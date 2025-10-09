@@ -281,14 +281,14 @@ class ServicoEmail:
                         <p><strong>Próximos passos:</strong></p>
                         <ol>
                             <li>Aguarde a validação da sua participação pelos organizadores</li>
-                            <li>Após a validação, você receberá um e-mail com instruções para download do certificado</li>
+                            <li>Após sua apresentação, você receberá um e-mail com instruções para download de seu certificado</li>
                             <li>Qualquer dúvida, entre em contato com os organizadores da sua cidade</li>
                         </ol>
                     </div>
 
                     <div style="text-align: center; margin-top: 30px; padding: 20px; background-color: #e8f4f8; border-radius: 8px;">
                         <p style="margin: 0;">
-                            <em>"Levar a ciência para o bar"</em>
+                            <em>"Levando a ciência para o bar"</em>
                         </p>
                         <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #666;">
                             Pint of Science Brasil
@@ -360,7 +360,7 @@ class ServicoEmail:
 
                     <div style="text-align: center; margin-top: 30px; padding: 20px; background-color: #e8f4f8; border-radius: 8px;">
                         <p style="margin: 0;">
-                            <em>"Levar a ciência para o bar"</em>
+                            <em>"Levando a ciência para o bar"</em>
                         </p>
                         <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #666;">
                             Pint of Science Brasil
@@ -561,7 +561,7 @@ class GeradorCertificado:
                     rodape_style,
                 )
             )
-            content.append(Paragraph('"Levar a ciência para o bar"', rodape_style))
+            content.append(Paragraph('"Levando a ciência para o bar"', rodape_style))
 
             # Gerar PDF
             doc.build(content)

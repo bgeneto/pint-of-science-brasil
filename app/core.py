@@ -47,6 +47,17 @@ class Settings:
         self.app_version: str = os.getenv("APP_VERSION", "1.0.0")
         self.debug: bool = os.getenv("DEBUG", "false").lower() == "true"
 
+        # Configurações do Superadmin Inicial (opcional)
+        self.initial_superadmin_email: Optional[str] = os.getenv(
+            "INITIAL_SUPERADMIN_EMAIL"
+        )
+        self.initial_superadmin_password: Optional[str] = os.getenv(
+            "INITIAL_SUPERADMIN_PASSWORD"
+        )
+        self.initial_superadmin_name: Optional[str] = os.getenv(
+            "INITIAL_SUPERADMIN_NAME"
+        )
+
         # Validação de configurações obrigatórias
         self._validate_config()
 

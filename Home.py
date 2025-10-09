@@ -47,20 +47,13 @@ st.markdown(
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 
-    .section-container {
-        background: white;
-        padding: 2rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin-bottom: 2rem;
-    }
-
     .success-message {
         background: #d4edda;
         color: #155724;
         padding: 1rem;
         border-radius: 5px;
         border-left: 4px solid #28a745;
+        margin: 1rem 0;
     }
 
     .error-message {
@@ -69,6 +62,7 @@ st.markdown(
         padding: 1rem;
         border-radius: 5px;
         border-left: 4px solid #dc3545;
+        margin: 1rem 0;
     }
 
     .info-message {
@@ -77,25 +71,7 @@ st.markdown(
         padding: 1rem;
         border-radius: 5px;
         border-left: 4px solid #17a2b8;
-    }
-
-    .feature-card {
-        background: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 8px;
-        border-left: 4px solid #e74c3c;
-        margin-bottom: 1rem;
-    }
-
-    /* Estilo para inputs */
-    .stTextInput > div > div > input {
-        border-radius: 5px;
-        border: 1px solid #ddd;
-    }
-
-    .stSelectbox > div > div > select {
-        border-radius: 5px;
-        border: 1px solid #ddd;
+        margin: 1rem 0;
     }
 
     /* Estilo para botões */
@@ -111,8 +87,16 @@ st.markdown(
 
     .stButton > button:hover {
         background: #c0392b;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Melhorar espaçamento das tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        padding: 10px 20px;
     }
 
     /* Esconder elementos do Streamlit */
@@ -122,9 +106,6 @@ st.markdown(
 
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    .st-emotion-cache-1avcm2n ez1byc5 {
-        visibility: hidden;
-    }
 </style>
 """,
     unsafe_allow_html=True,
@@ -208,16 +189,12 @@ def carregar_dados_formulario() -> tuple:
 
 def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
     """Exibe o formulário de inscrição de participantes."""
-    st.markdown('<div class="section-container">', unsafe_allow_html=True)
-
     st.subheader("📝 Formulário de Inscrição")
     st.write("Preencha os dados abaixo para se inscrever no evento:")
 
     # Informações do evento
     if evento_atual:
-        st.info(
-            f"🎯 **Evento Atual:** Pint of Science {evento_atual['ano']} ({evento_atual['datas_evento']})"
-        )
+        st.info(f"🎯 Evento Atual: **Pint of Science {evento_atual['ano']}**")
 
     # Formulário
     with st.form("form_inscricao"):
@@ -252,8 +229,8 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
             )
 
         titulo_apresentacao = st.text_input(
-            "Título da Apresentação (opcional)",
-            placeholder="Se você for apresentador, informe o título",
+            "Título da Apresentação (somente se aplicável)",
+            placeholder="Se você for palestrante, informe o título",
             help="Apenas se você for apresentar alguma palestra/mesa redonda",
         )
 
@@ -269,8 +246,7 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
         )
 
         # Termo de consentimento
-        st.markdown("---")
-        st.markdown("**📋 Termo de Consentimento:**")
+        st.markdown("📋 Termo de Consentimento *")
         consentimento = st.checkbox(
             "Eu concordo em ter meus dados utilizados para geração de certificados e comunicação do evento.",
             help="Seus dados serão criptografados e utilizados apenas para os fins do evento",
@@ -340,14 +316,11 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
                 mostrar_mensagem("error", mensagem)
                 return False
 
-    st.markdown("</div>", unsafe_allow_html=True)
     return False
 
 
 def formulario_download_certificado(evento_atual) -> bool:
     """Exibe o formulário para download de certificados."""
-    st.markdown('<div class="section-container">', unsafe_allow_html=True)
-
     st.subheader("📜 Download de Certificado")
     st.write("Digite seu e-mail para baixar seu certificado:")
 
@@ -355,8 +328,8 @@ def formulario_download_certificado(evento_atual) -> bool:
     st.info(
         """
     ℹ️ **Importante:**
-    - Apenas participantes com inscrição validada podem baixar certificados
-    - Se você acabou de se inscrever, aguarde a validação pelos organizadores
+    - Apenas participantes com apresentação validada pelos coordenadores podem baixar certificados
+    - Se você acabou de se inscrever, aguarde a validação pelos coordenadores após a sua apresentação
     - Você receberá um e-mail quando seu certificado estiver disponível
     """
     )
@@ -419,14 +392,11 @@ def formulario_download_certificado(evento_atual) -> bool:
                 mostrar_mensagem("error", mensagem)
                 return False
 
-    st.markdown("</div>", unsafe_allow_html=True)
     return False
 
 
 def formulario_login_coordenador() -> bool:
     """Exibe o formulário de login para coordenadores."""
-    st.markdown('<div class="section-container">', unsafe_allow_html=True)
-
     st.subheader("🔐 Área Restrita - Coordenadores")
     st.write("Acesso exclusivo para coordenadores e organizadores:")
 
@@ -444,7 +414,7 @@ def formulario_login_coordenador() -> bool:
             )
 
         submit_button = st.form_submit_button(
-            "🚪 Entrar", type="primary", use_container_width=True
+            "🔓 Entrar", type="primary", use_container_width=True
         )
 
         if submit_button:
@@ -464,7 +434,6 @@ def formulario_login_coordenador() -> bool:
                 mostrar_mensagem("error", "E-mail ou senha incorretos.")
                 return False
 
-    st.markdown("</div>", unsafe_allow_html=True)
     return False
 
 
@@ -485,7 +454,7 @@ def mostrar_menu_usuario_logado() -> None:
             tempo_login = formatar_data_exibicao(user_info["login_time"])
             st.sidebar.write(f"**Login:** {tempo_login}")
 
-        if st.sidebar.button("🚪 Sair", use_container_width=True):
+        if st.sidebar.button("🔐 Sair", use_container_width=True):
             logout_coordenador()
 
 
@@ -515,8 +484,6 @@ def main():
 
     # Sidebar
     with st.sidebar:
-        st.markdown("### 🧭 Navegação")
-
         # Verificar se usuário está logado
         if is_user_logged_in():
             mostrar_menu_usuario_logado()
@@ -529,7 +496,6 @@ def main():
                 if st.button("⚙️ Administração", use_container_width=True):
                     st.switch_page("pages/2_⚙️_Administração.py")
 
-        st.markdown("---")
         st.markdown("### 📊 Status do Sistema")
 
         # Mostrar informações do sistema

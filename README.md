@@ -252,7 +252,6 @@ Para dúvidas ou suporte:
 
 - [ ] Implementar testes unitários automatizados
 - [ ] Adicionar suporte a múltiplos idiomas
-- [ ] Integração com sistemas de pagamento
 - [ ] Dashboard avançado com analytics
 - [ ] API REST para integração externa
 

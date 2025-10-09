@@ -441,7 +441,26 @@ def init_database() -> None:
         funcoes_exist = session.query(Funcao).first() is not None
         eventos_exist = session.query(Evento).first() is not None
 
-        if not (cidades_exist and funcoes_exist and eventos_exist):
+        # Verificar se existe superadmin (sempre necessário)
+        from app.core import settings
+
+        superadmin_needed = (
+            settings.initial_superadmin_email
+            and settings.initial_superadmin_password
+            and settings.initial_superadmin_name
+        )
+        superadmin_exists = False
+        if superadmin_needed:
+            superadmin_exists = (
+                session.query(Coordenador)
+                .filter(Coordenador.is_superadmin == True)
+                .first()
+                is not None
+            )
+
+        if not (cidades_exist and funcoes_exist and eventos_exist) or (
+            superadmin_needed and not superadmin_exists
+        ):
             logger.info("📝 Criando dados iniciais...")
             _create_initial_data(session)
         else:
@@ -498,6 +517,38 @@ def _create_initial_data(session: Session) -> None:
             ano=2024,
             datas_evento=datas_evento_iso,  # Pass the list directly
         )
+
+        # Seed initial superadmin if configured and none exists
+        from app.core import settings
+        from app.auth import AuthManager
+
+        if (
+            settings.initial_superadmin_email
+            and settings.initial_superadmin_password
+            and settings.initial_superadmin_name
+        ):
+
+            coord_repo = get_coordenador_repository(session)
+            existing_superadmins = coord_repo.get_superadmins()
+
+            if not existing_superadmins:
+                # Hash the password
+                auth_manager = AuthManager()
+                hashed_password = auth_manager.hash_password(
+                    settings.initial_superadmin_password
+                )
+
+                # Create initial superadmin
+                initial_admin = coord_repo.create_coordenador(
+                    nome=settings.initial_superadmin_name,
+                    email=settings.initial_superadmin_email,
+                    senha_hash=hashed_password,
+                    is_superadmin=True,
+                )
+
+                logger.info(
+                    f"✅ Superadmin inicial criado: {settings.initial_superadmin_email}"
+                )
 
         logger.info(
             f"✅ Dados iniciais criados com sucesso! Evento {evento_2024.ano} configurado."
