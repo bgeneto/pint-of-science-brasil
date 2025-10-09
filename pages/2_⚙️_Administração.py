@@ -411,7 +411,7 @@ def formulario_criar_evento() -> bool:
 
 
 def listar_eventos():
-    """Lista eventos existentes."""
+    """Lista e permite editar eventos existentes usando data_editor."""
     st.subheader("📅 Eventos Cadastrados")
 
     try:
@@ -425,14 +425,18 @@ def listar_eventos():
                 st.info("📋 Nenhum evento cadastrado.")
                 return
 
-            # Preparar dados para exibição
+            # Preparar dados para exibição e edição
             dados = []
             for evento in eventos:
+                # Converter datas_evento (JSON) para string legível
+                datas_str = (
+                    ", ".join(evento.datas_evento) if evento.datas_evento else ""
+                )
                 dados.append(
                     {
                         "ID": evento.id,
                         "Ano": evento.ano,
-                        "Datas": evento.datas_evento,
+                        "Datas": datas_str,
                         "Data Criação": formatar_data_exibicao(evento.data_criacao),
                     }
                 )
@@ -440,11 +444,181 @@ def listar_eventos():
             df = pd.DataFrame(dados)
             df = df.sort_values("Ano", ascending=False)
 
-            # Exibir tabela
-            st.dataframe(df, width="stretch")
+            # Usar data_editor para permitir edição
+            st.markdown(
+                """
+                    💡 **Dicas de uso:**
+                    - Edite os valores diretamente nas células (use clique duplo)
+                    - Para adicionar novo evento, clique em + (na parte superior-direita da tabela)
+                    - Para deletar, deixe o campo Ano vazio (só funciona se não houver participantes)
+                    - Clique em **Salvar Alterações** para confirmar
+                """
+            )
+
+            # Editor de dados
+            edited_df = st.data_editor(
+                df,
+                column_config={
+                    "ID": st.column_config.NumberColumn(
+                        "ID",
+                        help="ID único do evento (somente leitura)",
+                        disabled=True,
+                    ),
+                    "Ano": st.column_config.NumberColumn(
+                        "Ano",
+                        help="Ano do evento (deve ser único)",
+                        min_value=2020,
+                        max_value=2100,
+                        step=1,
+                    ),
+                    "Datas": st.column_config.TextColumn(
+                        "Datas",
+                        help="Datas do evento no formato YYYY-MM-DD, separadas por vírgula",
+                    ),
+                    "Data Criação": st.column_config.TextColumn(
+                        "Data Criação",
+                        help="Data de criação (somente leitura)",
+                        disabled=True,
+                    ),
+                },
+                hide_index=True,
+                num_rows="dynamic",
+                key="eventos_editor",
+            )
+
+            # Botão para salvar alterações
+            if st.button("💾 Salvar Alterações", type="primary"):
+                salvar_alteracoes_eventos(edited_df, eventos, evento_repo)
 
     except Exception as e:
         st.error(f"❌ Erro ao listar eventos: {str(e)}")
+
+
+def salvar_alteracoes_eventos(
+    edited_df: pd.DataFrame, eventos_originais: list, evento_repo
+):
+    """Salva as alterações feitas no data_editor para eventos."""
+    try:
+        alteracoes = 0
+        erros = []
+
+        # Criar dicionário de eventos originais por ID
+        eventos_por_id = {evento.id: evento for evento in eventos_originais}
+
+        for _, row in edited_df.iterrows():
+            evento_id = row["ID"]
+            ano_novo = row["Ano"]
+            datas_str = row["Datas"].strip() if row["Datas"] else ""
+
+            # Convert numpy/pandas types to Python types
+            if hasattr(evento_id, "item"):  # numpy type
+                evento_id = evento_id.item()
+            if hasattr(ano_novo, "item"):  # numpy type
+                ano_novo = ano_novo.item()
+
+            # Skip rows that are completely empty or invalid
+            if pd.isna(evento_id) and (
+                pd.isna(ano_novo) or ano_novo == 0 or ano_novo == ""
+            ):
+                continue  # Skip empty rows added by data_editor
+
+            # Handle different data types from data_editor
+            if pd.isna(ano_novo) or ano_novo == 0 or ano_novo == "":
+                # Deletar evento se Ano estiver vazio ou 0
+                if not pd.isna(evento_id) and evento_id in eventos_por_id:
+                    evento = eventos_por_id[evento_id]
+
+                    # Verificar se há participantes associados ao evento
+                    from app.db import get_participante_repository
+
+                    participante_repo = get_participante_repository(evento_repo.session)
+                    participantes_associados = participante_repo.get_by_evento_cidade(
+                        evento_id
+                    )
+
+                    if participantes_associados:
+                        erros.append(
+                            f"Não é possível deletar o evento {evento.ano} pois há "
+                            f"{len(participantes_associados)} participante(s) associado(s). "
+                            "Transfira os participantes para outro evento antes de deletar."
+                        )
+                        continue
+
+                    try:
+                        evento_repo.delete(evento)
+                        alteracoes += 1
+                        st.success(f"✅ Evento {evento.ano} deletado com sucesso!")
+                    except Exception as e:
+                        erros.append(f"Erro ao deletar evento {evento.ano}: {str(e)}")
+                continue
+
+            # Parse datas
+            try:
+                if datas_str:
+                    datas_list = []
+                    for d in datas_str.split(","):
+                        d = d.strip()
+                        if d:
+                            datetime.fromisoformat(d)  # Validar formato
+                            datas_list.append(d)
+                    if not datas_list:
+                        raise ValueError("Nenhuma data válida")
+                else:
+                    raise ValueError("Datas são obrigatórias")
+            except Exception as e:
+                erros.append(f"Erro nas datas do evento {ano_novo}: {str(e)}")
+                continue
+
+            if not pd.isna(evento_id) and evento_id in eventos_por_id:
+                # Atualizar evento existente
+                evento = eventos_por_id[evento_id]
+
+                # Verificar se houve mudanças
+                mudou = False
+                # Convert ano_novo to int safely
+                try:
+                    ano_int = int(ano_novo)
+                except (ValueError, TypeError):
+                    erros.append(f"Ano inválido: {ano_novo}")
+                    continue
+
+                if evento.ano != ano_int:
+                    evento.ano = ano_int
+                    mudou = True
+
+                if evento.datas_evento != datas_list:
+                    evento.datas_evento = datas_list
+                    mudou = True
+
+                if mudou:
+                    alteracoes += 1
+                    st.success(f"✅ Evento {ano_int} atualizado com sucesso!")
+
+            # Skip rows that have ID but no valid ano (these might be unmodified existing rows)
+
+        if alteracoes > 0:
+            # Commit explicitamente antes do rerun
+            try:
+                evento_repo.session.commit()
+                st.success(f"🎉 {alteracoes} alteração(ões) salva(s) com sucesso!")
+                st.rerun()
+            except Exception as commit_error:
+                evento_repo.session.rollback()
+                st.error(f"❌ Erro ao salvar no banco de dados: {str(commit_error)}")
+                erros.append(f"Erro de commit: {str(commit_error)}")
+        elif erros:
+            pass  # Erros já foram mostrados acima
+        else:
+            st.info("ℹ️ Nenhuma alteração detectada.")
+
+        # Mostrar erros se houver
+        if erros:
+            with st.expander("⚠️ Erros encontrados"):
+                for erro in erros:
+                    st.error(erro)
+
+    except Exception as e:
+        st.error(f"❌ Erro ao salvar alterações: {str(e)}")
 
 
 def formulario_criar_cidade() -> bool:
