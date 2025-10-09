@@ -9,20 +9,31 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Any, Optional
+import logging
 
 # Importar módulos do sistema
-from app.auth import require_login, get_current_user_info
+from app.auth import require_login, get_current_user_info, auth_manager
 from app.db import db_manager
 from app.models import Evento, Cidade, Funcao, Participante
 from app.services import servico_criptografia, validar_participantes
 from app.utils import formatar_data_exibicao, limpar_texto
 
-# Configuração da página
-st.set_page_config(
-    page_title="Validação de Participação", page_icon="✅", layout="wide"
-)
+# Configure logging
+logger = logging.getLogger(__name__)
 
-# Proteção de acesso
+# CRITICAL: Check authentication cookie BEFORE require_login
+# This restores the session from cookie if it exists
+try:
+    if auth_manager.authenticator:
+        name, authentication_status, username = auth_manager.authenticator.login(
+            location="unrendered"
+        )
+        if authentication_status and username and not st.session_state.get("logged_in"):
+            auth_manager.handle_login_result(name, authentication_status, username)
+except Exception:
+    pass  # Will be caught by require_login below
+
+# Proteção de acesso - agora é simples!
 require_login()
 
 # CSS customizado
@@ -322,7 +333,7 @@ def tabela_validacao_participantes(
             ),
         },
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
         num_rows="dynamic",
     )
 
@@ -352,7 +363,7 @@ def processar_validacao(df_original: pd.DataFrame, df_editado: pd.DataFrame) -> 
     # Confirmar ação
     st.warning(f"⚠️ Você está prestes a validar {len(participante_ids)} participantes.")
 
-    if st.button("✅ Confirmar Validação", type="primary", use_container_width=True):
+    if st.button("✅ Confirmar Validação", type="primary", width="stretch"):
         with st.spinner("Processando validações..."):
             sucesso, mensagem = validar_participantes(participante_ids, novos_status)
 

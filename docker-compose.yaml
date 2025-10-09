@@ -1,0 +1,57 @@
+services:
+  # Main Streamlit application
+  pint-of-science:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: pint-of-science-app
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+
+    volumes:
+      # Database persistence
+      - ./data:/app/data
+      # Static files (logo, etc.)
+      - ./static:/app/static
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    networks:
+      - pint-of-science-network
+
+    # Security settings
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+networks:
+  pint-of-science-network:
+    driver: bridge
+    name: pint-of-science-network
+
+# Named volumes for data persistence (if using docker volumes instead of bind mounts)
+volumes:
+  database-data:
+    driver: local
+    name: pint-of-science-db
+  static-files:
+    driver: local
+    name: pint-of-science-static

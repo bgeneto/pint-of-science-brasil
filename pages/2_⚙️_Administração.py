@@ -13,18 +13,35 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Any, Optional
+import logging
 
 # Importar módulos do sistema
-from app.auth import require_superadmin, get_current_user_info
+from app.auth import (
+    require_superadmin,
+    get_current_user_info,
+    criar_coordenador,
+    auth_manager,
+)
 from app.db import db_manager
 from app.models import Evento, Cidade, Funcao, Coordenador, Participante
-from app.auth import criar_coordenador, alterar_senha_coordenador
 from app.utils import formatar_data_exibicao, limpar_texto, validar_email
 
-# Configuração da página
-st.set_page_config(page_title="Administração", page_icon="⚙️", layout="wide")
+# Configure logging
+logger = logging.getLogger(__name__)
 
-# Proteção de acesso
+# CRITICAL: Check authentication cookie BEFORE require_superadmin
+# This restores the session from cookie if it exists
+try:
+    if auth_manager.authenticator:
+        name, authentication_status, username = auth_manager.authenticator.login(
+            location="unrendered"
+        )
+        if authentication_status and username and not st.session_state.get("logged_in"):
+            auth_manager.handle_login_result(name, authentication_status, username)
+except Exception:
+    pass  # Will be caught by require_superadmin below
+
+# Proteção de acesso - agora é simples!
 require_superadmin()
 
 # CSS customizado
@@ -64,11 +81,41 @@ def mostrar_informacoes_usuario():
     user_info = get_current_user_info()
 
     if user_info:
-        st.info(
-            f"👤 **Superadmin:** {user_info['name']} ({user_info['email']})  \n"
-            f"⏰ **Login:** {formatar_data_exibicao(user_info.get('login_time', ''))}  \n"
-            f"🔐 **Acesso:** Total (Superadmin)"
-        )
+        col1, col2 = st.columns([3, 1])
+
+        with col1:
+            st.info(
+                f"👤 **Superadmin:** {user_info['name']} ({user_info['email']})  \n"
+                f"⏰ **Login:** {formatar_data_exibicao(user_info.get('login_time', ''))}  \n"
+                f"🔐 **Acesso:** Total (Superadmin)"
+            )
+
+        with col2:
+            # Get current token for navigation
+            current_token = st.query_params.get(
+                "session_token"
+            ) or st.session_state.get("persistent_session_token")
+            if current_token:
+                validation_url = f"pages/1_✅_Validação_de_Participantes.py?session_token={current_token}"
+                st.markdown(
+                    f"""
+                <a href="{validation_url}" target="_self" style="
+                    display: inline-block;
+                    padding: 0.5rem 1rem;
+                    background: #27ae60;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    font-weight: bold;
+                    text-align: center;
+                    margin-top: 1rem;
+                ">✅ Validação</a>
+                """,
+                    unsafe_allow_html=True,
+                )
+            else:
+                if st.button("✅ Validação", type="secondary"):
+                    st.switch_page("pages/1_✅_Validação_de_Participantes.py")
 
 
 def mostrar_estatisticas_gerais():
@@ -195,7 +242,7 @@ def formulario_criar_coordenador() -> bool:
         )
 
         submit_button = st.form_submit_button(
-            "👤 Criar Coordenador", type="primary", use_container_width=True
+            "👤 Criar Coordenador", type="primary", width="stretch"
         )
 
         if submit_button:
@@ -273,7 +320,7 @@ def listar_coordenadores():
             df = pd.DataFrame(dados)
 
             # Exibir tabela
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, width="stretch")
 
     except Exception as e:
         st.error(f"❌ Erro ao listar coordenadores: {str(e)}")
@@ -304,7 +351,7 @@ def formulario_criar_evento() -> bool:
             )
 
         submit_button = st.form_submit_button(
-            "📅 Criar Evento", type="primary", use_container_width=True
+            "📅 Criar Evento", type="primary", width="stretch"
         )
 
         if submit_button:
@@ -392,7 +439,7 @@ def listar_eventos():
             df = df.sort_values("Ano", ascending=False)
 
             # Exibir tabela
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, width="stretch")
 
     except Exception as e:
         st.error(f"❌ Erro ao listar eventos: {str(e)}")
@@ -413,23 +460,50 @@ def formulario_criar_cidade() -> bool:
             )
 
         with col2:
-            estado = st.text_input(
+            # Lista de estados brasileiros em ordem alfabética
+            estados_brasileiros = [
+                "AC",
+                "AL",
+                "AP",
+                "AM",
+                "BA",
+                "CE",
+                "DF",
+                "ES",
+                "GO",
+                "MA",
+                "MT",
+                "MS",
+                "MG",
+                "PA",
+                "PB",
+                "PR",
+                "PE",
+                "PI",
+                "RJ",
+                "RN",
+                "RS",
+                "RO",
+                "RR",
+                "SC",
+                "SP",
+                "SE",
+                "TO",
+            ]
+
+            estado = st.selectbox(
                 "Estado (UF) *",
-                placeholder="Ex: SP",
-                help="Sigla do estado com 2 letras",
+                options=estados_brasileiros,
+                help="Selecione o estado brasileiro",
             )
 
         submit_button = st.form_submit_button(
-            "🏙️ Criar Cidade", type="primary", use_container_width=True
+            "🏙️ Criar Cidade", type="primary", width="stretch"
         )
 
         if submit_button:
             if not all([nome, estado]):
                 st.error("❌ Preencha todos os campos obrigatórios.")
-                return False
-
-            if len(estado) != 2 or not estado.isalpha():
-                st.error("❌ Estado deve ter exatamente 2 letras.")
                 return False
 
             try:
@@ -439,20 +513,16 @@ def formulario_criar_cidade() -> bool:
                     cidade_repo = get_cidade_repository(session)
 
                     # Verificar se cidade já existe
-                    existing = cidade_repo.get_by_nome_estado(nome, estado.upper())
+                    existing = cidade_repo.get_by_nome_estado(nome, estado)
                     if existing:
-                        st.error(
-                            f"❌ A cidade {nome}-{estado.upper()} já está cadastrada."
-                        )
+                        st.error(f"❌ A cidade {nome}-{estado} já está cadastrada.")
                         return False
 
                     # Criar cidade
-                    cidade = cidade_repo.create_cidade(nome.strip(), estado.upper())
+                    cidade = cidade_repo.create_cidade(nome.strip(), estado)
 
                     if cidade:
-                        st.success(
-                            f"✅ Cidade {nome}-{estado.upper()} criada com sucesso!"
-                        )
+                        st.success(f"✅ Cidade {nome}-{estado} criada com sucesso!")
                         return True
                     else:
                         st.error("❌ Erro ao criar cidade.")
@@ -495,7 +565,7 @@ def listar_cidades():
             df = pd.DataFrame(dados)
 
             # Exibir tabela
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, width="stretch")
 
     except Exception as e:
         st.error(f"❌ Erro ao listar cidades: {str(e)}")
@@ -513,7 +583,7 @@ def formulario_criar_funcao() -> bool:
         )
 
         submit_button = st.form_submit_button(
-            "🎭 Criar Função", type="primary", use_container_width=True
+            "🎭 Criar Função", type="primary", width="stretch"
         )
 
         if submit_button:
@@ -573,7 +643,7 @@ def listar_funcoes():
             df = pd.DataFrame(dados)
 
             # Exibir tabela
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, width="stretch")
 
     except Exception as e:
         st.error(f"❌ Erro ao listar funções: {str(e)}")

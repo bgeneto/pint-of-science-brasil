@@ -18,10 +18,12 @@ from app.db import init_database, db_manager
 from app.models import Evento, Cidade, Funcao, ParticipanteCreate
 from app.services import inscrever_participante, baixar_certificado
 from app.auth import (
-    login_coordenador,
-    logout_coordenador,
+    show_login,
+    logout,
     is_user_logged_in,
     get_current_user_info,
+    auth_manager,
+    login_coordenador,
 )
 from app.utils import validar_email, formatar_data_exibicao, limpar_texto
 
@@ -32,6 +34,22 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# CRITICAL: Check authentication cookie IMMEDIATELY after page config
+# This MUST be done before any other Streamlit operations
+# The authenticator automatically checks cookies when login() is called
+try:
+    # Call the authenticator's login with location='unrendered' to check cookie without showing form
+    # This will restore session from cookie if it exists
+    if auth_manager.authenticator:
+        name, authentication_status, username = auth_manager.authenticator.login(
+            location="unrendered"
+        )
+        # If cookie restored the session, update our custom session keys
+        if authentication_status and username and not st.session_state.get("logged_in"):
+            auth_manager.handle_login_result(name, authentication_status, username)
+except Exception as e:
+    pass  # Ignore errors in cookie restoration, user will just need to login again
 
 # CSS customizado para melhorar a aparência
 st.markdown(
@@ -254,7 +272,7 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
 
         # Botão de envio
         submit_button = st.form_submit_button(
-            "🚀 Realizar Inscrição", type="primary", use_container_width=True
+            "🚀 Realizar Inscrição", type="primary", width="stretch"
         )
 
         if submit_button:
@@ -353,7 +371,7 @@ def formulario_download_certificado(evento_atual) -> bool:
         )
 
         submit_button = st.form_submit_button(
-            "📥 Baixar Certificado", type="primary", use_container_width=True
+            "📥 Baixar Certificado", type="primary", width="stretch"
         )
 
         if submit_button:
@@ -385,7 +403,7 @@ def formulario_download_certificado(evento_atual) -> bool:
                     data=pdf_bytes,
                     file_name=nome_arquivo,
                     mime="application/pdf",
-                    use_container_width=True,
+                    width="stretch",
                 )
                 return True
             else:
@@ -422,17 +440,14 @@ def formulario_login_coordenador() -> bool:
                 mostrar_mensagem("error", "Por favor, preencha e-mail e senha.")
                 return False
 
-            # Realizar login
+            # Realizar login com validação customizada
             with st.spinner("Autenticando..."):
                 sucesso = login_coordenador(email.strip().lower(), senha)
 
             if sucesso:
-                st.success("🎉 Login realizado com sucesso!")
-                st.rerun()
-                return True
-            else:
-                mostrar_mensagem("error", "E-mail ou senha incorretos.")
-                return False
+                # Redirecionar imediatamente para a página de validação
+                st.switch_page("pages/1_✅_Validação_de_Participantes.py")
+            # Mensagens de erro já são mostradas por login_coordenador()
 
     return False
 
@@ -454,8 +469,10 @@ def mostrar_menu_usuario_logado() -> None:
             tempo_login = formatar_data_exibicao(user_info["login_time"])
             st.sidebar.write(f"**Login:** {tempo_login}")
 
-        if st.sidebar.button("🔒 Sair", use_container_width=True):
-            logout_coordenador()
+        if st.sidebar.button("🔒 Sair", width="stretch"):
+            auth_manager.clear_session()
+            auth_manager.show_logout_button(location="sidebar")
+            st.rerun()
 
 
 def main():
@@ -489,11 +506,11 @@ def main():
             mostrar_menu_usuario_logado()
 
             st.markdown("### 📋 Acesso Rápido")
-            if st.button("✅ Validação de Participação", use_container_width=True):
+            if st.button("✅ Validação de Participação", width="stretch"):
                 st.switch_page("pages/1_✅_Validação_de_Participantes.py")
 
             if get_current_user_info().get("is_superadmin"):
-                if st.button("⚙️ Administração", use_container_width=True):
+                if st.button("⚙️ Administração", width="stretch"):
                     st.switch_page("pages/2_⚙️_Administração.py")
 
         st.markdown("### 📊 Status do Sistema")
@@ -574,7 +591,7 @@ def main():
     st.markdown(
         """
     <div style='text-align: center; color: #666; padding: 20px;'>
-        <p><strong>Pint of Science Brasil</strong> - Sistema de Inscrição e Emissão Certificados</p>
+        <p><strong>Pint of Science Brasil</strong> - Sistema de Inscrição e Emissão de Certificados</p>
         <p>Desenvolvido com ❤️ para a comunidade científica brasileira</p>
     </div>
     """,

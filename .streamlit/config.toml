@@ -1,0 +1,39 @@
+# Streamlit Configuration File
+# This file configures the Streamlit application behavior
+
+[global]
+# Suppress warnings on direct execution
+showWarningOnDirectExecution = false
+
+[logger]
+# Set logging level (debug, info, warning, error)
+# Setting to "error" will hide the deprecation warnings from libraries
+level = "warning"
+
+[server]
+# Server configuration
+headless = true
+port = 8501
+address = "0.0.0.0"
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+# Browser behavior
+gatherUsageStats = false
+serverAddress = "localhost"
+serverPort = 8501
+
+[client]
+# Client-side configuration
+showErrorDetails = true
+toolbarMode = "minimal"
+
+[theme]
+# Use default Streamlit theme
+# You can customize colors here if needed
+# primaryColor = "#e74c3c"
+# backgroundColor = "#ffffff"
+# secondaryBackgroundColor = "#f0f2f6"
+# textColor = "#262730"
+# font = "sans serif"

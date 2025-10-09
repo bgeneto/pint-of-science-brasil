@@ -14,7 +14,81 @@ O objetivo é desenvolver um sistema web completo para gerenciar e emitir certif
 - **Banco de Dados:** SQLite
 - **Modelagem de Dados:** Pydantic
 - **Criptografia:** Biblioteca `cryptography` (módulo Fernet)
+- **Autenticação:** `streamlit-authenticator` (v0.3.3+)
 - **Variáveis de Ambiente:** Arquivo `.env`
+
+### 2.1. Authentication System - streamlit-authenticator
+
+**IMPORTANT**: The project uses `streamlit-authenticator` library for robust session management and cookie-based persistent login. This was adopted after manual cookie management with `streamlit-cookies-manager` proved unreliable due to timing issues.
+
+#### Key Implementation Details:
+
+1. **Installation Requirements:**
+   ```bash
+   pip install streamlit-authenticator>=0.3.3 pyyaml
+   # or with uv:
+   uv pip install streamlit-authenticator pyyaml
+   ```
+
+2. **AuthManager Pattern** (in `app/auth.py`):
+   - Uses `streamlit_authenticator.Authenticate` class
+   - Loads credentials from database (bcrypt-hashed passwords)
+   - Provides simple interface: `auth_manager.show_login_form()`
+   - Automatic cookie management (no manual timing logic needed)
+
+3. **Login Flow:**
+   ```python
+   # In Home.py or any public page:
+   name, authentication_status, username = auth_manager.show_login_form()
+
+   if authentication_status is True:
+       # Login successful
+       auth_manager.handle_login_result(name, authentication_status, username)
+   elif authentication_status is False:
+       # Login failed (wrong credentials)
+       st.error("❌ Credenciais incorretas")
+   # authentication_status is None: form not submitted yet
+   ```
+
+4. **Protected Pages:**
+   ```python
+   # At the top of any protected page:
+   from app.auth import require_login, require_superadmin
+
+   # For coordinator pages:
+   require_login()
+
+   # For superadmin-only pages:
+   require_superadmin()
+   ```
+
+5. **Session Persistence:**
+   - Sessions automatically persist across page refreshes (F5)
+   - Cookie expiry: 30 days (configurable in `AuthManager._initialize_authenticator()`)
+   - No manual token generation/storage needed
+   - No cookie timing checks required
+
+6. **Migration Notes:**
+   - Old system used `streamlit-cookies-manager` (removed)
+   - Backup of old code: `app/auth_old_backup.py`
+   - Code reduction: 699 lines → 375 lines (46% smaller)
+   - Database field `session_token` in `coordenadores` table is now unused but harmless
+   - bcrypt password hashes remain compatible (no password reset needed)
+
+7. **Troubleshooting:**
+   - If login form doesn't appear, check that `streamlit-authenticator` is installed
+   - If sessions don't persist, verify `.streamlit/config.toml` exists
+   - The library shows warnings about `st.cache` deprecation - these are suppressed in config
+   - Login button text is "Login" (English) - this comes from the library
+
+8. **Testing Checklist:**
+   - [ ] Login works with existing credentials
+   - [ ] Session persists on F5 refresh
+   - [ ] Protected pages load without "loading session" messages
+   - [ ] Logout clears session properly
+   - [ ] Multiple users can login simultaneously (different browsers)
+
+For detailed migration information, see `MIGRATION_TO_STREAMLIT_AUTHENTICATOR.md`.
 
 ## 3. Princípios de Arquitetura
 
@@ -139,23 +213,29 @@ pint-of-science/
 Para garantir uma implementação robusta e idiomática, os seguintes padrões devem ser adotados:
 
 1.  **Gerenciamento de Autenticação e Sessão:**
-    - O estado de login do usuário **DEVE** ser gerenciado através do `st.session_state`.
-    - Ao realizar o login com sucesso, armazene as informações do usuário na sessão. Exemplo:
+    - **CURRENT IMPLEMENTATION**: Uses `streamlit-authenticator` library for all authentication
+    - The library automatically manages `st.session_state` and cookies
+    - Session state is populated by `auth_manager.handle_login_result()`:
       ```python
-      # Em auth.py, após validar a senha
-      st.session_state['logged_in'] = True
-      st.session_state['user_id'] = user.id
-      st.session_state['user_email'] = user.email
-      st.session_state['is_superadmin'] = user.is_superadmin
+      # In app/auth.py - handle_login_result() method
+      st.session_state[SESSION_KEYS["logged_in"]] = True
+      st.session_state[SESSION_KEYS["user_id"]] = coordenador.id
+      st.session_state[SESSION_KEYS["user_email"]] = coordenador.email
+      st.session_state[SESSION_KEYS["user_name"]] = coordenador.nome
+      st.session_state[SESSION_KEYS["is_superadmin"]] = coordenador.is_superadmin
       ```
-    - As páginas restritas (`pages/*.py`) **DEVEM** iniciar com um bloco de verificação:
+    - **IMPORTANT**: Always use `SESSION_KEYS` dict from `app/auth.py` when accessing session state
+    - Pages are protected using helper functions:
       ```python
-      import streamlit as st
+      from app.auth import require_login, require_superadmin
 
-      if 'logged_in' not in st.session_state or not st.session_state.logged_in:
-          st.error("⚠️ Você precisa estar logado para acessar esta página.")
-          st.stop() # Interrompe a execução do script
+      # For coordinator pages:
+      require_login()  # Checks auth and calls st.stop() if not logged in
+
+      # For superadmin pages:
+      require_superadmin()  # Checks both login and superadmin status
       ```
+    - The old manual approach with direct `st.session_state` checks is **DEPRECATED**
 
 2.  **Tabelas de Dados Interativas:**
     - Para a tela de validação de participantes, use o componente `st.data_editor`. Ele permite a edição direta na interface (como marcar checkboxes de validação), além de oferecer ordenação e filtragem nativas, cumprindo o requisito de "DataTable".
@@ -185,7 +265,7 @@ Os prompts iniciais continuam válidos, e agora a IA terá um contexto muito mai
 
     ```
 
-## Tooling for shell interactions (install if missing)
+## Tooling for shell interactions
 
 - Is it about finding FILES? use `fd`
 - Is it about finding TEXT/strings? use `rg`
@@ -193,3 +273,8 @@ Os prompts iniciais continuam válidos, e agora a IA terá um contexto muito mai
 - Is it about SELECTING from multiple results? pipe to `fzf`
 - Is it about interacting with JSON? use `jq`
 - Is it about interacting with YAML or XML? use `yq`
+
+## Avoid creating unnecessary files
+- Only create files that are explicitly requested or clearly needed based on the context.
+- Do not create placeholder files unless they serve a specific purpose in the project structure.
+- Do not create .md files for applied fixes, summaries, or migrations unless explicitly requested.

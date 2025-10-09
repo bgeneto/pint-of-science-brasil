@@ -95,6 +95,9 @@ class Coordenador(Base):
     email = Column(Text, nullable=False, unique=True)
     senha_hash = Column(Text, nullable=False)
     is_superadmin = Column(Boolean, nullable=False, default=False)
+    session_token = Column(
+        Text, nullable=True, unique=True
+    )  # New field for session persistence
 
     # Relacionamentos
     cidades = relationship("CoordenadorCidadeLink", back_populates="coordenador")
