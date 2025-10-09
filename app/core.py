@@ -47,6 +47,11 @@ class Settings:
         self.app_version: str = os.getenv("APP_VERSION", "1.0.0")
         self.debug: bool = os.getenv("DEBUG", "false").lower() == "true"
 
+        # Configurações de Auditoria
+        self.enable_audit_logging: bool = (
+            os.getenv("ENABLE_AUDIT_LOGGING", "false").lower() == "true"
+        )
+
         # Configurações do Superadmin Inicial (opcional)
         self.initial_superadmin_email: Optional[str] = os.getenv(
             "INITIAL_SUPERADMIN_EMAIL"

@@ -6,7 +6,6 @@ Esta página permite que superadmins gerenciem todo o sistema:
 - CRUD de eventos
 - CRUD de cidades
 - CRUD de funções
-- Visualização de auditoria
 - Gestão geral do sistema
 """
 
@@ -18,7 +17,7 @@ from typing import List, Dict, Any, Optional
 # Importar módulos do sistema
 from app.auth import require_superadmin, get_current_user_info
 from app.db import db_manager
-from app.models import Evento, Cidade, Funcao, Coordenador, Auditoria
+from app.models import Evento, Cidade, Funcao, Coordenador, Participante
 from app.auth import criar_coordenador, alterar_senha_coordenador
 from app.utils import formatar_data_exibicao, limpar_texto, validar_email
 
@@ -82,7 +81,6 @@ def mostrar_estatisticas_gerais():
                 get_funcao_repository,
                 get_coordenador_repository,
                 get_participante_repository,
-                get_auditoria_repository,
             )
 
             evento_repo = get_evento_repository(session)
@@ -90,7 +88,6 @@ def mostrar_estatisticas_gerais():
             funcao_repo = get_funcao_repository(session)
             coord_repo = get_coordenador_repository(session)
             participante_repo = get_participante_repository(session)
-            auditoria_repo = get_auditoria_repository(session)
 
             # Contar registros
             eventos_count = len(evento_repo.get_all(Evento))
@@ -98,7 +95,6 @@ def mostrar_estatisticas_gerais():
             funcoes_count = len(funcao_repo.get_all_ordered())
             coordenadores_count = len(coord_repo.get_all(Coordenador))
             participantes_count = len(participante_repo.get_all(Participante))
-            auditoria_count = len(auditoria_repo.get_recent_logs(1000))
 
             # Participantes validados
             participantes_validados = len(
@@ -195,7 +191,7 @@ def formulario_criar_coordenador() -> bool:
 
         is_superadmin = st.checkbox(
             "É Superadmin?",
-            help="Marque se este usuário deve ter acesso total ao sistema",
+            help="Marque se este usuário deve ter acesso total ao sistema, permitindo gerenciar outros coordenadores e configurações do sistema.",
         )
 
         submit_button = st.form_submit_button(
@@ -302,7 +298,7 @@ def formulario_criar_evento() -> bool:
 
         with col2:
             datas_evento = st.text_input(
-                "Datas do Evento *",
+                "Datas do Evento (YYYY-MM-DD) *",
                 placeholder="Ex: 2024-05-13, 2024-05-14, 2024-05-15",
                 help="Datas no formato YYYY-MM-DD (ISO), separadas por vírgula",
             )
@@ -420,7 +416,6 @@ def formulario_criar_cidade() -> bool:
             estado = st.text_input(
                 "Estado (UF) *",
                 placeholder="Ex: SP",
-                max_length=2,
                 help="Sigla do estado com 2 letras",
             )
 
@@ -584,51 +579,6 @@ def listar_funcoes():
         st.error(f"❌ Erro ao listar funções: {str(e)}")
 
 
-def mostrar_auditoria():
-    """Exibe logs de auditoria recentes."""
-    st.subheader("📊 Logs de Auditoria")
-
-    try:
-        with db_manager.get_db_session() as session:
-            from app.db import get_auditoria_repository, get_coordenador_repository
-
-            auditoria_repo = get_auditoria_repository(session)
-            coord_repo = get_coordenador_repository(session)
-
-            # Obter logs recentes
-            logs = auditoria_repo.get_recent_logs(50)
-
-            if not logs:
-                st.info("📋 Nenhum log de auditoria encontrado.")
-                return
-
-            # Preparar dados para exibição
-            dados = []
-            for log in logs:
-                coordenador = coord_repo.get_by_id(Coordenador, log.coordenador_id)
-                coord_nome = (
-                    coordenador.nome if coordenador else f"ID {log.coordenador_id}"
-                )
-
-                dados.append(
-                    {
-                        "ID": log.id,
-                        "Coordenador": coord_nome,
-                        "Ação": log.acao,
-                        "Detalhes": log.detalhes or "-",
-                        "Timestamp": formatar_data_exibicao(log.timestamp),
-                    }
-                )
-
-            df = pd.DataFrame(dados)
-
-            # Exibir tabela
-            st.dataframe(df, use_container_width=True)
-
-    except Exception as e:
-        st.error(f"❌ Erro ao carregar auditoria: {str(e)}")
-
-
 def main():
     """Função principal da página."""
 
@@ -652,8 +602,8 @@ def main():
     mostrar_estatisticas_gerais()
 
     # Abas para organizar o conteúdo
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        ["👤 Coordenadores", "📅 Eventos", "🏙️ Cidades", "🎭 Funções", "📊 Auditoria"]
+    tab1, tab2, tab3, tab4 = st.tabs(
+        ["👤 Coordenadores", "📅 Eventos", "🏙️ Cidades", "🎭 Funções"]
     )
 
     with tab1:
@@ -696,18 +646,12 @@ def main():
         # Lista de funções
         listar_funcoes()
 
-    with tab5:
-        st.markdown("---")
-        # Logs de auditoria
-        mostrar_auditoria()
-
     # Rodapé
     st.markdown("---")
     st.markdown(
         """
     <div style='text-align: center; color: #666; padding: 20px;'>
         <p><em>Use esta área para gerenciar todos os aspectos do sistema.</em></p>
-        <p><strong>Atenção:</strong> Todas as ações são registradas na auditoria do sistema.</p>
     </div>
     """,
         unsafe_allow_html=True,

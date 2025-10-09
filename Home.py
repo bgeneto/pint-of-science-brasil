@@ -398,7 +398,7 @@ def formulario_download_certificado(evento_atual) -> bool:
 def formulario_login_coordenador() -> bool:
     """Exibe o formulário de login para coordenadores."""
     st.subheader("🔐 Área Restrita - Coordenadores")
-    st.write("Acesso exclusivo para coordenadores e organizadores:")
+    st.write("Acesso exclusivo para coordenadores")
 
     with st.form("form_login"):
         col1, col2 = st.columns(2)
@@ -454,7 +454,7 @@ def mostrar_menu_usuario_logado() -> None:
             tempo_login = formatar_data_exibicao(user_info["login_time"])
             st.sidebar.write(f"**Login:** {tempo_login}")
 
-        if st.sidebar.button("🔐 Sair", use_container_width=True):
+        if st.sidebar.button("🔒 Sair", use_container_width=True):
             logout_coordenador()
 
 
@@ -489,7 +489,7 @@ def main():
             mostrar_menu_usuario_logado()
 
             st.markdown("### 📋 Acesso Rápido")
-            if st.button("✅ Validação de Participantes", use_container_width=True):
+            if st.button("✅ Validação de Participação", use_container_width=True):
                 st.switch_page("pages/1_✅_Validação_de_Participantes.py")
 
             if get_current_user_info().get("is_superadmin"):
@@ -555,7 +555,6 @@ def main():
     active_tab = st.segmented_control(
         "Navegação",
         options=["📝 Inscrição", "📜 Certificados", "🔐 Coordenadores"],
-        default=st.session_state["active_tab"],
         key="active_tab",
         label_visibility="collapsed",
     )
@@ -566,9 +565,7 @@ def main():
         formulario_download_certificado(evento_atual)
     elif active_tab == "🔐 Coordenadores":
         if is_user_logged_in():
-            st.info(
-                "✅ Você já está logado! Use o menu lateral para acessar as áreas restritas."
-            )
+            st.switch_page("pages/1_✅_Validação_de_Participantes.py")
         else:
             formulario_login_coordenador()
 

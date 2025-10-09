@@ -24,7 +24,7 @@ from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Session, sessionmaker
 from sqlalchemy.pool import StaticPool
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
 
 
 # Base para modelos SQLAlchemy
@@ -172,10 +172,9 @@ class Auditoria(Base):
 # Eventos
 class EventoBase(BaseModel):
     ano: int = Field(..., gt=2000, lt=2100)
-    datas_evento: List[str] = Field(..., min_items=1)
+    datas_evento: List[str] = Field(..., min_length=1)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class EventoCreate(EventoBase):
@@ -186,8 +185,7 @@ class EventoRead(EventoBase):
     id: int
     data_criacao: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Cidades
@@ -195,14 +193,14 @@ class CidadeBase(BaseModel):
     nome: str = Field(..., min_length=1, max_length=100)
     estado: str = Field(..., min_length=2, max_length=2)
 
-    @validator("estado")
+    @field_validator("estado")
+    @classmethod
     def validate_estado(cls, v):
         if not v.isalpha() or len(v) != 2:
             raise ValueError("Estado deve ser uma sigla de 2 letras")
         return v.upper()
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CidadeCreate(CidadeBase):
@@ -212,16 +210,14 @@ class CidadeCreate(CidadeBase):
 class CidadeRead(CidadeBase):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Funções
 class FuncaoBase(BaseModel):
     nome_funcao: str = Field(..., min_length=1, max_length=100)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FuncaoCreate(FuncaoBase):
@@ -231,8 +227,7 @@ class FuncaoCreate(FuncaoBase):
 class FuncaoRead(FuncaoBase):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Coordenadores
@@ -241,14 +236,14 @@ class CoordenadorBase(BaseModel):
     email: EmailStr
     is_superadmin: bool = False
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CoordenadorCreate(CoordenadorBase):
     senha: str = Field(..., min_length=8)
 
-    @validator("senha")
+    @field_validator("senha")
+    @classmethod
     def validate_senha(cls, v):
         if len(v) < 8:
             raise ValueError("Senha deve ter pelo menos 8 caracteres")
@@ -263,15 +258,13 @@ class CoordenadorLogin(BaseModel):
 class CoordenadorRead(CoordenadorBase):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CoordenadorCreateDB(CoordenadorBase):
     senha_hash: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Participantes
@@ -285,14 +278,14 @@ class ParticipanteBase(BaseModel):
     datas_participacao: str = Field(..., min_length=1, max_length=200)
     carga_horaria_calculada: int = Field(..., ge=0)
 
-    @validator("nome_completo")
+    @field_validator("nome_completo")
+    @classmethod
     def validate_nome(cls, v):
         if not v.strip():
             raise ValueError("Nome não pode estar vazio")
         return v.strip()
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ParticipanteCreate(ParticipanteBase):
@@ -312,8 +305,7 @@ class ParticipanteRead(BaseModel):
     validado: bool
     data_inscricao: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Auditoria
@@ -321,8 +313,7 @@ class AuditoriaBase(BaseModel):
     acao: str = Field(..., min_length=1, max_length=100)
     detalhes: Optional[str] = Field(None, max_length=500)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AuditoriaCreate(AuditoriaBase):
@@ -334,8 +325,7 @@ class AuditoriaRead(AuditoriaBase):
     timestamp: str
     coordenador_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============= FUNÇÕES ÚTEIS =============

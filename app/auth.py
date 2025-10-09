@@ -40,6 +40,45 @@ MAX_LOGIN_ATTEMPTS = 5
 LOGIN_LOCKOUT_MINUTES = 15
 
 
+def validar_credenciais_login(email: str, senha: str) -> str:
+    """
+    Valida as credenciais de login e retorna uma mensagem de erro amigável se houver problemas.
+
+    Args:
+        email: Email fornecido
+        senha: Senha fornecida
+
+    Returns:
+        String vazia se válido, ou mensagem de erro amigável
+    """
+    # Validar email
+    if not email or not email.strip():
+        return "Por favor, informe seu endereço de e-mail."
+
+    email = email.strip().lower()
+
+    # Verificar formato básico do email
+    if "@" not in email:
+        return "O e-mail deve conter o símbolo @."
+
+    if "." not in email.split("@")[1]:
+        return "O e-mail deve ter um domínio válido (exemplo: gmail.com)."
+
+    # Verificar se tem pelo menos um ponto após o @
+    dominio = email.split("@")[1]
+    if not dominio or dominio.startswith(".") or dominio.endswith("."):
+        return "O domínio do e-mail não parece válido."
+
+    # Validar senha
+    if not senha:
+        return "Por favor, informe sua senha."
+
+    if len(senha) < 6:
+        return "A senha deve ter pelo menos 6 caracteres."
+
+    return ""  # Sem erros
+
+
 class AuthManager:
     """Gerenciador central de autenticação."""
 
@@ -154,11 +193,12 @@ class AuthManager:
                 self._record_login_attempt(email, True)
 
                 # Registrar auditoria
-                auditoria_repo.create_audit_log(
-                    coordenador_id=coordenador.id,
-                    acao="LOGIN_SUCCESS",
-                    detalhes=f"Login realizado via interface web",
-                )
+                if settings.enable_audit_logging:
+                    auditoria_repo.create_audit_log(
+                        coordenador_id=coordenador.id,
+                        acao="LOGIN_SUCCESS",
+                        detalhes=f"Login realizado via interface web",
+                    )
 
                 logger.info(f"✅ Login bem-sucedido: {coordenador.email}")
                 return coordenador.id
@@ -246,11 +286,12 @@ class AuthManager:
 
                         coordenador = coord_repo.get_by_email(user_email)
                         if coordenador:
-                            auditoria_repo.create_audit_log(
-                                coordenador_id=coordenador.id,
-                                acao="LOGOUT",
-                                detalhes="Logout realizado via interface web",
-                            )
+                            if settings.enable_audit_logging:
+                                auditoria_repo.create_audit_log(
+                                    coordenador_id=coordenador.id,
+                                    acao="LOGOUT",
+                                    detalhes="Logout realizado via interface web",
+                                )
                 except Exception as e:
                     logger.warning(
                         f"⚠️ Não foi possível registrar auditoria de logout: {e}"
@@ -373,6 +414,16 @@ def login_coordenador(email: str, senha: str) -> bool:
         True se login bem-sucedido, False caso contrário
     """
     try:
+        # Validação customizada com mensagens amigáveis
+        erro_validacao = validar_credenciais_login(email, senha)
+        if erro_validacao:
+            try:
+                st.error(f"❌ {erro_validacao}")
+            except:
+                # Estamos fora do contexto Streamlit
+                pass
+            return False
+
         credentials = CoordenadorLogin(email=email, senha=senha)
         coordenador_id = auth_manager.authenticate_coordenador(credentials)
 
@@ -461,7 +512,7 @@ def criar_coordenador(
 
             # Registrar auditoria
             current_user = get_current_user_info()
-            if current_user:
+            if current_user and settings.enable_audit_logging:
                 auditoria_repo.create_audit_log(
                     coordenador_id=current_user["id"],
                     acao="CREATE_COORDENADOR",
@@ -511,7 +562,7 @@ def alterar_senha_coordenador(email: str, senha_atual: str, nova_senha: str) -> 
 
             # Registrar auditoria
             current_user = get_current_user_info()
-            if current_user:
+            if current_user and settings.enable_audit_logging:
                 auditoria_repo.create_audit_log(
                     coordenador_id=current_user["id"],
                     acao="CHANGE_PASSWORD",

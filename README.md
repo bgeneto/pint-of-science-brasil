@@ -126,8 +126,103 @@ BREVO_SENDER_NAME=Pint of Science Brasil
 ```
 
 ### Passo 5: Inicializar o Banco de Dados
-O banco de dados será criado automaticamente na primeira execução, com dados iniciais de cidades, funções e eventos.
 
+O sistema utiliza SQLite como banco de dados e será criado automaticamente na primeira execução. O processo de inicialização inclui a criação das tabelas e o seed de dados iniciais.
+
+#### 5.1: Executar a Inicialização Automática
+```bash
+# Executar o sistema pela primeira vez
+streamlit run Home.py
+```
+
+Na primeira execução, o sistema irá:
+- ✅ Criar o arquivo `pint_of_science.db`
+- ✅ Criar todas as tabelas necessárias
+- ✅ Popular dados iniciais (cidades, funções, eventos)
+- ✅ Criar usuário superadmin (se configurado)
+
+#### 5.2: Verificar a Inicialização
+Para verificar se o banco foi criado corretamente, execute o script de teste:
+
+```bash
+python tests/test_system.py
+```
+
+**Saída esperada:**
+```
+🚀 Iniciando testes do sistema Pint of Science Brasil
+✅ Todos os arquivos necessários encontrados!
+✅ Conexão com o banco de dados bem-sucedida!
+✅ Banco de dados inicializado corretamente!
+   - 10 cidades cadastradas
+   - 6 funções cadastradas
+   - 1 eventos cadastrados
+🎉 Todos os testes passaram! O sistema está pronto para uso.
+```
+
+#### 5.3: Dados Iniciais Criados
+
+**Cidades (10 cidades):**
+- São Paulo (SP), Rio de Janeiro (RJ), Belo Horizonte (MG)
+- Porto Alegre (RS), Recife (PE), Salvador (BA)
+- Brasília (DF), Campinas (SP), Fortaleza (CE), Curitiba (PR)
+
+**Funções (6 funções):**
+- Organizador(a), Voluntário(a), Palestrante
+- Moderador(a), Apoio Técnico, Divulgação
+
+**Eventos:**
+- Pint of Science 2024 (datas: 13-15 de maio)
+
+**Superadmin (opcional):**
+- Criado apenas se as variáveis `INITIAL_SUPERADMIN_*` estiverem configuradas no `.env`
+
+**Coordenadores de Teste:**
+- Um coordenador de teste é criado durante os testes: `teste@exemplo.com` / `senha123`
+- Um participante de teste é criado: `participante@exemplo.com`
+
+#### 5.4: Solução de Problemas
+
+**Se o banco não for criado:**
+```bash
+# Forçar recriação do banco
+rm pint_of_science.db
+python tests/test_system.py
+```
+
+**Se houver erro de permissão:**
+```bash
+# Verificar permissões da pasta
+chmod 755 .
+ls -la pint_of_science.db
+```
+
+**Se os dados iniciais não forem criados:**
+- Verifique se o arquivo `.env` existe e está configurado
+- Execute `python -c "from app.db import init_database; init_database()"` para debug
+
+#### 5.5: Reset/Recriação do Banco (Desenvolvimento)
+
+Para desenvolvimento ou teste, você pode recriar o banco do zero:
+
+```bash
+# 1. Remover banco existente
+rm pint_of_science.db
+
+# 2. Executar inicialização
+python tests/test_system.py
+
+# 3. Verificar dados
+python -c "
+from app.db import db_manager
+from app.models import Cidade, Funcao, Evento, Coordenador
+with db_manager.get_db_session() as session:
+    print(f'Cidades: {session.query(Cidade).count()}')
+    print(f'Funções: {session.query(Funcao).count()}')
+    print(f'Eventos: {session.query(Evento).count()}')
+    print(f'Coordenadores: {session.query(Coordenador).count()}')
+"
+```
 ### Passo 6: Executar a Aplicação
 ```bash
 streamlit run Home.py
@@ -172,10 +267,27 @@ O sistema implementa várias camadas de segurança:
 
 ## 🧪 Testes
 
+### Sistema de Testes Automatizado
+O projeto inclui um sistema completo de testes que valida todas as funcionalidades:
+
+```bash
+# Executar todos os testes
+python tests/test_system.py
+```
+
+**Testes Incluídos:**
+- ✅ Verificação de estrutura de arquivos
+- ✅ Conexão com banco de dados
+- ✅ Inicialização do banco de dados
+- ✅ Criptografia de dados
+- ✅ Criação de coordenadores
+- ✅ Registro de participantes
+- ✅ Configuração de e-mail
+
 ### Teste de Funcionalidade Básica
 1. Acesse `http://localhost:8501`
 2. Preencha o formulário de inscrição como participante
-3. Tente fazer login como coordenador (credenciais iniciais no banco)
+3. Tente fazer login como coordenador (`teste@exemplo.com` / `senha123`)
 4. Valide participantes na área restrita
 5. Faça download de certificado
 

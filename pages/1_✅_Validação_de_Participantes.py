@@ -1,5 +1,5 @@
 """
-Página de Validação de Participantes - Coordenadores
+Página de Validação de Participação - Coordenadores
 
 Esta página permite que coordenadores validem as inscrições dos participantes,
 visualizem dados e gerenciem o status de validação.
@@ -19,7 +19,7 @@ from app.utils import formatar_data_exibicao, limpar_texto
 
 # Configuração da página
 st.set_page_config(
-    page_title="Validação de Participantes", page_icon="✅", layout="wide"
+    page_title="Validação de Participação", page_icon="✅", layout="wide"
 )
 
 # Proteção de acesso
@@ -88,17 +88,58 @@ def carregar_dados_validacao() -> tuple:
             # Buscar evento atual
             evento_atual = evento_repo.get_current_event()
 
-            # Buscar cidades e funções
-            cidades = {c.id: c for c in cidade_repo.get_all_ordered()}
-            funcoes = {f.id: f for f in funcao_repo.get_all_ordered()}
-
-            # Buscar participantes
+            # Preparar informações do evento (acessar atributos dentro da sessão)
+            evento_info = None
             if evento_atual:
-                participantes = participante_repo.get_by_evento_cidade(evento_atual.id)
-            else:
-                participantes = []
+                evento_info = {
+                    "id": evento_atual.id,
+                    "ano": evento_atual.ano,
+                    "datas_evento": evento_atual.datas_evento,
+                }
 
-            return evento_atual, cidades, funcoes, participantes
+            # Buscar cidades e funções (extrair dados dentro da sessão)
+            cidades_raw = cidade_repo.get_all_ordered()
+            cidades = {}
+            for cidade in cidades_raw:
+                cidades[cidade.id] = {
+                    "id": cidade.id,
+                    "nome": cidade.nome,
+                    "estado": cidade.estado,
+                }
+
+            funcoes_raw = funcao_repo.get_all_ordered()
+            funcoes = {}
+            for funcao in funcoes_raw:
+                funcoes[funcao.id] = {
+                    "id": funcao.id,
+                    "nome_funcao": funcao.nome_funcao,
+                }
+
+            # Buscar participantes (extrair dados dentro da sessão)
+            participantes_data = []
+            if evento_info:
+                participantes_raw = participante_repo.get_by_evento_cidade(
+                    evento_info["id"]
+                )
+                for participante in participantes_raw:
+                    participantes_data.append(
+                        {
+                            "id": participante.id,
+                            "nome_completo_encrypted": participante.nome_completo_encrypted,
+                            "email_encrypted": participante.email_encrypted,
+                            "cidade_id": participante.cidade_id,
+                            "funcao_id": participante.funcao_id,
+                            "titulo_apresentacao": participante.titulo_apresentacao,
+                            "datas_participacao": participante.datas_participacao,
+                            "carga_horaria_calculada": participante.carga_horaria_calculada,
+                            "validado": participante.validado,
+                            "data_inscricao": participante.data_inscricao,
+                        }
+                    )
+            else:
+                participantes_data = []
+
+            return evento_info, cidades, funcoes, participantes_data
 
     except Exception as e:
         st.error(f"Erro ao carregar dados: {str(e)}")
@@ -106,9 +147,9 @@ def carregar_dados_validacao() -> tuple:
 
 
 def preparar_dataframe_participantes(
-    participantes: List[Participante],
-    cidades: Dict[int, Cidade],
-    funcoes: Dict[int, Funcao],
+    participantes: List[Dict[str, Any]],
+    cidades: Dict[int, Dict[str, Any]],
+    funcoes: Dict[int, Dict[str, Any]],
 ) -> pd.DataFrame:
     """Prepara um DataFrame com os dados dos participantes para exibição."""
 
@@ -118,32 +159,36 @@ def preparar_dataframe_participantes(
         try:
             # Descriptografar dados sensíveis
             nome = servico_criptografia.descriptografar(
-                participante.nome_completo_encrypted
+                participante["nome_completo_encrypted"]
             )
-            email = servico_criptografia.descriptografar(participante.email_encrypted)
+            email = servico_criptografia.descriptografar(
+                participante["email_encrypted"]
+            )
 
             # Obter informações relacionadas
-            cidade = cidades.get(participante.cidade_id)
-            funcao = funcoes.get(participante.funcao_id)
+            cidade = cidades.get(participante["cidade_id"])
+            funcao = funcoes.get(participante["funcao_id"])
 
             # Preparar dados da linha
             linha = {
-                "ID": participante.id,
+                "ID": participante["id"],
                 "Nome": nome,
                 "Email": email,
-                "Cidade": f"{cidade.nome}-{cidade.estado}" if cidade else "N/A",
-                "Função": funcao.nome_funcao if funcao else "N/A",
-                "Título Apresentação": participante.titulo_apresentacao or "-",
-                "Datas Participação": participante.datas_participacao,
-                "Carga Horária": f"{participante.carga_horaria_calculada}h",
-                "Validado": participante.validado,
-                "Data Inscrição": formatar_data_exibicao(participante.data_inscricao),
+                "Cidade": f"{cidade['nome']}-{cidade['estado']}" if cidade else "N/A",
+                "Função": funcao["nome_funcao"] if funcao else "N/A",
+                "Título Apresentação": participante["titulo_apresentacao"] or "-",
+                "Datas Participação": participante["datas_participacao"],
+                "Carga Horária": f"{participante['carga_horaria_calculada']}h",
+                "Validado": participante["validado"],
+                "Data Inscrição": formatar_data_exibicao(
+                    participante["data_inscricao"]
+                ),
             }
 
             dados.append(linha)
 
         except Exception as e:
-            st.warning(f"Erro ao processar participante {participante.id}: {str(e)}")
+            st.warning(f"Erro ao processar participante {participante['id']}: {str(e)}")
             continue
 
     # Criar DataFrame
@@ -170,11 +215,11 @@ def preparar_dataframe_participantes(
         return pd.DataFrame()
 
 
-def mostrar_estatisticas(participantes: List[Participante]) -> None:
+def mostrar_estatisticas(participantes: List[Dict[str, Any]]) -> None:
     """Exibe estatísticas sobre os participantes."""
 
     total = len(participantes)
-    validados = sum(1 for p in participantes if p.validado)
+    validados = sum(1 for p in participantes if p["validado"])
     pendentes = total - validados
 
     col1, col2, col3 = st.columns(3)
@@ -216,13 +261,13 @@ def mostrar_estatisticas(participantes: List[Participante]) -> None:
 def tabela_validacao_participantes(
     df_participantes: pd.DataFrame,
 ) -> Optional[pd.DataFrame]:
-    """Exibe tabela editável para validação de participantes."""
+    """Exibe tabela editável para validação de participação."""
 
     if df_participantes.empty:
         st.info("📋 Nenhum participante encontrado para este evento.")
         return None
 
-    st.subheader("📋 Validação de Participantes")
+    st.subheader("📋 Validação de Participação")
     st.write("Marque os participantes que deseja validar:")
 
     # Preparar DataFrame para edição
@@ -379,8 +424,8 @@ def main():
     st.markdown(
         """
     <div class="header-validation">
-        <h1>✅ Validação de Participantes</h1>
-        <p>Área exclusiva para coordenadores validarem inscrições</p>
+        <h1>✅ Validação de Participação</h1>
+        <p>Área exclusiva para coordenadores</p>
     </div>
     """,
         unsafe_allow_html=True,
@@ -390,15 +435,17 @@ def main():
     mostrar_informacoes_usuario()
 
     # Carregar dados
-    evento_atual, cidades, funcoes, participantes = carregar_dados_validacao()
+    evento_info, cidades, funcoes, participantes = carregar_dados_validacao()
 
-    if not evento_atual:
+    if not evento_info:
         st.error("❌ Nenhum evento encontrado. Contate o administrador.")
         return
 
     # Informações do evento
+    # Formatar datas do evento para exibição amigável
+    datas_evento_str = ", ".join(evento_info["datas_evento"])
     st.info(
-        f"🎯 **Evento:** Pint of Science {evento_atual.ano} ({evento_atual.datas_evento})"
+        f"🎯 **Evento:** Pint of Science {evento_info['ano']}, dias: {datas_evento_str}"
     )
 
     # Preparar DataFrame
