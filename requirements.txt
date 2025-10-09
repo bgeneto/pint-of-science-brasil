@@ -1,0 +1,19 @@
+# Core dependencies
+streamlit
+sqlalchemy
+pydantic
+pydantic[email]
+cryptography
+python-dotenv
+reportlab
+aiosqlite
+pillow
+bcrypt
+requests
+
+# Development dependencies
+pytest
+pytest-asyncio
+black
+isort
+flake8
