@@ -311,6 +311,9 @@ class AuthManager:
         """
         if not self.is_session_valid():
             st.error("⚠️ Você precisa estar logado para acessar esta página.")
+            if st.button("↩️ Ir para Login", type="primary", use_container_width=True):
+                st.session_state["redirect_to_login"] = True
+                st.switch_page("Home.py")
             st.stop()
 
     def require_superadmin(self) -> None:

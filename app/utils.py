@@ -9,7 +9,7 @@ e outras funções auxiliares.
 import re
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 
 def validar_email(email: str) -> bool:
@@ -53,21 +53,26 @@ def formatar_data_iso(data: datetime) -> str:
     return data.isoformat()
 
 
-def formatar_data_exibicao(data_iso: str) -> str:
+def formatar_data_exibicao(data: Union[str, datetime]) -> str:
     """
-    Formata uma data ISO para exibição amigável.
+    Formata uma data (datetime object ou string ISO) para exibição amigável.
 
     Args:
-        data_iso: Data em formato ISO
+        data: Data como objeto datetime ou string em formato ISO
 
     Returns:
         String formatada para exibição
     """
     try:
-        data = datetime.fromisoformat(data_iso)
-        return data.strftime("%d/%m/%Y %H:%M")
+        if isinstance(data, datetime):
+            return data.strftime("%d/%m/%Y %H:%M")
+        elif isinstance(data, str):
+            data_obj = datetime.fromisoformat(data)
+            return data_obj.strftime("%d/%m/%Y %H:%M")
+        else:
+            return str(data)
     except (ValueError, AttributeError):
-        return data_iso
+        return str(data)
 
 
 def limpar_texto(texto: str) -> str:

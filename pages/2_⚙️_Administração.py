@@ -51,39 +51,9 @@ st.markdown(
         border-left: 4px solid #3498db;
     }
 
-    .success-message {
-        background: #d4edda;
-        color: #155724;
-        padding: 1rem;
-        border-radius: 5px;
-        border-left: 4px solid #28a745;
-        margin: 1rem 0;
-    }
-
-    .error-message {
-        background: #f8d7da;
-        color: #721c24;
-        padding: 1rem;
-        border-radius: 5px;
-        border-left: 4px solid #dc3545;
-        margin: 1rem 0;
-    }
-
-    .warning-message {
-        background: #fff3cd;
-        color: #856404;
-        padding: 1rem;
-        border-radius: 5px;
-        border-left: 4px solid #ffc107;
-        margin: 1rem 0;
-    }
-
     /* Esconder elementos do Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    .st-emotion-cache-1avcm2n ez1byc5 {
-        visibility: hidden;
-    }
 </style>
 """,
     unsafe_allow_html=True,
@@ -95,15 +65,10 @@ def mostrar_informacoes_usuario():
     user_info = get_current_user_info()
 
     if user_info:
-        st.markdown(
-            f"""
-        <div style='background: #e3f2fd; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;'>
-            <strong>👤 Superadmin:</strong> {user_info['name']} ({user_info['email']})<br>
-            <strong>⏰ Login:</strong> {formatar_data_exibicao(user_info.get('login_time', ''))}<br>
-            <strong>🔐 Acesso:</strong> Total (Superadmin)
-        </div>
-        """,
-            unsafe_allow_html=True,
+        st.info(
+            f"👤 **Superadmin:** {user_info['name']} ({user_info['email']})  \n"
+            f"⏰ **Login:** {formatar_data_exibicao(user_info.get('login_time', ''))}  \n"
+            f"🔐 **Acesso:** Total (Superadmin)"
         )
 
 

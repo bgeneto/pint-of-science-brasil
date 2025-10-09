@@ -539,16 +539,32 @@ def main():
         st.warning("⚠️ Nenhum evento encontrado. Contate o administrador do sistema.")
         return
 
-    # Abas para organizar o conteúdo
-    tab1, tab2, tab3 = st.tabs(["📝 Inscrição", "📜 Certificados", "🔐 Coordenadores"])
+    # Verificar se foi redirecionado para login
+    if st.session_state.get("redirect_to_login"):
+        st.info(
+            "ℹ️ Por favor, faça login na aba **🔐 Coordenadores** para acessar esta área."
+        )
+        st.session_state["active_tab"] = "🔐 Coordenadores"
+        st.session_state["redirect_to_login"] = False
 
-    with tab1:
+    # Inicializar aba ativa se não existir
+    if "active_tab" not in st.session_state:
+        st.session_state["active_tab"] = "📝 Inscrição"
+
+    # Abas para organizar o conteúdo (usando segmented control para permitir controle programático)
+    active_tab = st.segmented_control(
+        "Navegação",
+        options=["📝 Inscrição", "📜 Certificados", "🔐 Coordenadores"],
+        default=st.session_state["active_tab"],
+        key="active_tab",
+        label_visibility="collapsed",
+    )
+
+    if active_tab == "📝 Inscrição":
         formulario_inscricao(evento_atual, cidades, funcoes)
-
-    with tab2:
+    elif active_tab == "📜 Certificados":
         formulario_download_certificado(evento_atual)
-
-    with tab3:
+    elif active_tab == "🔐 Coordenadores":
         if is_user_logged_in():
             st.info(
                 "✅ Você já está logado! Use o menu lateral para acessar as áreas restritas."

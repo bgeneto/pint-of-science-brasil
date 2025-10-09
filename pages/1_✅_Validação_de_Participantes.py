@@ -48,66 +48,9 @@ st.markdown(
         border-left: 4px solid #27ae60;
     }
 
-    .validation-section {
-        background: white;
-        padding: 2rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin-bottom: 2rem;
-    }
-
-    /* Estilo para tabela */
-    .stDataFrame {
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-    .stDataFrame table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-
-    .stDataFrame th {
-        background-color: #f8f9fa;
-        padding: 12px;
-        text-align: left;
-        font-weight: bold;
-        border-bottom: 2px solid #dee2e6;
-    }
-
-    .stDataFrame td {
-        padding: 12px;
-        border-bottom: 1px solid #dee2e6;
-    }
-
-    .stDataFrame tr:hover {
-        background-color: #f8f9fa;
-    }
-
     /* Esconder elementos do Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    .st-emotion-cache-1avcm2n ez1byc5 {
-        visibility: hidden;
-    }
-
-    /* Badge de status */
-    .status-badge {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        font-weight: bold;
-    }
-
-    .status-validado {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .status-pendente {
-        background-color: #fff3cd;
-        color: #856404;
-    }
 </style>
 """,
     unsafe_allow_html=True,
@@ -119,15 +62,10 @@ def mostrar_informacoes_usuario():
     user_info = get_current_user_info()
 
     if user_info:
-        st.markdown(
-            f"""
-        <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;'>
-            <strong>👤 Usuário:</strong> {user_info['name']} ({user_info['email']})<br>
-            <strong>🔐 Tipo:</strong> {'Superadmin' if user_info['is_superadmin'] else 'Coordenador'}<br>
-            <strong>⏰ Login:</strong> {formatar_data_exibicao(user_info.get('login_time', ''))}
-        </div>
-        """,
-            unsafe_allow_html=True,
+        st.info(
+            f"👤 **Usuário:** {user_info['name']} ({user_info['email']})  \n"
+            f"🔐 **Tipo:** {'Superadmin' if user_info['is_superadmin'] else 'Coordenador'}  \n"
+            f"⏰ **Login:** {formatar_data_exibicao(user_info.get('login_time', ''))}"
         )
 
 
