@@ -279,7 +279,9 @@ def tabela_validacao_participantes(
         return None
 
     st.subheader("📋 Validação de Participação")
-    st.write("Marque os participantes que deseja validar:")
+    st.write(
+        "Marque os participantes que deseja confirmar (para que seja possível emitir certificado):"
+    )
 
     # Preparar DataFrame para edição
     df_editavel = df_participantes.copy()
@@ -363,7 +365,7 @@ def processar_validacao(df_original: pd.DataFrame, df_editado: pd.DataFrame) -> 
     # Confirmar ação
     st.warning(f"⚠️ Você está prestes a validar {len(participante_ids)} participantes.")
 
-    if st.button("✅ Confirmar Validação", type="primary", width="stretch"):
+    if st.button("✅ Confirmar Participação", type="primary", width="stretch"):
         with st.spinner("Processando validações..."):
             sucesso, mensagem = validar_participantes(participante_ids, novos_status)
 

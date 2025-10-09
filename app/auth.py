@@ -349,7 +349,7 @@ class AuthManager:
             st.error("⚠️ Você precisa estar logado para acessar esta página.")
             if st.button("↩️ Ir para Login", type="primary", use_container_width=True):
                 st.session_state["redirect_to_login"] = True
-                st.switch_page("Home.py")
+                st.switch_page("🏠_Home.py")
             st.stop()
 
     def require_superadmin(self):
@@ -383,7 +383,6 @@ def show_login() -> bool:
 def logout():
     """Realiza logout do usuário."""
     auth_manager.clear_session()
-    auth_manager.show_logout_button()
 
 
 def is_user_logged_in() -> bool:

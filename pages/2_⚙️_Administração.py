@@ -96,7 +96,9 @@ def mostrar_informacoes_usuario():
                 "session_token"
             ) or st.session_state.get("persistent_session_token")
             if current_token:
-                validation_url = f"pages/1_✅_Validação_de_Participantes.py?session_token={current_token}"
+                validation_url = (
+                    f"pages/1_👨‍👨‍👦‍👦_Participantes.py?session_token={current_token}"
+                )
                 st.markdown(
                     f"""
                 <a href="{validation_url}" target="_self" style="
@@ -115,7 +117,7 @@ def mostrar_informacoes_usuario():
                 )
             else:
                 if st.button("✅ Validação", type="secondary"):
-                    st.switch_page("pages/1_✅_Validação_de_Participantes.py")
+                    st.switch_page("pages/1_👨‍👨‍👦‍👦_Participantes.py")
 
 
 def mostrar_estatisticas_gerais():
