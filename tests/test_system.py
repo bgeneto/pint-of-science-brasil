@@ -199,7 +199,7 @@ def test_participant_registration():
             "evento_id": event_id,  # Use the current event ID
             "cidade_id": 1,  # Supondo que existe uma cidade com ID 1
             "funcao_id": 1,  # Supondo que existe uma função com ID 1
-            "datas_participacao": "2024-05-13, 2024-05-14",  # ISO format dates
+            "datas_participacao": "2025-05-19, 2025-05-20",  # ISO format dates
             "validado": False,
             "carga_horaria_calculada": 8,  # Campo obrigatório adicionado (8 horas para 2 dias)
         }
@@ -268,8 +268,7 @@ def test_file_structure():
         "app/auth.py",
         "app/services.py",
         "app/utils.py",
-        "Home.py",
-        "pages/1_✅_Validação_de_Participantes.py",
+        "pages/1_👨‍👨‍👦‍👦_Participantes.py",
         "pages/2_⚙️_Administração.py",
         "requirements.txt",
         ".env.example",
@@ -288,6 +287,56 @@ def test_file_structure():
 
     print("✅ Todos os arquivos necessários encontrados!")
     return True
+
+
+def cleanup_test_data():
+    """Remove dados de teste criados durante os testes."""
+    print("🧹 Limpando dados de teste...")
+
+    try:
+        settings = Settings()
+        db_manager = DatabaseManager()
+        cripto = ServicoCriptografia()
+
+        with db_manager.get_db_session() as session:
+            # Remover TODOS os participantes de teste
+            all_participants = session.query(Participante).all()
+            participants_removed = 0
+            for participant in all_participants:
+                try:
+                    decrypted_email = cripto.descriptografar(
+                        participant.email_encrypted
+                    )
+                    if decrypted_email == "participante@exemplo.com":
+                        session.delete(participant)
+                        participants_removed += 1
+                except Exception:
+                    # Skip participants that can't be decrypted
+                    continue
+
+            if participants_removed > 0:
+                print(f"✅ {participants_removed} participantes de teste removidos")
+
+            # Remover TODOS os coordenadores de teste
+            test_coordinators = (
+                session.query(Coordenador)
+                .filter(Coordenador.email == "teste@exemplo.com")
+                .all()
+            )
+            coordinators_removed = 0
+            for coordinator in test_coordinators:
+                session.delete(coordinator)
+                coordinators_removed += 1
+
+            if coordinators_removed > 0:
+                print(f"✅ {coordinators_removed} coordenadores de teste removidos")
+
+            session.commit()
+            return True
+
+    except Exception as e:
+        print(f"❌ Erro ao limpar dados de teste: {e}")
+        return False
 
 
 def run_all_tests():
@@ -314,6 +363,14 @@ def run_all_tests():
 
     print("=" * 50)
     print(f"📊 Resultado dos testes: {passed}/{total} passaram")
+
+    # Sempre limpar dados de teste, independente do resultado
+    print("\n🧹 Executando limpeza de dados de teste...")
+    cleanup_success = cleanup_test_data()
+    if cleanup_success:
+        print("✅ Dados de teste removidos com sucesso!")
+    else:
+        print("⚠️  Alguns dados de teste podem ter permanecido no banco.")
 
     if passed == total:
         print("🎉 Todos os testes passaram! O sistema está pronto para uso.")

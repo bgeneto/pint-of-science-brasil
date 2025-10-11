@@ -76,10 +76,13 @@ from app.services import servico_criptografia
 
 # Encrypt before storing
 email_encrypted = servico_criptografia.criptografar_email(email)
+email_hash = servico_criptografia.gerar_hash_email(email)  # For lookups
 
 # Decrypt when reading
 email_plain = servico_criptografia.descriptografar(participante.email_encrypted)
 ```
+
+**IMPORTANT:** Email lookups use SHA-256 hash (`email_hash` field) instead of encrypted values for performance and correctness, since Fernet encryption is not deterministic.
 
 ### 5. Environment Configuration
 
@@ -118,7 +121,8 @@ streamlit run Home.py
 Database auto-initializes on first `db_manager` usage. To manually reset:
 
 ```bash
-rm pint_of_science.db
+rm data/pint_of_science.db
+python utils/seed_database.py  # Creates initial data structure
 python test_system.py  # Re-creates with test data
 ```
 
@@ -152,7 +156,7 @@ pytest tests/ --cov=app
 
 ## Common Pitfalls
 
-1. **Don't decrypt in queries**: Can't filter by encrypted fields. Use separate lookup tables if needed.
+1. **Don't decrypt in queries**: Can't filter by encrypted fields. Use email_hash field for lookups instead of encrypted values.
 2. **Check `is_email_configured`**: Email features fail gracefully if Brevo not configured.
 3. **Import order matters**: `app/core.py` loads `.env` - import `settings` before other app modules.
 4. **Streamlit reruns**: Every widget interaction reruns entire script. Use `@st.cache_data` for expensive operations.

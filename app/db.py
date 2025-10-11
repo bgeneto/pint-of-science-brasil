@@ -233,6 +233,15 @@ class CoordenadorRepository(BaseRepository):
             .all()
         )
 
+    def get_first_superadmin(self) -> Optional[Coordenador]:
+        """Retorna o primeiro superadmin cadastrado (usado para assinatura do certificado)."""
+        return (
+            self.session.query(Coordenador)
+            .filter(Coordenador.is_superadmin == True)
+            .order_by(Coordenador.id.asc())
+            .first()
+        )
+
     def get_cidade_coordenadores(self, cidade_id: int) -> list[Coordenador]:
         """Retorna coordenadores de uma cidade específica."""
         return (
@@ -289,10 +298,23 @@ class CoordenadorRepository(BaseRepository):
 class ParticipanteRepository(BaseRepository):
     """Repositório para operações com Participantes."""
 
+    def get_by_email_hash(
+        self, email_hash: str, evento_id: int
+    ) -> Optional[Participante]:
+        """Busca um participante pelo hash do email e evento."""
+        return (
+            self.session.query(Participante)
+            .filter(
+                Participante.email_hash == email_hash,
+                Participante.evento_id == evento_id,
+            )
+            .first()
+        )
+
     def get_by_encrypted_email(
         self, email_encrypted: bytes, evento_id: int
     ) -> Optional[Participante]:
-        """Busca um participante pelo email criptografado e evento."""
+        """Busca um participante pelo email criptografado e evento (deprecated - use get_by_email_hash)."""
         return (
             self.session.query(Participante)
             .filter(
@@ -434,37 +456,11 @@ def init_database() -> None:
     """Inicializa o banco de dados e cria dados iniciais se necessário."""
     db_manager.initialize()
 
-    # Verificar se precisamos criar dados iniciais
+    # Sempre tentar criar dados iniciais (a função é idempotente)
     with db_manager.get_db_session() as session:
-        # Verificar se já existem dados básicos
-        cidades_exist = session.query(Cidade).first() is not None
-        funcoes_exist = session.query(Funcao).first() is not None
-        eventos_exist = session.query(Evento).first() is not None
-
-        # Verificar se existe superadmin (sempre necessário)
-        from app.core import settings
-
-        superadmin_needed = (
-            settings.initial_superadmin_email
-            and settings.initial_superadmin_password
-            and settings.initial_superadmin_name
-        )
-        superadmin_exists = False
-        if superadmin_needed:
-            superadmin_exists = (
-                session.query(Coordenador)
-                .filter(Coordenador.is_superadmin == True)
-                .first()
-                is not None
-            )
-
-        if not (cidades_exist and funcoes_exist and eventos_exist) or (
-            superadmin_needed and not superadmin_exists
-        ):
-            logger.info("📝 Criando dados iniciais...")
-            _create_initial_data(session)
-        else:
-            logger.info("✅ Banco de dados já contém dados.")
+        logger.info("📝 Verificando/criando dados iniciais...")
+        _create_initial_data(session)
+        logger.info("✅ Dados iniciais verificados/criados com sucesso.")
 
 
 def _create_initial_data(session: Session) -> None:
@@ -485,8 +481,15 @@ def _create_initial_data(session: Session) -> None:
         ]
 
         cidade_repo = get_cidade_repository(session)
+        cidades_criadas = 0
         for nome, estado in cidades_data:
-            cidade_repo.create_cidade(nome, estado)
+            # Verificar se a cidade já existe
+            if not cidade_repo.get_by_nome_estado(nome, estado):
+                cidade_repo.create_cidade(nome, estado)
+                cidades_criadas += 1
+
+        if cidades_criadas > 0:
+            logger.info(f"✅ Criadas {cidades_criadas} cidades")
 
         # Funções de exemplo
         funcoes_data = [
@@ -523,33 +526,44 @@ def _create_initial_data(session: Session) -> None:
             "Fotógrafo(a)",
             "Técnico Audiovisual",
             "Equipe Executora",
-            "Apresentador(a)",
             "Palestrante",
         ]
 
         funcao_repo = get_funcao_repository(session)
+        funcoes_criadas = 0
         for nome_funcao in funcoes_data:
-            funcao_repo.create_funcao(nome_funcao)
+            # Verificar se a função já existe
+            if not funcao_repo.get_by_name(nome_funcao):
+                funcao_repo.create_funcao(nome_funcao)
+                funcoes_criadas += 1
 
-        # Evento atual (2024) - using ISO 8601 format for dates
+        if funcoes_criadas > 0:
+            logger.info(f"✅ Criadas {funcoes_criadas} funções")
+
+        # Evento atual (2025) - using ISO 8601 format for dates
         evento_repo = get_evento_repository(session)
-        from datetime import date
 
-        # Convert date objects to ISO 8601 strings for JSON serialization
-        datas_evento_iso = [
-            "2024-05-13",  # ISO 8601: YYYY-MM-DD
-            "2024-05-14",
-            "2024-05-15",
-        ]
+        # Verificar se o evento 2025 já existe
+        evento_2025 = evento_repo.get_by_ano(2025)
+        if not evento_2025:
+            # Convert date objects to ISO 8601 strings for JSON serialization
+            datas_evento_iso = [
+                "2025-05-19",  # ISO 8601: YYYY-MM-DD
+                "2025-05-20",
+                "2025-05-21",
+            ]
 
-        evento_2024 = evento_repo.create_evento(
-            ano=2024,
-            datas_evento=datas_evento_iso,  # Pass the list directly
-        )
+            evento_2025 = evento_repo.create_evento(
+                ano=2025,
+                datas_evento=datas_evento_iso,  # Pass the list directly
+            )
+            logger.info(f"✅ Evento {evento_2025.ano} criado")
+        else:
+            logger.info(f"✅ Evento {evento_2025.ano} já existe")
 
         # Seed initial superadmin if configured and none exists
         from app.core import settings
-        from app.auth import AuthManager
+        from app.auth import criar_coordenador
 
         if (
             settings.initial_superadmin_email
@@ -561,26 +575,25 @@ def _create_initial_data(session: Session) -> None:
             existing_superadmins = coord_repo.get_superadmins()
 
             if not existing_superadmins:
-                # Hash the password
-                auth_manager = AuthManager()
-                hashed_password = auth_manager.hash_password(
-                    settings.initial_superadmin_password
-                )
-
-                # Create initial superadmin
-                initial_admin = coord_repo.create_coordenador(
+                # Create initial superadmin using the auth function (handles password hashing)
+                success = criar_coordenador(
                     nome=settings.initial_superadmin_name,
                     email=settings.initial_superadmin_email,
-                    senha_hash=hashed_password,
+                    senha=settings.initial_superadmin_password,
                     is_superadmin=True,
                 )
 
-                logger.info(
-                    f"✅ Superadmin inicial criado: {settings.initial_superadmin_email}"
-                )
+                if success:
+                    logger.info(
+                        f"✅ Superadmin inicial criado: {settings.initial_superadmin_email}"
+                    )
+                else:
+                    logger.error(
+                        f"❌ Falha ao criar superadmin inicial: {settings.initial_superadmin_email}"
+                    )
 
         logger.info(
-            f"✅ Dados iniciais criados com sucesso! Evento {evento_2024.ano} configurado."
+            f"✅ Dados iniciais criados com sucesso! Evento {evento_2025.ano} configurado."
         )
 
     except Exception as e:

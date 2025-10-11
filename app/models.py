@@ -131,6 +131,9 @@ class Participante(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     nome_completo_encrypted = Column(LargeBinary, nullable=False)
     email_encrypted = Column(LargeBinary, nullable=False)
+    email_hash = Column(
+        String(64), nullable=True, index=True
+    )  # SHA-256 hash for lookups
     titulo_apresentacao = Column(Text, nullable=True)
     evento_id = Column(Integer, ForeignKey("eventos.id"), nullable=False)
     cidade_id = Column(Integer, ForeignKey("cidades.id"), nullable=False)
@@ -138,6 +141,9 @@ class Participante(Base):
     datas_participacao = Column(Text, nullable=False)
     carga_horaria_calculada = Column(Integer, nullable=False)
     validado = Column(Boolean, nullable=False, default=False)
+    hash_validacao = Column(
+        String(64), nullable=True, unique=True, index=True
+    )  # HMAC-SHA256 hash for certificate validation
     data_inscricao = Column(
         Text, nullable=False, default=lambda: datetime.now().isoformat()
     )

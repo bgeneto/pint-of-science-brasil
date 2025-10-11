@@ -164,11 +164,14 @@ def carregar_dados_formulario() -> tuple:
             # Buscar evento atual
             evento_atual = evento_repo.get_current_event()
 
+            # Buscar TODOS os eventos (para permitir download de certificados de anos anteriores)
+            todos_eventos = evento_repo.get_all(Evento)
+
             # Buscar cidades e funções
             cidades = cidade_repo.get_all_ordered()
             funcoes = funcao_repo.get_all_ordered()
 
-            # Extrair dados do evento antes de fechar a sessão
+            # Extrair dados do evento atual antes de fechar a sessão
             evento_data = None
             if evento_atual:
                 evento_data = {
@@ -176,6 +179,17 @@ def carregar_dados_formulario() -> tuple:
                     "ano": evento_atual.ano,
                     "datas_evento": evento_atual.datas_evento,
                 }
+
+            # Extrair dados de TODOS os eventos antes de fechar a sessão
+            eventos_data = []
+            for evento in todos_eventos:
+                eventos_data.append(
+                    {
+                        "id": evento.id,
+                        "ano": evento.ano,
+                        "datas_evento": evento.datas_evento,
+                    }
+                )
 
             # Extrair dados das cidades antes de fechar a sessão
             cidades_data = []
@@ -198,11 +212,11 @@ def carregar_dados_formulario() -> tuple:
                     }
                 )
 
-            return evento_data, cidades_data, funcoes_data
+            return evento_data, eventos_data, cidades_data, funcoes_data
 
     except Exception as e:
         st.error(f"Erro ao carregar dados: {str(e)}")
-        return None, [], []
+        return None, [], [], []
 
 
 def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
@@ -212,7 +226,7 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
 
     # Informações do evento
     if evento_atual:
-        st.info(f"🎯 Evento Atual: **Pint of Science {evento_atual['ano']}**")
+        st.success(f"🎯 Evento Atual: **Pint of Science {evento_atual['ano']}**")
 
     # Formulário
     with st.form("form_inscricao"):
@@ -337,7 +351,7 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
     return False
 
 
-def formulario_download_certificado(evento_atual) -> bool:
+def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
     """Exibe o formulário para download de certificados."""
     st.subheader("📜 Download de Certificado")
     st.write("Digite seu e-mail para baixar seu certificado:")
@@ -359,56 +373,101 @@ def formulario_download_certificado(evento_atual) -> bool:
             help="Use o mesmo e-mail da sua inscrição",
         )
 
+        # Sort events by year descending (most recent first)
+        eventos_ordenados = (
+            sorted(todos_eventos, key=lambda e: e["ano"], reverse=True)
+            if todos_eventos
+            else []
+        )
+
+        # Find the index of the current event to set as default
+        default_index = 0  # Fallback to most recent
+        if evento_atual and eventos_ordenados:
+            try:
+                default_index = next(
+                    (
+                        i
+                        for i, e in enumerate(eventos_ordenados)
+                        if e["id"] == evento_atual["id"]
+                    ),
+                    0,  # Fallback to most recent if current event not found
+                )
+            except Exception:
+                default_index = 0
+
         evento_id = st.selectbox(
-            "Evento",
+            "Evento *",
             options=(
-                [(f"Pint of Science {evento_atual['ano']}", evento_atual["id"])]
-                if evento_atual
+                [
+                    (f"Pint of Science {evento['ano']}", evento["id"])
+                    for evento in eventos_ordenados
+                ]
+                if eventos_ordenados
                 else []
             ),
             format_func=lambda x: x[0] if x else "Selecione...",
             help="Selecione o evento para baixar o certificado",
+            index=(
+                default_index if eventos_ordenados else None
+            ),  # Default to current event
         )
 
         submit_button = st.form_submit_button(
             "📥 Baixar Certificado", type="primary", width="stretch"
         )
 
-        if submit_button:
-            if not email:
-                mostrar_mensagem("error", "Por favor, informe seu e-mail.")
-                return False
+    # Process form submission OUTSIDE the form context
+    if submit_button:
+        if not email:
+            mostrar_mensagem("error", "Por favor, informe seu e-mail.")
+            return False
 
-            if not validar_email(email):
-                mostrar_mensagem(
-                    "error", "Por favor, informe um endereço de e-mail válido."
-                )
-                return False
+        if not validar_email(email):
+            mostrar_mensagem(
+                "error", "Por favor, informe um endereço de e-mail válido."
+            )
+            return False
 
-            # Baixar certificado
-            with st.spinner("Verificando seu certificado..."):
-                sucesso, pdf_bytes, mensagem = baixar_certificado(
-                    email.lower().strip(), evento_id[1] if evento_id else 1
-                )
+        if not evento_id:
+            mostrar_mensagem("error", "Por favor, selecione um evento.")
+            return False
 
-            if sucesso and pdf_bytes:
-                # Gerar nome do arquivo
-                from datetime import datetime
+        # Baixar certificado
+        with st.spinner("Verificando seu certificado..."):
+            sucesso, pdf_bytes, mensagem = baixar_certificado(
+                email.lower().strip(), evento_id[1] if evento_id else None
+            )
 
-                nome_arquivo = f"Certificado-PintOfScience-{evento_atual['ano'] if evento_atual else '2024'}-{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        if sucesso and pdf_bytes:
+            # Gerar nome do arquivo usando o ano do evento selecionado
+            from datetime import datetime
 
-                st.success(f"🎉 {mensagem}")
-                st.download_button(
-                    label="📄 Clique aqui para baixar o PDF",
-                    data=pdf_bytes,
-                    file_name=nome_arquivo,
-                    mime="application/pdf",
-                    width="stretch",
-                )
-                return True
-            else:
-                mostrar_mensagem("error", mensagem)
-                return False
+            # Get the selected event's year
+            ano_selecionado = next(
+                (e["ano"] for e in eventos_ordenados if e["id"] == evento_id[1]),
+                evento_atual["ano"] if evento_atual else datetime.now().year,
+            )
+
+            nome_arquivo = f"Certificado-PintOfScience-{ano_selecionado}-{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
+            st.success(f"🎉 {mensagem}")
+
+            # Display PDF preview
+            st.markdown("### 📄 Pré-visualização do Certificado")
+            st.pdf(pdf_bytes)
+
+            # Provide download button
+            st.download_button(
+                label="⬇️ Baixar PDF",
+                data=pdf_bytes,
+                file_name=nome_arquivo,
+                mime="application/pdf",
+                use_container_width=True,
+            )
+            return True
+        else:
+            mostrar_mensagem("error", mensagem)
+            return False
 
     return False
 
@@ -457,7 +516,6 @@ def mostrar_menu_usuario_logado() -> None:
     user_info = get_current_user_info()
 
     if user_info:
-        st.sidebar.markdown("---")
         st.sidebar.markdown("### 👤 Usuário Logado")
         st.sidebar.write(f"**Nome:** {user_info['name']}")
         st.sidebar.write(f"**E-mail:** {user_info['email']}")
@@ -549,7 +607,7 @@ def main():
             st.rerun()
 
     # Carregar dados para os formulários
-    evento_atual, cidades, funcoes = carregar_dados_formulario()
+    evento_atual, todos_eventos, cidades, funcoes = carregar_dados_formulario()
 
     if not evento_atual:
         st.warning("⚠️ Nenhum evento encontrado. Contate o administrador do sistema.")
@@ -578,7 +636,7 @@ def main():
     if active_tab == "📝 Inscrição":
         formulario_inscricao(evento_atual, cidades, funcoes)
     elif active_tab == "📜 Certificados":
-        formulario_download_certificado(evento_atual)
+        formulario_download_certificado(evento_atual, todos_eventos)
     elif active_tab == "🔐 Coordenadores":
         if is_user_logged_in():
             st.switch_page("pages/1_👨‍👨‍👦‍👦_Participantes.py")

@@ -14,6 +14,8 @@ import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 import logging
+import json
+from pathlib import Path
 
 # Importar módulos do sistema
 from app.auth import (
@@ -238,10 +240,11 @@ def formulario_criar_coordenador() -> bool:
                 type="password",
             )
 
-        is_superadmin = st.checkbox(
-            "É Superadmin?",
-            help="Marque se este usuário deve ter acesso total ao sistema, permitindo gerenciar outros coordenadores e configurações do sistema.",
-        )
+        is_superadmin = False  # do not allow creating superadmin from UI
+        # is_superadmin = st.checkbox(
+        #    "É Superadmin?",
+        #    help="Marque se este usuário deve ter acesso total ao sistema, permitindo gerenciar outros coordenadores e configurações do sistema.",
+        # )
 
         submit_button = st.form_submit_button(
             "👤 Criar Coordenador", type="primary", width="stretch"
@@ -276,7 +279,10 @@ def formulario_criar_coordenador() -> bool:
                     )
 
                     if sucesso:
-                        st.success("✅ Coordenador criado com sucesso!")
+                        # Store success message in session state to show after rerun
+                        st.session_state["show_success_coordenador"] = (
+                            "✅ Coordenador criado com sucesso!"
+                        )
                         return True
                     else:
                         st.error("❌ Erro ao criar coordenador.")
@@ -290,7 +296,7 @@ def formulario_criar_coordenador() -> bool:
 
 
 def listar_coordenadores():
-    """Lista e gerencia coordenadores existentes."""
+    """Lista e gerencia coordenadores existentes usando data_editor."""
     st.subheader("👤 Coordenadores Cadastrados")
 
     try:
@@ -304,7 +310,7 @@ def listar_coordenadores():
                 st.info("📋 Nenhum coordenador cadastrado.")
                 return
 
-            # Preparar dados para exibição
+            # Preparar dados para exibição e edição
             dados = []
             for coord in coordenadores:
                 dados.append(
@@ -312,20 +318,185 @@ def listar_coordenadores():
                         "ID": coord.id,
                         "Nome": coord.nome,
                         "Email": coord.email,
-                        "Tipo": "Superadmin" if coord.is_superadmin else "Coordenador",
-                        "Data Cadastro": formatar_data_exibicao(
-                            str(datetime.now())
-                        ),  # Ajustar quando tiver data de cadastro
+                        "Superadmin": coord.is_superadmin,
                     }
                 )
 
             df = pd.DataFrame(dados)
+            df = df.sort_values("ID", ascending=True)
 
-            # Exibir tabela
-            st.dataframe(df, width="stretch")
+            # Instruções de uso
+            st.markdown(
+                """
+                💡 **Dicas de uso:**
+                - Edite os valores diretamente nas células (clique duplo)
+                - Marque/desmarque a coluna "Superadmin" para alterar permissões
+                - **ATENÇÃO**: Não é possível alterar a senha por aqui (use a função de criar para resetar)
+                - Para deletar, deixe o campo Nome vazio
+                - Clique em **Salvar Alterações** para confirmar
+                """
+            )
+
+            # Editor de dados
+            edited_df = st.data_editor(
+                df,
+                column_config={
+                    "ID": st.column_config.NumberColumn(
+                        "ID",
+                        help="ID único do coordenador (somente leitura)",
+                        disabled=True,
+                    ),
+                    "Nome": st.column_config.TextColumn(
+                        "Nome",
+                        help="Nome completo do coordenador",
+                        required=True,
+                        max_chars=200,
+                    ),
+                    "Email": st.column_config.TextColumn(
+                        "Email",
+                        help="Email para login (deve ser único)",
+                        required=True,
+                        max_chars=200,
+                    ),
+                    "Superadmin": st.column_config.CheckboxColumn(
+                        "Superadmin",
+                        help="Marque se o coordenador deve ter acesso total ao sistema",
+                        default=False,
+                    ),
+                },
+                hide_index=True,
+                num_rows="fixed",  # Não permitir adicionar linhas (use o formulário de criação)
+                key="coordenadores_editor",
+            )
+
+            # Botão para salvar alterações
+            if st.button(
+                "💾 Salvar Alterações", type="primary", key="salvar_coordenadores"
+            ):
+                salvar_alteracoes_coordenadores(edited_df, coordenadores, coord_repo)
 
     except Exception as e:
         st.error(f"❌ Erro ao listar coordenadores: {str(e)}")
+
+
+def salvar_alteracoes_coordenadores(
+    edited_df: pd.DataFrame, coordenadores_originais: list, coord_repo
+):
+    """Salva as alterações feitas no data_editor para coordenadores."""
+    try:
+        alteracoes = 0
+        erros = []
+
+        # Criar dicionário de coordenadores originais por ID
+        coordenadores_por_id = {coord.id: coord for coord in coordenadores_originais}
+
+        for _, row in edited_df.iterrows():
+            coord_id = row["ID"]
+            nome_novo = row["Nome"].strip() if row["Nome"] else ""
+            email_novo = row["Email"].strip().lower() if row["Email"] else ""
+            is_superadmin_novo = bool(row["Superadmin"])
+
+            # Convert numpy/pandas types to Python types
+            if hasattr(coord_id, "item"):
+                coord_id = coord_id.item()
+
+            # Skip rows com ID inválido
+            if pd.isna(coord_id) or coord_id not in coordenadores_por_id:
+                continue
+
+            # Deletar coordenador se Nome estiver vazio
+            if not nome_novo:
+                coordenador = coordenadores_por_id[coord_id]
+
+                # Verificar se não é o último superadmin
+                if coordenador.is_superadmin:
+                    superadmins_count = len(coord_repo.get_superadmins())
+                    if superadmins_count <= 1:
+                        erros.append(
+                            f"Não é possível deletar {coordenador.nome}: é o único superadmin do sistema. "
+                            "Crie outro superadmin antes de deletar este."
+                        )
+                        continue
+
+                try:
+                    coord_repo.delete(coordenador)
+                    alteracoes += 1
+                    st.success(
+                        f"✅ Coordenador {coordenador.nome} deletado com sucesso!"
+                    )
+                except Exception as e:
+                    erros.append(f"Erro ao deletar {coordenador.nome}: {str(e)}")
+                continue
+
+            # Validar email
+            if not validar_email(email_novo):
+                erros.append(f"Email inválido para {nome_novo}: {email_novo}")
+                continue
+
+            # Atualizar coordenador existente
+            coordenador = coordenadores_por_id[coord_id]
+
+            # Verificar se houve mudanças
+            mudou = False
+
+            if coordenador.nome != nome_novo:
+                coordenador.nome = nome_novo
+                mudou = True
+
+            if coordenador.email != email_novo:
+                # Verificar se email já existe em outro coordenador
+                existing = coord_repo.get_by_email(email_novo)
+                if existing and existing.id != coord_id:
+                    erros.append(
+                        f"Email {email_novo} já está em uso por outro coordenador"
+                    )
+                    continue
+                coordenador.email = email_novo
+                mudou = True
+
+            # Verificar mudança de permissão de superadmin
+            if coordenador.is_superadmin != is_superadmin_novo:
+                # Se está tentando remover superadmin, verificar se não é o último
+                if coordenador.is_superadmin and not is_superadmin_novo:
+                    superadmins_count = len(coord_repo.get_superadmins())
+                    if superadmins_count <= 1:
+                        erros.append(
+                            f"Não é possível remover permissão de superadmin de {coordenador.nome}: "
+                            "é o único superadmin do sistema."
+                        )
+                        continue
+
+                coordenador.is_superadmin = is_superadmin_novo
+                mudou = True
+
+            if mudou:
+                alteracoes += 1
+                tipo = "Superadmin" if is_superadmin_novo else "Coordenador"
+                st.success(f"✅ {nome_novo} atualizado com sucesso! Tipo: {tipo}")
+
+        if alteracoes > 0:
+            # Commit explicitamente
+            try:
+                coord_repo.session.commit()
+                st.success(f"🎉 {alteracoes} alteração(ões) salva(s) com sucesso!")
+                st.rerun()
+            except Exception as commit_error:
+                coord_repo.session.rollback()
+                st.error(f"❌ Erro ao salvar no banco de dados: {str(commit_error)}")
+                erros.append(f"Erro de commit: {str(commit_error)}")
+        elif erros:
+            pass  # Erros já foram mostrados
+        else:
+            st.info("ℹ️ Nenhuma alteração detectada.")
+
+        # Mostrar erros se houver
+        if erros:
+            with st.expander("⚠️ Erros encontrados"):
+                for erro in erros:
+                    st.error(erro)
+
+    except Exception as e:
+        st.error(f"❌ Erro ao salvar alterações: {str(e)}")
 
 
 def formulario_criar_evento() -> bool:
@@ -348,7 +519,7 @@ def formulario_criar_evento() -> bool:
         with col2:
             datas_evento = st.text_input(
                 "Datas do Evento (YYYY-MM-DD) *",
-                placeholder="Ex: 2024-05-13, 2024-05-14, 2024-05-15",
+                placeholder="Ex: 2025-05-19, 2025-05-20, 2025-05-21",
                 help="Datas no formato YYYY-MM-DD (ISO), separadas por vírgula",
             )
 
@@ -397,7 +568,10 @@ def formulario_criar_evento() -> bool:
                     evento = evento_repo.create_evento(ano, datas_list)
 
                     if evento:
-                        st.success(f"✅ Evento {ano} criado com sucesso!")
+                        # Store success message in session state to show after rerun
+                        st.session_state["show_success_evento"] = (
+                            f"✅ Evento {ano} criado com sucesso!"
+                        )
                         return True
                     else:
                         st.error("❌ Erro ao criar evento.")
@@ -449,7 +623,7 @@ def listar_eventos():
                 """
                     💡 **Dicas de uso:**
                     - Edite os valores diretamente nas células (use clique duplo)
-                    - Para adicionar novo evento, clique em + (na parte superior-direita da tabela)
+                    - Para adicionar novo evento, clique em + (na parte superior-direita da tabela ou na última linha)
                     - Para deletar, deixe o campo Ano vazio (só funciona se não houver participantes)
                     - Clique em **Salvar Alterações** para confirmar
                 """
@@ -487,7 +661,7 @@ def listar_eventos():
             )
 
             # Botão para salvar alterações
-            if st.button("💾 Salvar Alterações", type="primary"):
+            if st.button("💾 Salvar Alterações", type="primary", key="salvar_eventos"):
                 salvar_alteracoes_eventos(edited_df, eventos, evento_repo)
 
     except Exception as e:
@@ -698,7 +872,10 @@ def formulario_criar_cidade() -> bool:
                     cidade = cidade_repo.create_cidade(nome.strip(), estado)
 
                     if cidade:
-                        st.success(f"✅ Cidade {nome}-{estado} criada com sucesso!")
+                        # Store success message in session state to show after rerun
+                        st.session_state["show_success_cidade"] = (
+                            f"✅ Cidade {nome}-{estado} criada com sucesso!"
+                        )
                         return True
                     else:
                         st.error("❌ Erro ao criar cidade.")
@@ -783,7 +960,10 @@ def formulario_criar_funcao() -> bool:
                     funcao = funcao_repo.create_funcao(nome_funcao.strip())
 
                     if funcao:
-                        st.success(f"✅ Função '{nome_funcao}' criada com sucesso!")
+                        # Store success message in session state to show after rerun
+                        st.session_state["show_success_funcao"] = (
+                            f"✅ Função '{nome_funcao}' criada com sucesso!"
+                        )
                         return True
                     else:
                         st.error("❌ Erro ao criar função.")
@@ -825,6 +1005,438 @@ def listar_funcoes():
         st.error(f"❌ Erro ao listar funções: {str(e)}")
 
 
+def carregar_configuracao_certificado(ano: int) -> Dict[str, Any]:
+    """
+    Carrega configuração do certificado para um ano específico.
+
+    Args:
+        ano: Ano do evento
+
+    Returns:
+        Dicionário com configuração de cores para o ano
+    """
+    config_path = Path("static/certificate_config.json")
+
+    # Configuração padrão
+    default_config = {
+        "cor_primaria": "#e74c3c",  # Laranja/vermelho do Pint of Science
+        "cor_secundaria": "#c0392b",  # Tom mais escuro
+        "cor_texto": "#2c3e50",  # Cinza escuro para texto
+        "cor_destaque": "#f39c12",  # Laranja claro para destaques
+    }
+
+    try:
+        if config_path.exists():
+            with open(config_path, "r", encoding="utf-8") as f:
+                all_configs = json.load(f)
+
+                ano_key = str(ano)
+
+                # Buscar configuração do ano
+                if ano_key in all_configs and "cores" in all_configs[ano_key]:
+                    config = all_configs[ano_key]["cores"]
+                    # Garantir que todas as chaves existam
+                    for key, value in default_config.items():
+                        if key not in config:
+                            config[key] = value
+                    return config
+
+                # Fallback para _default
+                if "_default" in all_configs and "cores" in all_configs["_default"]:
+                    return all_configs["_default"]["cores"]
+
+        # Se não encontrou, retorna padrão
+        return default_config
+
+    except Exception as e:
+        logger.error(f"Erro ao carregar configuração para ano {ano}: {str(e)}")
+        return default_config
+
+
+def salvar_configuracao_certificado(ano: int, cores: Dict[str, str]) -> bool:
+    """
+    Salva configuração de cores do certificado para um ano específico.
+
+    Args:
+        ano: Ano do evento
+        cores: Dicionário com cores
+
+    Returns:
+        True se salvou com sucesso
+    """
+    config_path = Path("static/certificate_config.json")
+
+    try:
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Carregar configuração existente
+        if config_path.exists():
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+        else:
+            config = {}
+
+        # Garantir estrutura do ano
+        ano_key = str(ano)
+        if ano_key not in config:
+            config[ano_key] = {"cores": {}, "imagens": {}}
+
+        if "cores" not in config[ano_key]:
+            config[ano_key]["cores"] = {}
+
+        # Atualizar cores
+        config[ano_key]["cores"] = cores
+
+        # Salvar
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+        return True
+
+    except Exception as e:
+        logger.error(f"Erro ao salvar configuração para ano {ano}: {str(e)}")
+        return False
+
+
+def gerenciar_imagens_certificado():
+    """Interface para upload e gerenciamento de imagens do certificado por ano."""
+    st.subheader("🖼️ Imagens do Certificado")
+
+    st.info(
+        """
+        📝 **Instruções:**
+        - Selecione o ano do evento para configurar
+        - Faça upload das imagens que serão usadas nos certificados daquele ano
+        - Formatos aceitos: PNG, JPG, WEBP
+        - Tamanho máximo: 3MB por arquivo
+        - **IMPORTANTE**: Cada ano mantém sua própria configuração visual
+        """
+    )
+
+    # Buscar eventos disponíveis
+    with db_manager.get_db_session() as session:
+        from app.db import get_evento_repository
+
+        evento_repo = get_evento_repository(session)
+        eventos = session.query(Evento).order_by(Evento.ano.desc()).all()
+        # Eagerly load the anos before session closes
+        anos_disponiveis = [evento.ano for evento in eventos]
+
+    if not anos_disponiveis:
+        st.warning("⚠️ Nenhum evento cadastrado. Crie um evento primeiro.")
+        return
+
+    # Seletor de ano
+    ano_selecionado = st.selectbox(
+        "📅 Selecione o ano do evento:",
+        options=anos_disponiveis,
+        index=0,
+        help="Configurações de imagens são isoladas por ano do evento",
+    )
+
+    static_path = Path("static") / str(ano_selecionado)
+    static_path.mkdir(parents=True, exist_ok=True)
+
+    st.markdown(f"### Configurando imagens para o evento de **{ano_selecionado}**")
+    st.caption(f"📁 As imagens serão salvas em: `static/{ano_selecionado}/`")
+
+    st.markdown("---")
+
+    # Upload das 3 imagens
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("#### 🏷️ Logo Pint of Science")
+        st.caption("Logo principal (canto superior direito)")
+
+        pint_logo_file = st.file_uploader(
+            "Upload Logo Pint",
+            type=["png", "jpg", "jpeg", "webp"],
+            key=f"pint_logo_upload_{ano_selecionado}",
+            help="Logo do Pint of Science (recomendado: fundo transparente)",
+        )
+
+        if pint_logo_file:
+            # Validar tamanho
+            if pint_logo_file.size > 3 * 1024 * 1024:  # 3MB
+                st.error("❌ Arquivo muito grande! Máximo: 3MB")
+            else:
+                try:
+                    # Salvar arquivo
+                    logo_path = static_path / "pint_logo.png"
+                    with open(logo_path, "wb") as f:
+                        f.write(pint_logo_file.getbuffer())
+                    st.success(f"✅ Logo salvo! ({pint_logo_file.size / 1024:.1f} KB)")
+
+                    # Atualizar configuração JSON
+                    _atualizar_config_imagens(
+                        ano_selecionado, "pint_logo", f"{ano_selecionado}/pint_logo.png"
+                    )
+                except Exception as e:
+                    st.error(f"❌ Erro ao salvar: {str(e)}")
+
+        # Mostrar status
+        if (static_path / "pint_logo.png").exists():
+            st.success("✓ Logo disponível")
+        else:
+            st.warning("⚠️ Logo não encontrado")
+
+    with col2:
+        st.markdown("#### ✍️ Assinatura")
+        st.caption("Assinatura do responsável (parte inferior)")
+
+        signature_file = st.file_uploader(
+            "Upload Assinatura",
+            type=["png", "jpg", "jpeg", "webp"],
+            key=f"signature_upload_{ano_selecionado}",
+            help="Assinatura digital do coordenador geral",
+        )
+
+        if signature_file:
+            if signature_file.size > 3 * 1024 * 1024:
+                st.error("❌ Arquivo muito grande! Máximo: 3MB")
+            else:
+                try:
+                    sig_path = static_path / "pint_signature.png"
+                    with open(sig_path, "wb") as f:
+                        f.write(signature_file.getbuffer())
+                    st.success(
+                        f"✅ Assinatura salva! ({signature_file.size / 1024:.1f} KB)"
+                    )
+
+                    # Atualizar configuração JSON
+                    _atualizar_config_imagens(
+                        ano_selecionado,
+                        "pint_signature",
+                        f"{ano_selecionado}/pint_signature.png",
+                    )
+                except Exception as e:
+                    st.error(f"❌ Erro ao salvar: {str(e)}")
+
+        if (static_path / "pint_signature.png").exists():
+            st.success("✓ Assinatura disponível")
+        else:
+            st.warning("⚠️ Assinatura não encontrada")
+
+    with col3:
+        st.markdown("#### 🏢 Logo Patrocinador")
+        st.caption("Logo do(s) patrocinador(es) (coluna lateral)")
+
+        sponsor_file = st.file_uploader(
+            "Upload Logo Patrocinador",
+            type=["png", "jpg", "jpeg", "webp"],
+            key=f"sponsor_upload_{ano_selecionado}",
+            help="Logo único ou composição com todos os patrocinadores",
+        )
+
+        if sponsor_file:
+            if sponsor_file.size > 3 * 1024 * 1024:
+                st.error("❌ Arquivo muito grande! Máximo: 3MB")
+            else:
+                try:
+                    sponsor_path = static_path / "sponsor_logo.png"
+                    with open(sponsor_path, "wb") as f:
+                        f.write(sponsor_file.getbuffer())
+                    st.success(f"✅ Logo salvo! ({sponsor_file.size / 1024:.1f} KB)")
+
+                    # Atualizar configuração JSON
+                    _atualizar_config_imagens(
+                        ano_selecionado,
+                        "sponsor_logo",
+                        f"{ano_selecionado}/sponsor_logo.png",
+                    )
+                except Exception as e:
+                    st.error(f"❌ Erro ao salvar: {str(e)}")
+
+        if (static_path / "sponsor_logo.png").exists():
+            st.success("✓ Logo disponível")
+        else:
+            st.warning("⚠️ Logo não encontrado")
+
+    # Aviso importante
+    st.markdown("---")
+    st.info(
+        f"💡 **Dica**: As imagens configuradas para {ano_selecionado} serão usadas "
+        f"em todos os certificados gerados para esse ano, garantindo consistência visual "
+        f"mesmo se você criar certificados no futuro para eventos passados."
+    )
+
+
+def _atualizar_config_imagens(ano: int, chave_imagem: str, caminho_relativo: str):
+    """
+    Atualiza a configuração de imagens no JSON para um ano específico.
+
+    Args:
+        ano: Ano do evento
+        chave_imagem: 'pint_logo', 'pint_signature' ou 'sponsor_logo'
+        caminho_relativo: Caminho relativo à pasta static/
+    """
+    config_path = Path("static/certificate_config.json")
+
+    try:
+        # Carregar configuração existente
+        if config_path.exists():
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+        else:
+            config = {}
+
+        # Garantir estrutura do ano
+        ano_key = str(ano)
+        if ano_key not in config:
+            config[ano_key] = {
+                "cores": {
+                    "cor_primaria": "#e74c3c",
+                    "cor_secundaria": "#c0392b",
+                    "cor_texto": "#2c3e50",
+                    "cor_destaque": "#f39c12",
+                },
+                "imagens": {},
+            }
+
+        if "imagens" not in config[ano_key]:
+            config[ano_key]["imagens"] = {}
+
+        # Atualizar caminho da imagem
+        config[ano_key]["imagens"][chave_imagem] = caminho_relativo
+
+        # Salvar configuração
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+
+    except Exception as e:
+        logger.error(f"Erro ao atualizar config de imagens: {e}")
+
+
+def configurar_cores_certificado():
+    """Interface para configuração de cores do certificado por ano."""
+    st.subheader("🎨 Cores do Certificado")
+
+    st.info(
+        """
+        🎨 **Personalize as cores:**
+        - Selecione o ano do evento para configurar
+        - Escolha as cores que serão usadas no design do certificado
+        - **IMPORTANTE**: Cada ano mantém sua própria paleta de cores
+        """
+    )
+
+    # Buscar eventos disponíveis
+    with db_manager.get_db_session() as session:
+        from app.db import get_evento_repository
+
+        evento_repo = get_evento_repository(session)
+        eventos = session.query(Evento).order_by(Evento.ano.desc()).all()
+        # Eagerly load the anos before session closes
+        anos_disponiveis = [evento.ano for evento in eventos]
+
+    if not anos_disponiveis:
+        st.warning("⚠️ Nenhum evento cadastrado. Crie um evento primeiro.")
+        return
+
+    # Seletor de ano
+    ano_selecionado = st.selectbox(
+        "📅 Selecione o ano do evento:",
+        options=anos_disponiveis,
+        index=0,
+        key="ano_cores_certificado",
+        help="Configurações de cores são isoladas por ano do evento",
+    )
+
+    st.markdown(f"### Configurando cores para o evento de **{ano_selecionado}**")
+    st.markdown("---")
+
+    # Carregar configuração atual do ano
+    config = carregar_configuracao_certificado(ano_selecionado)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        cor_primaria = st.color_picker(
+            "Cor Primária (Barra Lateral)",
+            value=config.get("cor_primaria", "#e74c3c"),
+            help="Cor principal usada na barra lateral do certificado",
+            key=f"cor_primaria_{ano_selecionado}",
+        )
+
+        cor_secundaria = st.color_picker(
+            "Cor Secundária (Título)",
+            value=config.get("cor_secundaria", "#c0392b"),
+            help="Cor usada no título do certificado",
+            key=f"cor_secundaria_{ano_selecionado}",
+        )
+
+    with col2:
+        cor_texto = st.color_picker(
+            "Cor do Texto Principal",
+            value=config.get("cor_texto", "#2c3e50"),
+            help="Cor do texto principal do certificado",
+            key=f"cor_texto_{ano_selecionado}",
+        )
+
+        cor_destaque = st.color_picker(
+            "Cor de Destaque (Nome/Cidade)",
+            value=config.get("cor_destaque", "#f39c12"),
+            help="Cor para destacar informações importantes (nome, cidade, etc.)",
+            key=f"cor_destaque_{ano_selecionado}",
+        )
+
+    # Preview das cores
+    st.markdown("---")
+    st.markdown("#### 👁️ Visualização das Cores")
+
+    preview_cols = st.columns(4)
+    with preview_cols[0]:
+        st.markdown(
+            f'<div style="background-color: {cor_primaria}; padding: 20px; border-radius: 5px; text-align: center; color: white;"><b>Primária</b><br>{cor_primaria}</div>',
+            unsafe_allow_html=True,
+        )
+    with preview_cols[1]:
+        st.markdown(
+            f'<div style="background-color: {cor_secundaria}; padding: 20px; border-radius: 5px; text-align: center; color: white;"><b>Secundária</b><br>{cor_secundaria}</div>',
+            unsafe_allow_html=True,
+        )
+    with preview_cols[2]:
+        st.markdown(
+            f'<div style="background-color: {cor_texto}; padding: 20px; border-radius: 5px; text-align: center; color: white;"><b>Texto</b><br>{cor_texto}</div>',
+            unsafe_allow_html=True,
+        )
+    with preview_cols[3]:
+        st.markdown(
+            f'<div style="background-color: {cor_destaque}; padding: 20px; border-radius: 5px; text-align: center; color: white;"><b>Destaque</b><br>{cor_destaque}</div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+
+    # Botão para salvar
+    if st.button(
+        f"💾 Salvar Configuração de Cores para {ano_selecionado}",
+        type="primary",
+        use_container_width=True,
+    ):
+        nova_config = {
+            "cor_primaria": cor_primaria,
+            "cor_secundaria": cor_secundaria,
+            "cor_texto": cor_texto,
+            "cor_destaque": cor_destaque,
+        }
+
+        if salvar_configuracao_certificado(ano_selecionado, nova_config):
+            st.success(
+                f"✅ Configuração de cores salva com sucesso para o evento de {ano_selecionado}!"
+            )
+            st.balloons()
+        else:
+            st.error("❌ Erro ao salvar configuração.")
+
+    # Aviso importante
+    st.info(
+        f"💡 **Dica**: As cores configuradas para {ano_selecionado} serão usadas "
+        f"em todos os certificados gerados para esse ano, garantindo consistência visual "
+        f"mesmo se você gerar certificados no futuro para eventos passados."
+    )
+
+
 def main():
     """Função principal da página."""
 
@@ -848,12 +1460,18 @@ def main():
     mostrar_estatisticas_gerais()
 
     # Abas para organizar o conteúdo
-    tab1, tab2, tab3, tab4 = st.tabs(
-        ["👤 Coordenadores", "📅 Eventos", "🏙️ Cidades", "🎭 Funções"]
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        ["👤 Coordenadores", "📅 Eventos", "🏙️ Cidades", "🎭 Funções", "🖼️ Certificado"]
     )
 
     with tab1:
         st.markdown("---")
+
+        # Show success message if it exists in session state
+        if "show_success_coordenador" in st.session_state:
+            st.success(st.session_state["show_success_coordenador"])
+            del st.session_state["show_success_coordenador"]
+
         # Formulário de criação
         if formulario_criar_coordenador():
             st.rerun()
@@ -864,6 +1482,12 @@ def main():
 
     with tab2:
         st.markdown("---")
+
+        # Show success message if it exists in session state
+        if "show_success_evento" in st.session_state:
+            st.success(st.session_state["show_success_evento"])
+            del st.session_state["show_success_evento"]
+
         # Formulário de criação
         if formulario_criar_evento():
             st.rerun()
@@ -874,6 +1498,12 @@ def main():
 
     with tab3:
         st.markdown("---")
+
+        # Show success message if it exists in session state
+        if "show_success_cidade" in st.session_state:
+            st.success(st.session_state["show_success_cidade"])
+            del st.session_state["show_success_cidade"]
+
         # Formulário de criação
         if formulario_criar_cidade():
             st.rerun()
@@ -884,6 +1514,12 @@ def main():
 
     with tab4:
         st.markdown("---")
+
+        # Show success message if it exists in session state
+        if "show_success_funcao" in st.session_state:
+            st.success(st.session_state["show_success_funcao"])
+            del st.session_state["show_success_funcao"]
+
         # Formulário de criação
         if formulario_criar_funcao():
             st.rerun()
@@ -891,6 +1527,15 @@ def main():
         st.markdown("---")
         # Lista de funções
         listar_funcoes()
+
+    with tab5:
+        st.markdown("---")
+        # Gerenciamento de imagens
+        gerenciar_imagens_certificado()
+
+        st.markdown("---")
+        # Configuração de cores
+        configurar_cores_certificado()
 
     # Rodapé
     st.markdown("---")

@@ -593,9 +593,22 @@ def processar_validacao(
         if is_superadmin and mudancas:
             if st.button("💾 Salvar Edições", type="secondary", width="stretch"):
                 with st.spinner("Salvando edições..."):
+                    # Check if any changes affect hash (nome or email)
+                    hash_affected = any(
+                        "nome" in m["changes"] or "email" in m["changes"]
+                        for m in mudancas
+                    )
+
                     sucesso = salvar_edicoes_participantes(mudancas)
+
                 if sucesso:
                     st.success("🎉 Edições salvas com sucesso!")
+                    if hash_affected:
+                        st.warning(
+                            "⚠️ **Atenção:** O hash de validação do certificado foi regenerado automaticamente "
+                            "devido à alteração de nome ou email. O certificado antigo ficará inválido e "
+                            "um novo certificado deverá ser gerado."
+                        )
                     return "edicao"
                 else:
                     st.error("❌ Erro ao salvar edições.")
@@ -604,7 +617,7 @@ def processar_validacao(
 
 
 def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> bool:
-    """Salva edições nos participantes."""
+    """Salva edições nos participantes e regenera hash de validação se necessário."""
     try:
         with db_manager.get_db_session() as session:
             # Ensure Participante model is imported
@@ -642,16 +655,21 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> bool:
                     f"DEBUG: Found participant {participante.id}, current name: {servico_criptografia.descriptografar(participante.nome_completo_encrypted)}"
                 )
 
+                # Track if we need to regenerate hash (nome ou email changed)
+                needs_hash_regeneration = False
+
                 for campo, valor in mudanca["changes"].items():
                     if campo == "nome":
                         participante.nome_completo_encrypted = (
                             servico_criptografia.criptografar(valor)
                         )
+                        needs_hash_regeneration = True
                         print(f"DEBUG: Updated name to: {valor}")
                     elif campo == "email":
                         participante.email_encrypted = (
                             servico_criptografia.criptografar_email(valor)
                         )
+                        needs_hash_regeneration = True
                         print(f"DEBUG: Updated email to: {valor}")
                     elif campo == "cidade_id":
                         participante.cidade_id = valor
@@ -666,6 +684,25 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> bool:
                         participante.datas_participacao = valor
                         print(f"DEBUG: Updated datas_participacao to: {valor}")
 
+                # Regenerate hash if nome or email changed
+                if needs_hash_regeneration and participante.hash_validacao:
+                    # Get decrypted data
+                    nome_atual = servico_criptografia.descriptografar(
+                        participante.nome_completo_encrypted
+                    )
+                    email_atual = servico_criptografia.descriptografar(
+                        participante.email_encrypted
+                    )
+
+                    # Regenerate hash with new data
+                    novo_hash = servico_criptografia.gerar_hash_validacao_certificado(
+                        participante.id, participante.evento_id, email_atual, nome_atual
+                    )
+
+                    participante.hash_validacao = novo_hash
+                    print(f"DEBUG: ⚠️ Hash regenerated due to name/email change")
+                    print(f"DEBUG: New hash: {novo_hash}")
+
                 print(
                     f"DEBUG: After update - name: {servico_criptografia.descriptografar(participante.nome_completo_encrypted)}"
                 )
@@ -676,6 +713,9 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> bool:
         return True
     except Exception as e:
         print(f"DEBUG: ERROR during save: {str(e)}")
+        import traceback
+
+        traceback.print_exc()
         return False
 
 
@@ -771,12 +811,8 @@ def main():
     # Estatísticas
     mostrar_estatisticas(participantes)
 
-    st.markdown("---")
-
     # Filtros
     df_filtrado = mostrar_filtros(df_participantes)
-
-    st.markdown("---")
 
     # Tabela de validação
     df_editado = tabela_validacao_participantes(df_filtrado, cidades, funcoes)

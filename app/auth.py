@@ -115,7 +115,7 @@ class AuthManager:
             self.authenticator = stauth.Authenticate(
                 credentials,
                 cookie_name="pint_auth_cookie",
-                key="pint_of_science_auth_key_2024",  # Change this to a secure random key in production
+                key="mq3WvIV7FPjzdi",  # Change this to a secure random key in production
                 cookie_expiry_days=30,
                 preauthorized=None,
             )
@@ -130,7 +130,7 @@ class AuthManager:
             self.authenticator = stauth.Authenticate(
                 {"usernames": {}},
                 cookie_name="pint_auth_cookie",
-                key="pint_of_science_auth_key_2024",
+                key="mq3WvIV7FPjzdi",
                 cookie_expiry_days=30,
             )
 

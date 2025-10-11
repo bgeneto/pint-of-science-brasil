@@ -12,6 +12,7 @@ Este módulo contém a lógica de negócio central do sistema, incluindo:
 import logging
 import re
 import uuid
+import json
 from datetime import datetime, timedelta
 from io import BytesIO
 from pathlib import Path
@@ -102,6 +103,76 @@ class ServicoCriptografia:
     def criptografar_nome(self, nome: str) -> bytes:
         """Criptografa um nome completo."""
         return self.criptografar(nome.strip())
+
+    def gerar_hash_email(self, email: str) -> str:
+        """Gera um hash SHA-256 do email para buscas eficientes."""
+        import hashlib
+
+        return hashlib.sha256(email.lower().strip().encode("utf-8")).hexdigest()
+
+    def gerar_hash_validacao_certificado(
+        self, participante_id: int, evento_id: int, email: str, nome: str
+    ) -> str:
+        """
+        Gera um hash HMAC-SHA256 para validação de certificado.
+
+        Este hash é único e verificável, permitindo validar a autenticidade
+        de um certificado sem armazenar o PDF.
+
+        Args:
+            participante_id: ID do participante
+            evento_id: ID do evento
+            email: Email do participante
+            nome: Nome completo do participante
+
+        Returns:
+            String hexadecimal com 64 caracteres (HMAC-SHA256)
+        """
+        import hmac
+        import hashlib
+
+        # Construir mensagem a ser assinada
+        message = (
+            f"{participante_id}|{evento_id}|{email.lower().strip()}|{nome.strip()}"
+        )
+
+        # Gerar HMAC usando chave secreta
+        secret_key = settings.certificate_secret_key.encode("utf-8")
+        signature = hmac.new(
+            secret_key, message.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
+
+        return signature
+
+    def verificar_hash_validacao_certificado(
+        self,
+        hash_fornecido: str,
+        participante_id: int,
+        evento_id: int,
+        email: str,
+        nome: str,
+    ) -> bool:
+        """
+        Verifica se um hash de validação é autêntico.
+
+        Args:
+            hash_fornecido: Hash a ser verificado
+            participante_id: ID do participante
+            evento_id: ID do evento
+            email: Email do participante
+            nome: Nome completo do participante
+
+        Returns:
+            True se o hash é válido, False caso contrário
+        """
+        import hmac
+
+        hash_esperado = self.gerar_hash_validacao_certificado(
+            participante_id, evento_id, email, nome
+        )
+
+        # Comparação segura contra timing attacks
+        return hmac.compare_digest(hash_fornecido, hash_esperado)
 
 
 class ServicoCalculoCargaHoraria:
@@ -415,11 +486,129 @@ class GeradorCertificado:
     def __init__(self):
         self._servico_criptografia = ServicoCriptografia()
 
+    def _carregar_configuracao_cores(self, evento_ano: int) -> Dict[str, str]:
+        """
+        Carrega configuração de cores do certificado para um ano específico.
+
+        Args:
+            evento_ano: Ano do evento para buscar configuração
+
+        Returns:
+            Dicionário com cores configuradas para o ano
+        """
+        config_path = Path("static/certificate_config.json")
+        default_config = {
+            "cor_primaria": "#e74c3c",
+            "cor_secundaria": "#c0392b",
+            "cor_texto": "#2c3e50",
+            "cor_destaque": "#f39c12",
+        }
+
+        try:
+            if config_path.exists():
+                with open(config_path, "r", encoding="utf-8") as f:
+                    all_configs = json.load(f)
+
+                    # Tentar buscar configuração do ano específico
+                    ano_key = str(evento_ano)
+                    if ano_key in all_configs and "cores" in all_configs[ano_key]:
+                        config = all_configs[ano_key]["cores"]
+                        # Garantir que todas as chaves existem
+                        for key in default_config:
+                            if key not in config:
+                                config[key] = default_config[key]
+                        return config
+
+                    # Fallback para configuração padrão
+                    if "_default" in all_configs and "cores" in all_configs["_default"]:
+                        config = all_configs["_default"]["cores"]
+                        for key in default_config:
+                            if key not in config:
+                                config[key] = default_config[key]
+                        return config
+        except Exception as e:
+            logger.warning(
+                f"Erro ao carregar config de cores para ano {evento_ano}: {e}"
+            )
+
+        return default_config
+
+    def _carregar_caminhos_imagens(self, evento_ano: int) -> Dict[str, Path]:
+        """
+        Carrega caminhos das imagens do certificado para um ano específico.
+
+        Args:
+            evento_ano: Ano do evento para buscar configuração
+
+        Returns:
+            Dicionário com Path objects para cada imagem
+        """
+        config_path = Path("static/certificate_config.json")
+        default_images = {
+            "pint_logo": Path("static/pint_logo.png"),
+            "pint_signature": Path("static/pint_signature.png"),
+            "sponsor_logo": Path("static/sponsor_logo.png"),
+        }
+
+        try:
+            if config_path.exists():
+                with open(config_path, "r", encoding="utf-8") as f:
+                    all_configs = json.load(f)
+
+                    # Tentar buscar configuração do ano específico
+                    ano_key = str(evento_ano)
+                    if ano_key in all_configs and "imagens" in all_configs[ano_key]:
+                        images_config = all_configs[ano_key]["imagens"]
+                        return {
+                            key: Path("static")
+                            / images_config.get(key, default_images[key].name)
+                            for key in default_images.keys()
+                        }
+
+                    # Fallback para configuração padrão
+                    if (
+                        "_default" in all_configs
+                        and "imagens" in all_configs["_default"]
+                    ):
+                        images_config = all_configs["_default"]["imagens"]
+                        return {
+                            key: Path("static")
+                            / images_config.get(key, default_images[key].name)
+                            for key in default_images.keys()
+                        }
+        except Exception as e:
+            logger.warning(
+                f"Erro ao carregar paths de imagens para ano {evento_ano}: {e}"
+            )
+
+        return default_images
+
+    def _obter_nome_coordenador_geral(self) -> str:
+        """Obtém o nome do primeiro superadmin cadastrado."""
+        try:
+            with db_manager.get_db_session() as session:
+                from app.db import get_coordenador_repository
+
+                coord_repo = get_coordenador_repository(session)
+
+                # Buscar o primeiro superadmin
+                superadmin = coord_repo.get_first_superadmin()
+
+                if superadmin:
+                    return superadmin.nome.upper()
+                else:
+                    # Fallback caso não haja superadmin
+                    logger.warning("Nenhum superadmin encontrado, usando nome padrão")
+                    return "COORDENADOR GERAL"
+        except Exception as e:
+            logger.error(f"Erro ao buscar coordenador geral: {e}")
+            return "COORDENADOR GERAL"
+
     def gerar_certificado_pdf(
         self, participante: Participante, evento: Evento, cidade: Cidade, funcao: Funcao
     ) -> bytes:
         """
-        Gera um certificado PDF para um participante.
+        Gera um certificado PDF para um participante em formato A4 landscape.
 
         Args:
             participante: Objeto Participante com dados validados
@@ -431,6 +620,10 @@ class GeradorCertificado:
             Bytes do PDF gerado
         """
         try:
+            from reportlab.lib.pagesizes import A4, landscape
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.utils import ImageReader
+
             # Descriptografar dados sensíveis
             nome_completo = self._servico_criptografia.descriptografar(
                 participante.nome_completo_encrypted
@@ -439,132 +632,422 @@ class GeradorCertificado:
                 participante.email_encrypted
             )
 
+            # Gerar hash de validação se ainda não existe
+            if not participante.hash_validacao:
+                hash_validacao = (
+                    self._servico_criptografia.gerar_hash_validacao_certificado(
+                        participante.id, evento.id, email, nome_completo
+                    )
+                )
+                # Atualizar no banco
+                with db_manager.get_db_session() as session:
+                    participante_db = session.merge(participante)
+                    participante_db.hash_validacao = hash_validacao
+                    session.commit()
+                    # Atualizar objeto local
+                    participante.hash_validacao = hash_validacao
+            else:
+                hash_validacao = participante.hash_validacao
+
+            # Carregar configuração de cores e imagens para o ano do evento
+            cores = self._carregar_configuracao_cores(evento.ano)
+            caminhos_imagens = self._carregar_caminhos_imagens(evento.ano)
+
             # Criar buffer para o PDF
             buffer = BytesIO()
 
-            # Criar documento
-            doc = SimpleDocTemplate(
-                buffer,
-                pagesize=letter,
-                rightMargin=72,
-                leftMargin=72,
-                topMargin=72,
-                bottomMargin=18,
+            # Configurar página A4 landscape (297mm x 210mm = 841.89 x 595.27 points)
+            page_width, page_height = landscape(A4)
+
+            # Criar canvas
+            c = canvas.Canvas(buffer, pagesize=landscape(A4))
+
+            # Definir dimensões da coluna lateral (30% da largura)
+            sidebar_width = page_width * 0.30
+            content_x_start = sidebar_width + 30  # 30 points de margem
+
+            # ========== COLUNA LATERAL ESQUERDA (LARANJA) ==========
+            c.setFillColor(colors.HexColor(cores["cor_primaria"]))
+            c.rect(0, 0, sidebar_width, page_height, fill=1, stroke=0)
+
+            # Logo do patrocinador (se existir)
+            sponsor_logo_path = caminhos_imagens["sponsor_logo"]
+            if sponsor_logo_path.exists():
+                try:
+                    # Ajustar imagem para ocupar toda a altura da coluna lateral
+                    img_reader = ImageReader(str(sponsor_logo_path))
+                    img_width, img_height = img_reader.getSize()
+
+                    # Calcular dimensões - ALTURA FIXA = altura da página
+                    new_height = page_height  # Altura total da página
+                    max_width = sidebar_width - 40  # margem de 20 em cada lado
+
+                    # Calcular largura mantendo aspect ratio
+                    ratio = new_height / img_height
+                    new_width = img_width * ratio
+
+                    # Se a largura calculada exceder o máximo, ajustar pela largura
+                    if new_width > max_width:
+                        new_width = max_width
+                        new_height = (img_height * new_width) / img_width
+
+                    # Centralizar horizontalmente, alinhar verticalmente
+                    x = (sidebar_width - new_width) / 2
+                    y = (page_height - new_height) / 2
+
+                    c.drawImage(
+                        str(sponsor_logo_path),
+                        x,
+                        y,
+                        width=new_width,
+                        height=new_height,
+                        preserveAspectRatio=True,
+                        mask="auto",
+                    )
+                except Exception as e:
+                    logger.warning(f"Erro ao carregar logo do patrocinador: {e}")
+
+            # ========== ÁREA DE CONTEÚDO ==========
+
+            # Logo Pint of Science (canto superior direito)
+            pint_logo_path = caminhos_imagens["pint_logo"]
+            if pint_logo_path.exists():
+                try:
+                    logo_size = 80  # tamanho do logo
+                    c.drawImage(
+                        str(pint_logo_path),
+                        page_width - logo_size - 30,  # 30 points da margem direita
+                        page_height - logo_size - 30,  # 30 points da margem superior
+                        width=logo_size,
+                        height=logo_size,
+                        preserveAspectRatio=True,
+                        mask="auto",
+                    )
+                except Exception as e:
+                    logger.warning(f"Erro ao carregar logo Pint: {e}")
+
+            # Título principal
+            c.setFont("Helvetica-Bold", 24)
+            c.setFillColor(colors.HexColor(cores["cor_secundaria"]))
+            title_y = page_height - 100
+            # Calcular centro da área de conteúdo (excluindo sidebar e área do logo)
+            content_center_x = content_x_start + (
+                (page_width - content_x_start - 120) / 2
+            )  # 120 = espaço do logo + margem
+            c.drawCentredString(
+                content_center_x,
+                title_y,
+                "CERTIFICADO DE PARTICIPAÇÃO",
             )
-
-            # Estilos
-            styles = getSampleStyleSheet()
-            title_style = ParagraphStyle(
-                "CustomTitle",
-                parent=styles["Heading1"],
-                fontSize=24,
-                spaceAfter=30,
-                alignment=TA_CENTER,
-                textColor=colors.HexColor("#e74c3c"),
-            )
-
-            subtitle_style = ParagraphStyle(
-                "CustomSubtitle",
-                parent=styles["Heading2"],
-                fontSize=18,
-                spaceAfter=20,
-                alignment=TA_CENTER,
-                textColor=colors.HexColor("#2c3e50"),
-            )
-
-            normal_style = ParagraphStyle(
-                "CustomNormal",
-                parent=styles["Normal"],
-                fontSize=12,
-                spaceAfter=12,
-                alignment=TA_CENTER,
-            )
-
-            # Construir conteúdo
-            content = []
-
-            # Título
-            content.append(Paragraph("CERTIFICADO DE PARTICIPAÇÃO", title_style))
-            content.append(Spacer(1, 20))
 
             # Subtítulo
-            content.append(
-                Paragraph(f"Pint of Science Brasil - {evento.ano}", subtitle_style)
+            c.setFont("Helvetica-Bold", 20)
+            c.setFillColor(colors.HexColor(cores["cor_texto"]))
+            c.drawCentredString(
+                content_center_x,
+                title_y - 45,
+                f"Pint of Science Brasil - {evento.ano}",
             )
-            content.append(Spacer(1, 30))
 
-            # Texto principal
-            texto_certificado = f"""
-            Certificamos que <b>{nome_completo}</b> participou do evento
-            <b>Pint of Science Brasil {evento.ano}</b> na cidade de <b>{cidade.nome}-{cidade.estado}</b>,
-            com a função de <b>{funcao.nome_funcao}</b>.
-            """
-            content.append(Paragraph(texto_certificado, normal_style))
-            content.append(Spacer(1, 20))
+            # ========== TEXTO PRINCIPAL (SEM QUEBRAS DE LINHA) ==========
+            y_position = title_y - 110
+            c.setFont("Helvetica", 14)
+            c.setFillColor(colors.HexColor(cores["cor_texto"]))
 
-            # Detalhes da participação
-            detalhes_data = [
-                ["Período do Evento:", evento.datas_evento],
-                ["Datas de Participação:", participante.datas_participacao],
-                [
-                    "Carga Horária Total:",
+            # Formatar datas de participação
+            datas_participacao_str = participante.datas_participacao
+            if "," in datas_participacao_str:
+                # Multiple dates
+                datas_list = [d.strip() for d in datas_participacao_str.split(",")]
+                # Format ISO dates to DD/MM/YYYY
+                datas_formatadas = []
+                for data in datas_list:
+                    try:
+                        dt = datetime.fromisoformat(data)
+                        datas_formatadas.append(dt.strftime("%d/%m/%Y"))
+                    except:
+                        datas_formatadas.append(data)
+
+                if len(datas_formatadas) > 1:
+                    datas_texto = " e ".join(
+                        [", ".join(datas_formatadas[:-1]), datas_formatadas[-1]]
+                    )
+                else:
+                    datas_texto = datas_formatadas[0]
+            else:
+                try:
+                    dt = datetime.fromisoformat(datas_participacao_str.strip())
+                    datas_texto = dt.strftime("%d/%m/%Y")
+                except:
+                    datas_texto = datas_participacao_str
+
+            # Construir o texto completo do certificado em uma linha fluida
+            # Calcular a largura disponível
+            max_width = page_width - content_x_start - 60
+            x_current = content_x_start + 20
+
+            # Função auxiliar para desenhar texto com alternância de estilos
+            def desenhar_texto_fluido(canvas, x, y, texto, bold=False, cor=None):
+                """Desenha texto e retorna a nova posição X."""
+                if bold:
+                    canvas.setFont("Helvetica-Bold", 14)
+                else:
+                    canvas.setFont("Helvetica", 14)
+
+                if cor:
+                    canvas.setFillColor(colors.HexColor(cor))
+
+                canvas.drawString(x, y, texto)
+                return x + canvas.stringWidth(texto, canvas._fontname, 14)
+
+            # Construir o parágrafo completo
+            partes = [
+                ("Certificamos que ", False, cores["cor_texto"]),
+                (nome_completo, True, cores["cor_destaque"]),
+                (" participou como ", False, cores["cor_texto"]),
+                (funcao.nome_funcao, True, cores["cor_destaque"]),
+                (
+                    " do Pint of Science Brasil, realizado em ",
+                    False,
+                    cores["cor_texto"],
+                ),
+                (f"{cidade.nome} - {cidade.estado}", True, cores["cor_destaque"]),
+                (", no(s) dia(s) ", False, cores["cor_texto"]),
+                (datas_texto, True, cores["cor_destaque"]),
+                (", com carga horária de ", False, cores["cor_texto"]),
+                (
                     f"{participante.carga_horaria_calculada} horas",
-                ],
-                ["Função Exercida:", funcao.nome_funcao],
+                    True,
+                    cores["cor_destaque"],
+                ),
+                (".", False, cores["cor_texto"]),
             ]
 
+            # Quebrar em linhas com suporte a wordwrap inteligente
+            linha_atual = []
+            linhas = []
+            largura_linha = 0
+
+            for texto, bold, cor in partes:
+                # Calcular largura do texto
+                fonte = "Helvetica-Bold" if bold else "Helvetica"
+                largura_texto = c.stringWidth(texto, fonte, 14)
+
+                # Se o texto atual cabe na linha, adiciona
+                if largura_linha + largura_texto <= max_width or not linha_atual:
+                    linha_atual.append((texto, bold, cor))
+                    largura_linha += largura_texto
+                else:
+                    # Texto não cabe. Verificar se precisa quebrar por palavras
+                    if " " in texto.strip() and largura_texto > max_width * 0.6:
+                        # Texto muito longo, quebrar por palavras
+                        palavras = texto.split()
+                        texto_parcial = ""
+
+                        for palavra in palavras:
+                            teste = (
+                                texto_parcial + " " + palavra
+                                if texto_parcial
+                                else palavra
+                            )
+                            largura_teste = c.stringWidth(teste, fonte, 14)
+
+                            # Se cabe na linha atual com o que já tem
+                            if largura_linha + largura_teste <= max_width:
+                                texto_parcial = teste
+                            else:
+                                # Não cabe. Salvar linha atual se tiver conteúdo
+                                if linha_atual:
+                                    linhas.append(linha_atual)
+                                    linha_atual = []
+                                    largura_linha = 0
+
+                                # Adicionar o que já foi construído (se houver)
+                                if texto_parcial:
+                                    linha_atual.append((texto_parcial, bold, cor))
+                                    largura_linha = c.stringWidth(
+                                        texto_parcial, fonte, 14
+                                    )
+                                    # Nova linha
+                                    linhas.append(linha_atual)
+                                    linha_atual = []
+                                    largura_linha = 0
+                                    texto_parcial = ""
+
+                                # Começar com a palavra atual
+                                texto_parcial = palavra
+
+                        # Adicionar resto do texto parcial
+                        if texto_parcial:
+                            largura_parcial = c.stringWidth(texto_parcial, fonte, 14)
+                            if largura_linha + largura_parcial <= max_width:
+                                linha_atual.append((texto_parcial, bold, cor))
+                                largura_linha += largura_parcial
+                            else:
+                                if linha_atual:
+                                    linhas.append(linha_atual)
+                                linha_atual = [(texto_parcial, bold, cor)]
+                                largura_linha = largura_parcial
+                    else:
+                        # Salvar linha atual e começar nova
+                        linhas.append(linha_atual)
+                        linha_atual = [(texto, bold, cor)]
+                        largura_linha = largura_texto
+
+            # Adicionar última linha
+            if linha_atual:
+                linhas.append(linha_atual)
+
+            # Desenhar todas as linhas
+            for linha in linhas:
+                x_current = content_x_start + 20
+                for texto, bold, cor in linha:
+                    x_current = desenhar_texto_fluido(
+                        c, x_current, y_position, texto, bold, cor
+                    )
+                y_position -= 25  # Próxima linha
+
+            # ========== TÍTULO DA APRESENTAÇÃO (SE HOUVER) ==========
             if participante.titulo_apresentacao:
-                detalhes_data.append(
-                    ["Título da Apresentação:", participante.titulo_apresentacao]
+                y_position -= 15  # Espaço extra antes do título
+                c.setFont("Helvetica-Bold", 12)
+                c.setFillColor(colors.HexColor(cores["cor_texto"]))
+                c.drawString(
+                    content_x_start + 20, y_position, "Título da apresentação:"
                 )
 
-            tabela_detalhes = Table(detalhes_data, colWidths=[3 * inch, 3 * inch])
-            tabela_detalhes.setStyle(
-                TableStyle(
-                    [
-                        ("BACKGROUND", (0, 0), (-1, -1), colors.lightgrey),
-                        ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
-                        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 10),
-                        ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
-                        ("BACKGROUND", (0, 0), (0, -1), colors.grey),
-                        ("TEXTCOLOR", (0, 0), (0, -1), colors.whitesmoke),
-                    ]
-                )
-            )
-
-            content.append(tabela_detalhes)
-            content.append(Spacer(1, 30))
+                y_position -= 20
+                c.setFont("Helvetica-Bold", 14)
+                c.setFillColor(colors.HexColor(cores["cor_destaque"]))
+                # Quebrar título se for muito longo
+                max_width = page_width - content_x_start - 120
+                if (
+                    c.stringWidth(participante.titulo_apresentacao, "Helvetica", 14)
+                    > max_width
+                ):
+                    # Quebrar em palavras
+                    palavras = participante.titulo_apresentacao.split()
+                    linha = ""
+                    for palavra in palavras:
+                        teste = linha + " " + palavra if linha else palavra
+                        if c.stringWidth(teste, "Helvetica-Oblique", 12) <= max_width:
+                            linha = teste
+                        else:
+                            c.drawString(content_x_start + 20, y_position, linha)
+                            y_position -= 15
+                            linha = palavra
+                    if linha:
+                        c.drawString(content_x_start + 20, y_position, linha)
+                else:
+                    c.drawString(
+                        content_x_start + 20,
+                        y_position,
+                        participante.titulo_apresentacao,
+                    )
 
             # Data de emissão
+            y_position -= 50
+            c.setFont("Helvetica", 11)
+            c.setFillColor(colors.HexColor(cores["cor_texto"]))
             data_emissao = datetime.now().strftime("%d de %B de %Y")
-            content.append(Paragraph(f"Emitido em {data_emissao}", normal_style))
-            content.append(Spacer(1, 40))
+            # Traduzir mês para português
+            meses_pt = {
+                "January": "Janeiro",
+                "February": "Fevereiro",
+                "March": "Março",
+                "April": "Abril",
+                "May": "Maio",
+                "June": "Junho",
+                "July": "Julho",
+                "August": "Agosto",
+                "September": "Setembro",
+                "October": "Outubro",
+                "November": "Novembro",
+                "December": "Dezembro",
+            }
+            for en, pt in meses_pt.items():
+                data_emissao = data_emissao.replace(en, pt)
+
+            c.drawCentredString(
+                content_center_x,
+                y_position,
+                f"Emitido em {data_emissao}.",
+            )
+
+            # Assinatura (se existir)
+            signature_path = caminhos_imagens["pint_signature"]
+            if signature_path.exists():
+                try:
+                    sig_width = 200
+                    sig_height = 60
+                    sig_x = content_center_x - sig_width / 2
+                    sig_y = 95  # Aumentado de 80 para 95 para dar mais espaço ao rodapé
+
+                    c.drawImage(
+                        str(signature_path),
+                        sig_x,
+                        sig_y,
+                        width=sig_width,
+                        height=sig_height,
+                        preserveAspectRatio=True,
+                        mask="auto",
+                    )
+
+                    # Nome do coordenador geral IMEDIATAMENTE abaixo da assinatura
+                    nome_coordenador = self._obter_nome_coordenador_geral()
+                    c.setFont("Helvetica", 9)
+                    c.setFillColor(colors.HexColor(cores["cor_texto"]))
+                    # Reduzido espaço de -10 para -5 (mais próximo)
+                    c.drawCentredString(content_center_x, sig_y - 5, nome_coordenador)
+                    # Reduzido espaço de -22 para -17 (mais próximo)
+                    c.drawCentredString(
+                        content_center_x,
+                        sig_y - 17,
+                        "Coordenador Geral - Pint of Science Brasil",
+                    )
+                except Exception as e:
+                    logger.warning(f"Erro ao carregar assinatura: {e}")
 
             # Rodapé
-            rodape_style = ParagraphStyle(
-                "Rodape",
-                parent=styles["Normal"],
-                fontSize=10,
-                spaceAfter=10,
-                alignment=TA_CENTER,
-                textColor=colors.HexColor("#7f8c8d"),
+            c.setFont("Helvetica-Oblique", 9)
+            c.setFillColor(colors.HexColor("#7f8c8d"))
+            footer_text = '"Levando a ciência para o bar"'
+            c.drawCentredString(content_center_x, 50, footer_text)
+
+            # Link de validação
+            validation_url = (
+                f"{settings.base_url}/Validar_Certificado?hash={hash_validacao}"
+            )
+            c.setFont("Helvetica", 7)
+            c.setFillColor(colors.HexColor("#2980b9"))
+            c.drawCentredString(
+                content_center_x,
+                35,
+                "Valide a autenticidade deste certificado em:",
             )
 
-            content.append(
-                Paragraph("Organização: Pint of Science Brasil", rodape_style)
-            )
-            content.append(
-                Paragraph(
-                    "Este certificado tem validade digital e pode ser verificado online.",
-                    rodape_style,
-                )
-            )
-            content.append(Paragraph('"Levando a ciência para o bar"', rodape_style))
+            # Tornar o link clicável
+            c.setFillColor(colors.HexColor("#3498db"))
+            c.setFont("Helvetica", 6)
+            # Calcular largura aproximada do link para centralização do hitbox
+            link_width = c.stringWidth(validation_url, "Helvetica", 6)
+            link_x_start = content_center_x - (link_width / 2)
+            link_x_end = content_center_x + (link_width / 2)
 
-            # Gerar PDF
-            doc.build(content)
+            c.linkURL(
+                validation_url,
+                (
+                    link_x_start,
+                    18,
+                    link_x_end,
+                    28,
+                ),
+                relative=0,
+            )
+            c.drawCentredString(content_center_x, 22, validation_url)
+
+            # Finalizar PDF
+            c.save()
 
             # Retornar bytes
             pdf_bytes = buffer.getvalue()
@@ -608,12 +1091,8 @@ class ServicoValidacao:
             with db_manager.get_db_session() as session:
                 participante_repo = get_participante_repository(session)
 
-                email_criptografado = self._servico_criptografia.criptografar_email(
-                    dados.email
-                )
-                existing = participante_repo.get_by_encrypted_email(
-                    email_criptografado, evento.id
-                )
+                email_hash = self._servico_criptografia.gerar_hash_email(dados.email)
+                existing = participante_repo.get_by_email_hash(email_hash, evento.id)
 
                 if existing:
                     return False, "Este email já está inscrito neste evento"
@@ -657,11 +1136,9 @@ class ServicoValidacao:
                 evento_repo = get_evento_repository(session)
 
                 # Buscar participante
-                email_criptografado = self._servico_criptografia.criptografar_email(
-                    email
-                )
-                participante = participante_repo.get_by_encrypted_email(
-                    email_criptografado, evento_id
+                email_hash = self._servico_criptografia.gerar_hash_email(email)
+                participante = participante_repo.get_by_email_hash(
+                    email_hash, evento_id
                 )
 
                 if not participante:
@@ -676,7 +1153,7 @@ class ServicoValidacao:
                     return (
                         False,
                         None,
-                        "Sua participação ainda não foi validada pelos organizadores",
+                        "Sua participação ainda não foi validada pelos coordenadores",
                     )
 
                 # Buscar dados relacionados
@@ -756,6 +1233,7 @@ def inscrever_participante(
             email_criptografado = servico_criptografia.criptografar_email(
                 dados_inscricao.email
             )
+            email_hash = servico_criptografia.gerar_hash_email(dados_inscricao.email)
 
             # Calcular carga horária
             carga_horaria, _ = servico_calculo_carga_horaria.calcular_carga_horaria(
@@ -768,6 +1246,7 @@ def inscrever_participante(
             participante = participante_repo.create_participante(
                 nome_completo_encrypted=nome_criptografado,
                 email_encrypted=email_criptografado,
+                email_hash=email_hash,
                 titulo_apresentacao=dados_inscricao.titulo_apresentacao,
                 evento_id=dados_inscricao.evento_id,
                 cidade_id=dados_inscricao.cidade_id,
@@ -924,10 +1403,8 @@ def validar_participantes(
                                     participante.email_encrypted
                                 )
 
-                                # Aqui você implementaria a geração do link de download
-                                link_download = (
-                                    f"https://seusite.com/download/{participante_id}"
-                                )
+                                # Vamos usar o BASE_URL para construir o link
+                                link_download = f"{settings.base_url}/"
 
                                 servico_email.enviar_email_certificado_liberado(
                                     nome, email, link_download

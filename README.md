@@ -40,14 +40,17 @@ pint-of-science/
 ### Para Participantes (Público)
 - ✅ Formulário de inscrição com validação
 - ✅ Download de certificados por e-mail
+- ✅ **Validação de autenticidade de certificados** - Verifique certificados online via hash HMAC-SHA256
 - ✅ Interface responsiva e intuitiva
+- ✅ Página pública de validação com link direto do certificado
 
 ### Para Coordenadores (Acesso Restrito)
-- ✅ Login seguro com autenticação
+- ✅ Login seguro com autenticação persistente
 - ✅ Dashboard com estatísticas de participantes
 - ✅ Validação em lote de participantes
 - ✅ Filtros por cidade, função e status
 - ✅ Visualização de detalhes dos participantes
+- ✅ Editor interativo de dados (data_editor)
 
 ### Para Superadmin (Acesso Restrito)
 - ✅ Gestão completa de coordenadores
@@ -55,6 +58,11 @@ pint-of-science/
 - ✅ Dashboard com métricas do sistema
 - ✅ Visualização de logs de auditoria
 - ✅ Gerenciamento de usuários
+- ✅ **Configuração visual de certificados por ano do evento**
+  - Upload de imagens (logo, assinatura, patrocinadores) isoladas por ano
+  - Personalização de paleta de cores por ano
+  - Preview visual das cores em tempo real
+  - Gerenciamento através de interface intuitiva
 
 ## 📦 Tecnologias Utilizadas
 
@@ -114,37 +122,62 @@ nano .env  # ou use seu editor preferido
 Variáveis necessárias:
 ```env
 # Configurações do Banco de Dados
-DATABASE_URL=sqlite:///pint_of_science.db
+DATABASE_URL=sqlite:///./data/pint_of_science.db
 
 # Criptografia (gerar com: from cryptography.fernet import Fernet; print(Fernet.generate_key().decode()))
 ENCRYPTION_KEY=sua_chave_de_criptografia_aqui
+
+# Validação de Certificados (gerar com: python -c "import secrets; print(secrets.token_hex(32))")
+CERTIFICATE_SECRET_KEY=chave_secreta_64_caracteres_hex
+BASE_URL=https://seu-dominio.com  # URL base para links de validação
 
 # Configurações do Brevo (opcional, para envio de e-mails)
 BREVO_API_KEY=sua_chave_api_brevo
 BREVO_SENDER_EMAIL=seu_email@dominio.com
 BREVO_SENDER_NAME=Pint of Science Brasil
+
+# Superadmin inicial (opcional)
+INITIAL_SUPERADMIN_EMAIL=admin@pintofscience.com
+INITIAL_SUPERADMIN_PASSWORD=senha_segura_aqui
+INITIAL_SUPERADMIN_NAME=Administrador
 ```
+
+**Notas sobre configuração:**
+- `ENCRYPTION_KEY`: Obrigatória. Usada para criptografar dados PII (nome, email)
+- `CERTIFICATE_SECRET_KEY`: Recomendada. Se não configurada, uma chave temporária será gerada (não use em produção!)
+- `BASE_URL`: Usado para gerar links de validação nos certificados. Padrão: `http://localhost:8501`
+- Variáveis Brevo: Opcionais. Sistema funciona sem email, mas participantes não receberão notificações
 
 ### Passo 5: Inicializar o Banco de Dados
 
-O sistema utiliza SQLite como banco de dados e será criado automaticamente na primeira execução. O processo de inicialização inclui a criação das tabelas e o seed de dados iniciais.
+O sistema utiliza SQLite como banco de dados. Você pode inicializar o banco de duas formas:
 
-#### 5.1: Executar a Inicialização Automática
+#### 5.1: Inicialização Automática (Recomendado)
+```bash
+# Usando o script de seeding dedicado
+python utils/seed_database.py
+```
+
+Este script irá:
+- ✅ Criar o arquivo `data/pint_of_science.db`
+- ✅ Criar todas as tabelas necessárias
+- ✅ Popular dados iniciais (cidades, funções, eventos)
+- ✅ Criar usuário superadmin (se configurado no `.env`)
+
+#### 5.2: Inicialização Manual
 ```bash
 # Executar o sistema pela primeira vez
 streamlit run Home.py
 ```
 
-Na primeira execução, o sistema irá:
-- ✅ Criar o arquivo `pint_of_science.db`
-- ✅ Criar todas as tabelas necessárias
-- ✅ Popular dados iniciais (cidades, funções, eventos)
-- ✅ Criar usuário superadmin (se configurado)
+Na primeira execução do Streamlit, o sistema irá inicializar o banco automaticamente.
 
-#### 5.2: Verificar a Inicialização
-Para verificar se o banco foi criado corretamente, execute o script de teste:
-
+#### 5.3: Verificar Status do Banco
 ```bash
+# Ver apenas o status sem modificar
+python utils/seed_database.py --status-only
+
+# Ou executar testes completos
 python tests/test_system.py
 ```
 
@@ -155,12 +188,12 @@ python tests/test_system.py
 ✅ Conexão com o banco de dados bem-sucedida!
 ✅ Banco de dados inicializado corretamente!
    - 10 cidades cadastradas
-   - 6 funções cadastradas
+   - 35 funções cadastradas
    - 1 eventos cadastrados
 🎉 Todos os testes passaram! O sistema está pronto para uso.
 ```
 
-#### 5.3: Dados Iniciais Criados
+#### 5.4: Dados Iniciais Criados
 
 **Cidades (10 cidades):**
 - São Paulo (SP), Rio de Janeiro (RJ), Belo Horizonte (MG)
@@ -172,7 +205,7 @@ python tests/test_system.py
 - Moderador(a), Apoio Técnico, Divulgação
 
 **Eventos:**
-- Pint of Science 2024 (datas: 13-15 de maio)
+- Pint of Science 2025 (datas: 19-21 de maio)
 
 **Superadmin (opcional):**
 - Criado apenas se as variáveis `INITIAL_SUPERADMIN_*` estiverem configuradas no `.env`
@@ -181,7 +214,7 @@ python tests/test_system.py
 - Um coordenador de teste é criado durante os testes: `teste@exemplo.com` / `senha123`
 - Um participante de teste é criado: `participante@exemplo.com`
 
-#### 5.4: Solução de Problemas
+#### 5.5: Solução de Problemas
 
 **Se o banco não for criado:**
 ```bash
@@ -201,7 +234,7 @@ ls -la pint_of_science.db
 - Verifique se o arquivo `.env` existe e está configurado
 - Execute `python -c "from app.db import init_database; init_database()"` para debug
 
-#### 5.5: Reset/Recriação do Banco (Desenvolvimento)
+#### 5.6: Reset/Recriação do Banco (Desenvolvimento)
 
 Para desenvolvimento ou teste, você pode recriar o banco do zero:
 
@@ -251,19 +284,144 @@ A aplicação estará disponível em `http://localhost:8501`
 
 O sistema implementa várias camadas de segurança:
 
-- **Criptografia de Dados**: Nomes e e-mails de participantes são criptografados
+- **Criptografia de Dados**: Nomes e e-mails de participantes são criptografados (Fernet)
 - **Hash de Senhas**: Senhas armazenadas com bcrypt
-- **Sessão Segura**: Timeout de sessão (2 horas)
+- **Validação de Certificados**: HMAC-SHA256 para verificar autenticidade **sem armazenar PDFs**
+- **Sessão Segura**: Timeout de sessão (2 horas) com persistência via cookie
+- **Proteção contra Brute Force**: Limite de tentativas de login
+- **Validação de Entrada**: Todos os dados são validados com Pydantic
+- **Auditoria**: Todas as ações importantes são registradas
+- **Hash de Email**: SHA-256 para lookups sem expor dados criptografados
+
+### 🔒 Sistema de Validação de Certificados
+
+Todos os certificados emitidos incluem:
+- **Hash único de validação** (HMAC-SHA256) no rodapé do certificado
+- **Link clicável** para verificação online instantânea
+- **Impossível falsificar** sem a chave secreta (`CERTIFICATE_SECRET_KEY`)
+- **Sem armazenamento de PDFs** - hash é gerado dinamicamente dos dados do participante
+- **Verificação criptográfica** usando `hmac.compare_digest()` para prevenir timing attacks
+
+**Como funciona:**
+1. Ao gerar o certificado, um hash HMAC é criado com: `id|evento_id|email|nome`
+2. Hash é armazenado no banco de dados e impresso no certificado
+3. Link no certificado direciona para página pública de validação
+4. Sistema verifica hash recalculando com dados do banco
+5. Resultado mostra se certificado é autêntico e exibe detalhes
+
+Qualquer pessoa pode validar um certificado acessando a página `/Validar_Certificado` ou clicando no link do próprio certificado.
+
+📚 **Documentação técnica completa**: [`docs/CERTIFICATE_VALIDATION.md`](docs/CERTIFICATE_VALIDATION.md)
 - **Proteção contra Brute Force**: Limite de tentativas de login
 - **Validação de Entrada**: Todos os dados são validados com Pydantic
 - **Auditoria**: Todas as ações importantes são registradas
 
-## 📊 Fluxo de Trabalho
+### Sistema de Validação de Certificados
+
+Todos os certificados emitidos incluem:
+- **Hash único de validação** (HMAC-SHA256) no rodapé
+- **Link clicável** para verificação online
+- **Impossível falsificar** sem a chave secreta
+
+Qualquer pessoa pode validar um certificado em `/Validar_Certificado`.
+
+� **Documentação completa**: [`docs/CERTIFICATE_VALIDATION.md`](docs/CERTIFICATE_VALIDATION.md)
+
+##  Fluxo de Trabalho
 
 1. **Inscrição**: Participantes se registram através do formulário público
 2. **Validação**: Coordenadores acessam a área restrita e validam as participações
-3. **Emissão**: Sistema gera certificados PDF para participantes validados
+3. **Emissão**: Sistema gera certificados PDF personalizados com:
+   - Hash de validação HMAC-SHA256 único e não-forjável
+   - Design visual específico do ano do evento (cores e imagens)
+   - Link clicável para verificação online
 4. **Download**: Participantes baixam certificados usando e-mail de cadastro
+5. **Verificação**: Qualquer pessoa pode validar autenticidade do certificado online através do link ou página pública
+
+## 🎨 Configuração Visual por Ano do Evento
+
+### Sistema de Multi-Year Configuration
+
+O sistema mantém **configurações visuais isoladas por ano do evento**, garantindo que certificados de anos diferentes mantenham sua identidade visual original, mesmo quando gerados posteriormente.
+
+#### Estrutura de Configuração
+
+```
+static/
+├── 2024/
+│   ├── pint_logo.png           # Logo do evento de 2024
+│   ├── pint_signature.png      # Assinatura de 2024
+│   └── sponsor_logo.png        # Patrocinadores de 2024
+├── 2025/
+│   ├── pint_logo.png           # Logo do evento de 2025
+│   ├── pint_signature.png      # Assinatura de 2025
+│   └── sponsor_logo.png        # Patrocinadores de 2025
+└── certificate_config.json     # Configurações de cores e caminhos
+```
+
+#### Configuração no Admin
+
+Superadmins podem configurar através da aba **"🖼️ Certificado"**:
+
+1. **Upload de Imagens por Ano**:
+   - Selecione o ano do evento
+   - Faça upload de 3 imagens: Logo Pint, Assinatura, Logo Patrocinador
+   - Formatos aceitos: PNG, JPG, WEBP (máx. 3MB)
+   - Arquivos salvos automaticamente em `static/{ANO}/`
+
+2. **Personalização de Cores por Ano**:
+   - Selecione o ano do evento
+   - Configure 4 cores com color pickers:
+     - **Cor Primária**: Barra lateral do certificado
+     - **Cor Secundária**: Título "CERTIFICADO DE PARTICIPAÇÃO"
+     - **Cor do Texto**: Texto principal do certificado
+     - **Cor de Destaque**: Nome do participante e cidade
+   - Preview visual em tempo real
+   - Configuração salva em `certificate_config.json`
+
+#### Exemplo de Configuração JSON
+
+```json
+{
+  "2024": {
+    "cores": {
+      "cor_primaria": "#e74c3c",
+      "cor_secundaria": "#c0392b",
+      "cor_texto": "#2c3e50",
+      "cor_destaque": "#f39c12"
+    },
+    "imagens": {
+      "pint_logo": "2024/pint_logo.png",
+      "pint_signature": "2024/pint_signature.png",
+      "sponsor_logo": "2024/sponsor_logo.png"
+    }
+  },
+  "2025": {
+    "cores": {
+      "cor_primaria": "#3498db",
+      "cor_secundaria": "#2980b9",
+      "cor_texto": "#34495e",
+      "cor_destaque": "#e67e22"
+    },
+    "imagens": {
+      "pint_logo": "2025/pint_logo.png",
+      "pint_signature": "2025/pint_signature.png",
+      "sponsor_logo": "2025/sponsor_logo.png"
+    }
+  },
+  "_default": {
+    "cores": { "..." },
+    "imagens": { "..." }
+  }
+}
+```
+
+#### Benefícios
+
+- **Preservação Histórica**: Certificados de anos anteriores mantêm design original
+- **Flexibilidade**: Cada ano pode ter branding diferente
+- **Regeneração Segura**: Certificados podem ser regenerados no futuro com visual correto
+- **Gestão Simples**: Interface intuitiva sem necessidade de editar arquivos manualmente
 
 ## 🧪 Testes
 
@@ -323,12 +481,28 @@ CMD ["streamlit", "run", "Home.py", "--server.address=0.0.0.0"]
 ## 📝 Estrutura do Banco de Dados
 
 ### Tabelas Principais
-- **eventos**: Informações dos eventos (ano, datas)
-- **cidades**: Cidades participantes
-- **funcoes**: Funções dos participantes
-- **coordenadores**: Usuários do sistema
-- **participantes**: Dados dos participantes (com criptografia)
-- **auditoria**: Registro de ações do sistema
+- **eventos**: Informações dos eventos (ano, datas em JSON)
+- **cidades**: Cidades participantes (nome, estado UF)
+- **funcoes**: Funções dos participantes (Organizador, Voluntário, etc.)
+- **coordenadores**: Usuários do sistema (com senha hash bcrypt, session_token para persistência)
+- **participantes**: Dados dos participantes com:
+  - `nome_completo_encrypted` e `email_encrypted` (BLOB, Fernet)
+  - `email_hash` (SHA-256 para lookups, STRING 64 chars)
+  - `hash_validacao` (HMAC-SHA256 para validação de certificados, STRING 64 chars, UNIQUE)
+  - Dados de validação e participação
+- **coordenador_cidade_link**: Relacionamento N:N entre coordenadores e cidades
+- **auditoria**: Registro de ações do sistema (timestamp, coordenador_id, ação, detalhes)
+
+### Migrations Necessárias
+
+Se estiver atualizando de uma versão anterior, execute:
+
+```bash
+# Adicionar coluna hash_validacao se não existir
+python utils/add_hash_validacao_column.py
+```
+
+Este script verifica e adiciona a coluna `hash_validacao` na tabela `participantes` de forma segura (idempotente).
 
 ## 🐛 Solução de Problemas
 
@@ -362,10 +536,24 @@ Para dúvidas ou suporte:
 
 ## 🎯 Próximos Passos
 
-- [ ] Implementar testes unitários automatizados
-- [ ] Adicionar suporte a múltiplos idiomas
-- [ ] Dashboard avançado com analytics
+- [x] ✅ Sistema de validação de certificados com HMAC-SHA256
+- [x] ✅ Configuração visual de certificados por ano do evento
+- [x] ✅ Sessão persistente com cookie para coordenadores
+- [x] ✅ Sistema de notificações por email para participantes
+- [ ] Implementar testes unitários automatizados (pytest)
+- [ ] Adicionar suporte a múltiplos idiomas (i18n)
+- [ ] Dashboard avançado com analytics e gráficos
 - [ ] API REST para integração externa
+- [ ] Exportação de dados em formatos CSV/Excel
+
+
+## 📚 Documentação Adicional
+
+- **[CERTIFICATE_VALIDATION.md](docs/CERTIFICATE_VALIDATION.md)** - Documentação técnica completa do sistema de validação
+- **[QUICKSTART_VALIDATION.md](docs/QUICKSTART_VALIDATION.md)** - Guia rápido de instalação e configuração
+- **[static/README.md](static/README.md)** - Documentação sobre estrutura de imagens e configurações visuais
+- **[CLAUDE.md](CLAUDE.md)** - Brief original do projeto com requisitos completos
+- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Guia de arquitetura para desenvolvimento com IA
 
 ---
 

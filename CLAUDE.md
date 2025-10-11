@@ -124,6 +124,45 @@ pint-of-science/
 └── Home.py               # Página principal (inscrição, download e LOGIN)
 ```
 
+## Development Workflows
+
+### Running the Application
+
+```bash
+# Activate environment (using uv recommended)
+source .venv/bin/activate  # or `source pint/bin/activate`
+
+# Run Streamlit
+streamlit run Home.py
+
+# Access at http://localhost:8501
+```
+
+### Database Initialization
+
+Database auto-initializes on first `db_manager` usage. To manually reset:
+
+```bash
+rm data/pint_of_science.db
+python utils/seed_database.py  # Creates initial data structure
+python test_system.py  # Re-creates with test data
+```
+
+### Testing
+
+```bash
+# Run system validation tests
+python test_system.py
+
+# Expected output: Connection tests, encryption tests, database checks
+
+# Run pytest unit/integration tests
+pytest tests/
+
+# Run with coverage
+pytest tests/ --cov=app
+```
+
 ## 5. Esquema do Banco de Dados e Modelos de Dados
 
 **Tarefa:** Crie os modelos Pydantic (para validação de dados) e os modelos SQLAlchemy (para o ORM) correspondentes às seguintes tabelas:

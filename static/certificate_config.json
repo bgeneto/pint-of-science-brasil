@@ -1,0 +1,41 @@
+{
+  "2024": {
+    "cores": {
+      "cor_primaria": "#e74c3c",
+      "cor_secundaria": "#c0392b",
+      "cor_texto": "#2c3e50",
+      "cor_destaque": "#f39c12"
+    },
+    "imagens": {
+      "pint_logo": "2024/pint_logo.png",
+      "pint_signature": "2024/pint_signature.png",
+      "sponsor_logo": "2024/sponsor_logo.png"
+    }
+  },
+  "2025": {
+    "cores": {
+      "cor_primaria": "#e74c3c",
+      "cor_secundaria": "#c0392b",
+      "cor_texto": "#2c3e50",
+      "cor_destaque": "#f39c12"
+    },
+    "imagens": {
+      "pint_logo": "2025/pint_logo.png",
+      "pint_signature": "2025/pint_signature.png",
+      "sponsor_logo": "2025/sponsor_logo.png"
+    }
+  },
+  "_default": {
+    "cores": {
+      "cor_primaria": "#e74c3c",
+      "cor_secundaria": "#c0392b",
+      "cor_texto": "#2c3e50",
+      "cor_destaque": "#f39c12"
+    },
+    "imagens": {
+      "pint_logo": "pint_logo.png",
+      "pint_signature": "pint_signature.png",
+      "sponsor_logo": "sponsor_logo.png"
+    }
+  }
+}

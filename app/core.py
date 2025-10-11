@@ -26,6 +26,7 @@ class Settings:
 
         # Configurações de Criptografia
         self.encryption_key: Optional[str] = os.getenv("ENCRYPTION_KEY")
+        self.certificate_secret_key: Optional[str] = os.getenv("CERTIFICATE_SECRET_KEY")
 
         # Configurações do Serviço de E-mail (Brevo)
         self.brevo_api_key: Optional[str] = os.getenv("BREVO_API_KEY")
@@ -46,6 +47,7 @@ class Settings:
         self.app_name: str = os.getenv("APP_NAME", "Pint of Science Certificate System")
         self.app_version: str = os.getenv("APP_VERSION", "1.0.0")
         self.debug: bool = os.getenv("DEBUG", "false").lower() == "true"
+        self.base_url: str = os.getenv("BASE_URL", "http://localhost:8501")
 
         # Configurações de Auditoria
         self.enable_audit_logging: bool = (
@@ -73,6 +75,15 @@ class Settings:
                 "ENCRYPTION_KEY não configurada! "
                 "Gere uma chave com: from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
             )
+
+        if not self.certificate_secret_key:
+            print(
+                "⚠️ AVISO: CERTIFICATE_SECRET_KEY não configurada. "
+                "Gerando chave temporária (NÃO use em produção!)."
+            )
+            import secrets
+
+            self.certificate_secret_key = secrets.token_hex(32)
 
         if not self.brevo_api_key:
             print(
