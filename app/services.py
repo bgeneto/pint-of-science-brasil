@@ -680,7 +680,7 @@ class GeradorCertificado:
 
                     # Calcular dimensões - ALTURA FIXA = altura da página
                     new_height = page_height  # Altura total da página
-                    max_width = sidebar_width - 40  # margem de 20 em cada lado
+                    max_width = sidebar_width  # - 20 - 20 # margem de 20 em cada lado
 
                     # Calcular largura mantendo aspect ratio
                     ratio = new_height / img_height

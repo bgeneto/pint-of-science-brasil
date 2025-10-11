@@ -83,43 +83,11 @@ def mostrar_informacoes_usuario():
     user_info = get_current_user_info()
 
     if user_info:
-        col1, col2 = st.columns([3, 1])
-
-        with col1:
-            st.info(
-                f"👤 **Superadmin:** {user_info['name']} ({user_info['email']})  \n"
-                f"⏰ **Login:** {formatar_data_exibicao(user_info.get('login_time', ''))}  \n"
-                f"🔐 **Acesso:** Total (Superadmin)"
-            )
-
-        with col2:
-            # Get current token for navigation
-            current_token = st.query_params.get(
-                "session_token"
-            ) or st.session_state.get("persistent_session_token")
-            if current_token:
-                validation_url = (
-                    f"pages/1_👨‍👨‍👦‍👦_Participantes.py?session_token={current_token}"
-                )
-                st.markdown(
-                    f"""
-                <a href="{validation_url}" target="_self" style="
-                    display: inline-block;
-                    padding: 0.5rem 1rem;
-                    background: #27ae60;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 5px;
-                    font-weight: bold;
-                    text-align: center;
-                    margin-top: 1rem;
-                ">✅ Validação</a>
-                """,
-                    unsafe_allow_html=True,
-                )
-            else:
-                if st.button("✅ Validação", type="secondary"):
-                    st.switch_page("pages/1_👨‍👨‍👦‍👦_Participantes.py")
+        st.info(
+            f"👤 **Superadmin:** {user_info['name']} ({user_info['email']})  \n"
+            f"⏰ **Login:** {formatar_data_exibicao(user_info.get('login_time', ''))}  \n"
+            f"🔐 **Acesso:** Total (Superadmin)"
+        )
 
 
 def mostrar_estatisticas_gerais():

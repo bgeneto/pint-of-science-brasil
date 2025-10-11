@@ -591,7 +591,7 @@ def processar_validacao(
 
     with col2:
         if is_superadmin and mudancas:
-            if st.button("💾 Salvar Edições", type="secondary", width="stretch"):
+            if st.button("💾 Salvar Edições", type="primary", width="stretch"):
                 with st.spinner("Salvando edições..."):
                     # Check if any changes affect hash (nome or email)
                     hash_affected = any(
