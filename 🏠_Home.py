@@ -462,7 +462,7 @@ def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
                 data=pdf_bytes,
                 file_name=nome_arquivo,
                 mime="application/pdf",
-                use_container_width=True,
+                width="stretch",
             )
             return True
         else:
@@ -491,7 +491,7 @@ def formulario_login_coordenador() -> bool:
             )
 
         submit_button = st.form_submit_button(
-            "🔓 Entrar", type="primary", use_container_width=True
+            "🔓 Entrar", type="primary", width="stretch"
         )
 
         if submit_button:
@@ -562,14 +562,6 @@ def main():
         if is_user_logged_in():
             mostrar_menu_usuario_logado()
 
-            st.markdown("### 📋 Acesso Rápido")
-            if st.button("✅ Validação de Participação", width="stretch"):
-                st.switch_page("pages/1_👨‍👨‍👦‍👦_Participantes.py")
-
-            if get_current_user_info().get("is_superadmin"):
-                if st.button("⚙️ Administração", width="stretch"):
-                    st.switch_page("pages/2_⚙️_Administração.py")
-
         st.markdown("### 📊 Status do Sistema")
 
         # Mostrar informações do sistema
@@ -580,9 +572,9 @@ def main():
 
             if health["status"] == "healthy":
                 st.success("✅ Sistema Online")
-                st.info(
-                    f"📊 {health.get('details', {}).get('table_counts', {}).get('participantes', 0)} participantes"
-                )
+                # st.info(
+                #    f"📊 {health.get('details', {}).get('table_counts', {}).get('participantes', 0)} participantes"
+                # )
             elif health["status"] == "warning":
                 st.warning("⚠️ Sistema Online (sem dados)")
             else:

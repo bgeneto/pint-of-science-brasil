@@ -209,6 +209,22 @@ class AuthManager:
                     coordenador = coord_repo.get_by_email(username)
 
                     if coordenador:
+                        # Buscar cidades associadas ao coordenador
+                        cidades_ids = []
+                        if not coordenador.is_superadmin:
+                            # Para coordenadores normais, buscar cidades associadas
+                            from app.models import CoordenadorCidadeLink
+
+                            links = (
+                                session.query(CoordenadorCidadeLink)
+                                .filter_by(coordenador_id=coordenador.id)
+                                .all()
+                            )
+                            cidades_ids = [link.cidade_id for link in links]
+                            logger.info(
+                                f"Coordenador {coordenador.email} associado a {len(cidades_ids)} cidade(s): {cidades_ids}"
+                            )
+
                         # Preencher session state com dados do coordenador
                         st.session_state[SESSION_KEYS["logged_in"]] = True
                         st.session_state[SESSION_KEYS["user_id"]] = coordenador.id
@@ -219,7 +235,7 @@ class AuthManager:
                         )
                         st.session_state[SESSION_KEYS["login_time"]] = datetime.now()
                         st.session_state[SESSION_KEYS["last_activity"]] = datetime.now()
-                        st.session_state[SESSION_KEYS["allowed_cities"]] = []
+                        st.session_state[SESSION_KEYS["allowed_cities"]] = cidades_ids
 
                         # Registrar auditoria
                         if settings.enable_audit_logging:
@@ -347,7 +363,7 @@ class AuthManager:
         """Verifica se o usuário está autenticado. Se não, mostra erro e para."""
         if not self.is_session_valid():
             st.error("⚠️ Você precisa estar logado para acessar esta página.")
-            if st.button("↩️ Ir para Login", type="primary", use_container_width=True):
+            if st.button("↩️ Ir para Login", type="primary", width="stretch"):
                 st.session_state["redirect_to_login"] = True
                 st.switch_page("🏠_Home.py")
             st.stop()

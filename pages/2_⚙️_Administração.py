@@ -46,6 +46,25 @@ except Exception:
 # Proteção de acesso - agora é simples!
 require_superadmin()
 
+# Sidebar - Mostrar informações do usuário logado
+with st.sidebar:
+    user_info = get_current_user_info()
+    if user_info:
+        st.markdown("### 👤 Usuário Logado")
+        st.write(f"**Nome:** {user_info['name']}")
+        st.write(f"**E-mail:** {user_info['email']}")
+        st.write(
+            f"**Tipo:** {'Superadmin' if user_info['is_superadmin'] else 'Coordenador'}"
+        )
+
+        if user_info.get("login_time"):
+            tempo_login = formatar_data_exibicao(user_info["login_time"])
+            st.write(f"**Login:** {tempo_login}")
+
+        if st.button("🔒 Sair", key="logout_btn", width="stretch"):
+            auth_manager.clear_session()
+            st.rerun()
+
 # CSS customizado
 st.markdown(
     """
@@ -465,6 +484,119 @@ def salvar_alteracoes_coordenadores(
 
     except Exception as e:
         st.error(f"❌ Erro ao salvar alterações: {str(e)}")
+
+
+def gerenciar_associacoes_coordenador_cidade():
+    """Gerencia as associações entre coordenadores e cidades."""
+    st.subheader("🗺️ Associar Coordenadores a Cidades")
+
+    # Mostrar mensagem de sucesso se existir
+    if "show_success_associacao" in st.session_state:
+        st.success(st.session_state["show_success_associacao"])
+        del st.session_state["show_success_associacao"]
+
+    st.markdown(
+        """
+        💡 **Importante:**
+        - Superadmins têm acesso a todas as cidades automaticamente
+        - Coordenadores regulares só veem e editam participantes das cidades associadas
+        - Use esta seção para definir quais cidades cada coordenador pode gerenciar
+        """
+    )
+
+    try:
+        with db_manager.get_db_session() as session:
+            from app.db import get_coordenador_repository, get_cidade_repository
+            from app.models import CoordenadorCidadeLink
+
+            coord_repo = get_coordenador_repository(session)
+            cidade_repo = get_cidade_repository(session)
+
+            # Buscar coordenadores não-superadmin
+            coordenadores = [
+                c for c in coord_repo.get_all(Coordenador) if not c.is_superadmin
+            ]
+            cidades = cidade_repo.get_all_ordered()
+
+            if not coordenadores:
+                st.info("📋 Nenhum coordenador (não-superadmin) cadastrado.")
+                return
+
+            if not cidades:
+                st.warning("⚠️ Nenhuma cidade cadastrada. Cadastre cidades primeiro.")
+                return
+
+            # Criar mapa de cidades por ID
+            cidades_map = {c.id: f"{c.nome}-{c.estado}" for c in cidades}
+
+            # Para cada coordenador, mostrar suas cidades associadas
+            for coord in coordenadores:
+                with st.expander(f"👤 {coord.nome} ({coord.email})", expanded=False):
+                    # Buscar cidades já associadas
+                    links_existentes = (
+                        session.query(CoordenadorCidadeLink)
+                        .filter_by(coordenador_id=coord.id)
+                        .all()
+                    )
+                    cidades_atuais_ids = [link.cidade_id for link in links_existentes]
+
+                    # Preparar options e default como tuplas para manter consistência
+                    cidades_options = [(c.id, f"{c.nome}-{c.estado}") for c in cidades]
+                    cidades_default = [
+                        (cid, cidades_map[cid])
+                        for cid in cidades_atuais_ids
+                        if cid in cidades_map
+                    ]
+
+                    # Multiselect com cidades
+                    cidades_selecionadas = st.multiselect(
+                        "Cidades associadas",
+                        options=cidades_options,
+                        default=cidades_default,
+                        format_func=lambda x: x[1] if isinstance(x, tuple) else str(x),
+                        key=f"cidades_coord_{coord.id}",
+                        help="Selecione as cidades que este coordenador pode gerenciar",
+                    )
+
+                    # Extrair apenas os IDs
+                    cidades_ids_selecionados = [
+                        c[0] if isinstance(c, tuple) else c
+                        for c in cidades_selecionadas
+                    ]
+
+                    col1, col2 = st.columns([3, 1])
+                    with col2:
+                        if st.button(
+                            "💾 Salvar",
+                            key=f"salvar_cidades_{coord.id}",
+                            type="primary",
+                        ):
+                            try:
+                                # Deletar associações antigas
+                                for link in links_existentes:
+                                    session.delete(link)
+
+                                # Criar novas associações
+                                for cidade_id in cidades_ids_selecionados:
+                                    novo_link = CoordenadorCidadeLink(
+                                        coordenador_id=coord.id, cidade_id=cidade_id
+                                    )
+                                    session.add(novo_link)
+
+                                session.commit()
+
+                                # Armazenar mensagem de sucesso no session_state
+                                st.session_state["show_success_associacao"] = (
+                                    f"✅ Associações de {coord.nome} atualizadas com sucesso!"
+                                )
+                                st.rerun()
+                            except Exception as e:
+                                session.rollback()
+                                st.error(f"❌ Erro ao salvar associações: {str(e)}")
+
+    except Exception as e:
+        st.error(f"❌ Erro ao gerenciar associações: {str(e)}")
+        logger.error(f"Erro em gerenciar_associacoes_coordenador_cidade: {str(e)}")
 
 
 def formulario_criar_evento() -> bool:
@@ -1380,7 +1512,7 @@ def configurar_cores_certificado():
     if st.button(
         f"💾 Salvar Configuração de Cores para {ano_selecionado}",
         type="primary",
-        use_container_width=True,
+        width="stretch",
     ):
         nova_config = {
             "cor_primaria": cor_primaria,
@@ -1447,6 +1579,10 @@ def main():
         st.markdown("---")
         # Lista de coordenadores
         listar_coordenadores()
+
+        st.markdown("---")
+        # Associações coordenador-cidade
+        gerenciar_associacoes_coordenador_cidade()
 
     with tab2:
         st.markdown("---")

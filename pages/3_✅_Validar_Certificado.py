@@ -61,7 +61,7 @@ else:
     )
 
 # Botão de validação
-if st.button("🔍 Validar Certificado", type="primary", use_container_width=True):
+if st.button("🔍 Validar Certificado", type="primary", width="stretch"):
     if not hash_validacao or len(hash_validacao) != 64:
         st.error("❌ Código de validação inválido! Deve ter exatamente 64 caracteres.")
     else:

@@ -37,6 +37,25 @@ except Exception:
 # Proteção de acesso - agora é simples!
 require_login()
 
+# Sidebar - Mostrar informações do usuário logado
+with st.sidebar:
+    user_info = get_current_user_info()
+    if user_info:
+        st.markdown("### 👤 Usuário Logado")
+        st.write(f"**Nome:** {user_info['name']}")
+        st.write(f"**E-mail:** {user_info['email']}")
+        st.write(
+            f"**Tipo:** {'Superadmin' if user_info['is_superadmin'] else 'Coordenador'}"
+        )
+
+        if user_info.get("login_time"):
+            tempo_login = formatar_data_exibicao(user_info["login_time"])
+            st.write(f"**Login:** {tempo_login}")
+
+        if st.button("🔒 Sair", key="logout_btn", width="stretch"):
+            auth_manager.clear_session()
+            st.rerun()
+
 # CSS customizado
 st.markdown(
     """
@@ -127,12 +146,34 @@ def carregar_dados_validacao() -> tuple:
                     "nome_funcao": funcao.nome_funcao,
                 }
 
+            # Verificar se é coordenador com cidades restritas
+            is_superadmin = st.session_state.get(SESSION_KEYS["is_superadmin"], False)
+            allowed_cities = st.session_state.get(SESSION_KEYS["allowed_cities"], [])
+
             # Buscar participantes (extrair dados dentro da sessão)
             participantes_data = []
             if evento_info:
-                participantes_raw = participante_repo.get_by_evento_cidade(
-                    evento_info["id"]
-                )
+                if is_superadmin:
+                    # Superadmin vê todos os participantes
+                    participantes_raw = participante_repo.get_by_evento_cidade(
+                        evento_info["id"]
+                    )
+                elif allowed_cities:
+                    # Coordenador vê apenas participantes de suas cidades
+                    participantes_raw = []
+                    for cidade_id in allowed_cities:
+                        participantes_cidade = participante_repo.get_by_evento_cidade(
+                            evento_info["id"], cidade_id
+                        )
+                        participantes_raw.extend(participantes_cidade)
+                else:
+                    # Coordenador sem cidades associadas não vê nenhum participante
+                    participantes_raw = []
+                    st.warning(
+                        "⚠️ Você não está associado a nenhuma cidade. "
+                        "Entre em contato com o administrador para associar cidades ao seu perfil."
+                    )
+
                 print(
                     f"DEBUG: Data loading - Found {len(participantes_raw)} participants for event {evento_info['id']}"
                 )
@@ -297,8 +338,12 @@ def tabela_validacao_participantes(
 
     st.subheader("📋 Validação de Participação")
 
-    # Check if user is superadmin
+    # Check if user is superadmin or regular coordinator
     is_superadmin = st.session_state.get(SESSION_KEYS["is_superadmin"], False)
+    allowed_cities = st.session_state.get(SESSION_KEYS["allowed_cities"], [])
+
+    # Coordenadores podem editar participantes de suas cidades
+    can_edit = is_superadmin or bool(allowed_cities)
 
     if is_superadmin:
         st.write(
@@ -306,6 +351,13 @@ def tabela_validacao_participantes(
         )
         st.info(
             "💡 **Superadmin:** Você pode editar nome, email, cidade, função e título da apresentação."
+        )
+    elif allowed_cities:
+        st.write(
+            "Marque os participantes que deseja confirmar (para que seja possível emitir certificado):"
+        )
+        st.info(
+            "💡 **Coordenador:** Você pode editar os dados dos participantes das suas cidades associadas."
         )
     else:
         st.write(
@@ -357,20 +409,20 @@ def tabela_validacao_participantes(
             "Nome": st.column_config.TextColumn(
                 "Nome",
                 width="large",
-                disabled=not is_superadmin,
+                disabled=not can_edit,
                 help=(
-                    "Editar nome (somente superadmin)"
-                    if is_superadmin
+                    "Editar nome (coordenadores e superadmin)"
+                    if can_edit
                     else "Somente leitura"
                 ),
             ),
             "Email": st.column_config.TextColumn(
                 "Email",
                 width="large",
-                disabled=not is_superadmin,
+                disabled=not can_edit,
                 help=(
-                    "Editar email (somente superadmin)"
-                    if is_superadmin
+                    "Editar email (coordenadores e superadmin)"
+                    if can_edit
                     else "Somente leitura"
                 ),
             ),
@@ -378,7 +430,7 @@ def tabela_validacao_participantes(
                 "Cidade",
                 options=cidade_options,
                 width="medium",
-                disabled=not is_superadmin,
+                disabled=not is_superadmin,  # Apenas superadmin pode trocar cidade
                 help=(
                     "Selecionar cidade (somente superadmin)"
                     if is_superadmin
@@ -389,30 +441,30 @@ def tabela_validacao_participantes(
                 "Função",
                 options=funcao_options,
                 width="medium",
-                disabled=not is_superadmin,
+                disabled=not can_edit,
                 help=(
-                    "Selecionar função (somente superadmin)"
-                    if is_superadmin
+                    "Selecionar função (coordenadores e superadmin)"
+                    if can_edit
                     else "Somente leitura"
                 ),
             ),
             "Título Apresentação": st.column_config.TextColumn(
                 "Título Apresentação",
                 width="large",
-                disabled=not is_superadmin,
+                disabled=not can_edit,
                 help=(
-                    "Editar título (somente superadmin)"
-                    if is_superadmin
+                    "Editar título (coordenadores e superadmin)"
+                    if can_edit
                     else "Somente leitura"
                 ),
             ),
             "Datas Participação": st.column_config.TextColumn(
                 "Datas Participação",
                 width="medium",
-                disabled=not is_superadmin,
+                disabled=not can_edit,
                 help=(
-                    "Editar datas (somente superadmin)"
-                    if is_superadmin
+                    "Editar datas (coordenadores e superadmin)"
+                    if can_edit
                     else "Somente leitura"
                 ),
             ),
@@ -445,8 +497,12 @@ def processar_validacao(
         "" if no action was taken
     """
 
-    # Check if user is superadmin
+    # Check if user is superadmin or regular coordinator
     is_superadmin = st.session_state.get(SESSION_KEYS["is_superadmin"], False)
+    allowed_cities = st.session_state.get(SESSION_KEYS["allowed_cities"], [])
+
+    # Coordenadores podem editar participantes de suas cidades
+    can_edit = is_superadmin or bool(allowed_cities)
 
     # Identificar participantes que foram marcados para validação
     selecionados = df_editado[df_editado["Selecionado"] == True]
@@ -468,9 +524,9 @@ def processar_validacao(
             f"{'✅' if should_validate else '❌'} {action_text.title()} Selecionados"
         )
 
-    # Detectar mudanças em campos editáveis (somente para superadmins)
+    # Detectar mudanças em campos editáveis (para superadmins e coordenadores)
     mudancas = []
-    if is_superadmin:
+    if can_edit:
         print(
             f"DEBUG: Change detection - df_original shape: {df_original.shape}, df_editado shape: {df_editado.shape}"
         )
@@ -590,7 +646,7 @@ def processar_validacao(
                     st.error(f"❌ Erro ao {action_text} participantes: {mensagem}")
 
     with col2:
-        if is_superadmin and mudancas:
+        if can_edit and mudancas:
             if st.button("💾 Salvar Edições", type="primary", width="stretch"):
                 with st.spinner("Salvando edições..."):
                     # Check if any changes affect hash (nome or email)
@@ -603,12 +659,6 @@ def processar_validacao(
 
                 if sucesso:
                     st.success("🎉 Edições salvas com sucesso!")
-                    if hash_affected:
-                        st.warning(
-                            "⚠️ **Atenção:** O hash de validação do certificado foi regenerado automaticamente "
-                            "devido à alteração de nome ou email. O certificado antigo ficará inválido e "
-                            "um novo certificado deverá ser gerado."
-                        )
                     return "edicao"
                 else:
                     st.error("❌ Erro ao salvar edições.")
@@ -724,6 +774,10 @@ def mostrar_filtros(df_participantes: pd.DataFrame) -> pd.DataFrame:
 
     st.subheader("🔍 Filtros")
 
+    # Check if user is superadmin
+    is_superadmin = st.session_state.get(SESSION_KEYS["is_superadmin"], False)
+    allowed_cities = st.session_state.get(SESSION_KEYS["allowed_cities"], [])
+
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -735,13 +789,20 @@ def mostrar_filtros(df_participantes: pd.DataFrame) -> pd.DataFrame:
         )
 
     with col2:
-        # Filtro por cidade
-        cidades_disponiveis = ["Todas"] + sorted(
-            df_participantes["Cidade"].unique().tolist()
-        )
-        cidade_filter = st.selectbox(
-            "Cidade", options=cidades_disponiveis, help="Filtrar por cidade"
-        )
+        # Filtro por cidade (desabilitado para coordenadores, pois já filtrado automaticamente)
+        if is_superadmin:
+            cidades_disponiveis = ["Todas"] + sorted(
+                df_participantes["Cidade"].unique().tolist()
+            )
+            cidade_filter = st.selectbox(
+                "Cidade", options=cidades_disponiveis, help="Filtrar por cidade"
+            )
+        else:
+            # Para coordenadores, mostrar info das cidades associadas
+            if allowed_cities:
+                cidades_coord = sorted(df_participantes["Cidade"].unique().tolist())
+                st.info(f"🏙️ **Suas cidades:** {', '.join(cidades_coord)}")
+            cidade_filter = "Todas"  # Não aplicar filtro adicional
 
     with col3:
         # Filtro por função
