@@ -14,6 +14,7 @@ import time
 
 # Importar módulos do sistema
 from app.auth import require_login, get_current_user_info, auth_manager, SESSION_KEYS
+from app.core import settings
 from app.db import db_manager
 from app.models import Evento, Cidade, Funcao, Participante
 from app.services import servico_criptografia, validar_participantes
@@ -21,6 +22,13 @@ from app.utils import formatar_data_exibicao, limpar_texto
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+# Configuração da página
+st.set_page_config(
+    page_title=f"Participantes - {settings.app_name}",
+    page_icon="👨‍👨‍👦‍👦",
+    layout="wide",
+)
 
 # CRITICAL: Check authentication cookie BEFORE require_login
 # This restores the session from cookie if it exists
@@ -52,7 +60,7 @@ with st.sidebar:
             tempo_login = formatar_data_exibicao(user_info["login_time"])
             st.write(f"**Login:** {tempo_login}")
 
-        if st.button("🔒 Sair", key="logout_btn", width="stretch"):
+        if st.button("🔒 Sair", key="logout_btn", width="content"):
             auth_manager.clear_session()
             st.rerun()
 
@@ -476,7 +484,7 @@ def tabela_validacao_participantes(
             ),
         },
         hide_index=True,
-        width="stretch",
+        width="content",
         num_rows="dynamic",
     )
 
@@ -630,7 +638,7 @@ def processar_validacao(
 
     with col1:
         if not selecionados.empty:
-            if st.button(button_text, type="primary", width="stretch"):
+            if st.button(button_text, type="primary", width="content"):
                 with st.spinner(f"{action_text.title()}ndo participantes..."):
                     # Preparar lista de status para toggle
                     validation_statuses = [should_validate] * len(selecionados)
@@ -647,7 +655,7 @@ def processar_validacao(
 
     with col2:
         if can_edit and mudancas:
-            if st.button("💾 Salvar Edições", type="primary", width="stretch"):
+            if st.button("💾 Salvar Edições", type="primary", width="content"):
                 with st.spinner("Salvando edições..."):
                     # Check if any changes affect hash (nome or email)
                     hash_affected = any(
@@ -889,7 +897,6 @@ def main():
             st.rerun()
 
     # Rodapé
-    st.markdown("---")
     st.markdown(
         """
     <div style='text-align: center; color: #666; padding: 20px;'>

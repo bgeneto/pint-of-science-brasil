@@ -29,9 +29,9 @@ from app.utils import validar_email, formatar_data_exibicao, limpar_texto
 
 # Configuração da página
 st.set_page_config(
-    page_title=f"{settings.app_name}",
+    page_title=f"Home - {settings.app_name}",
     page_icon="🍺",
-    layout="wide",
+    layout="centered",
     initial_sidebar_state="expanded",
 )
 
@@ -295,7 +295,7 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
 
         # Botão de envio
         submit_button = st.form_submit_button(
-            "🚀 Realizar Inscrição", type="primary", width="stretch"
+            "🚀 Realizar Inscrição", type="primary", width="content"
         )
 
         if submit_button:
@@ -424,7 +424,7 @@ def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
         )
 
         submit_button = st.form_submit_button(
-            "📥 Baixar Certificado", type="primary", width="stretch"
+            "📥 Baixar Certificado", type="primary", width="content"
         )
 
     # Process form submission OUTSIDE the form context
@@ -473,7 +473,7 @@ def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
                 data=pdf_bytes,
                 file_name=nome_arquivo,
                 mime="application/pdf",
-                width="stretch",
+                width="content",
             )
             return True
         else:
@@ -502,7 +502,7 @@ def formulario_login_coordenador() -> bool:
             )
 
         submit_button = st.form_submit_button(
-            "🔓 Entrar", type="primary", width="stretch"
+            "🔓 Entrar", type="primary", width="content"
         )
 
         if submit_button:
@@ -538,7 +538,7 @@ def mostrar_menu_usuario_logado() -> None:
             tempo_login = formatar_data_exibicao(user_info["login_time"])
             st.sidebar.write(f"**Login:** {tempo_login}")
 
-        if st.sidebar.button("🔒 Sair", width="stretch"):
+        if st.sidebar.button("🔒 Sair", width="content"):
             auth_manager.clear_session()
             st.rerun()
 
@@ -642,11 +642,10 @@ def main():
             formulario_login_coordenador()
 
     # Rodapé
-    st.markdown("---")
     st.markdown(
         """
     <div style='text-align: center; color: #666; padding: 20px;'>
-        <p><strong>Pint of Science Brasil</strong> - Sistema de Inscrição e Emissão de Certificados</p>
+        <p><strong>© Pint of Science Brasil</strong> - Sistema de Inscrição e Emissão de Certificados</p>
         <p>Desenvolvido com ❤️ para a comunidade científica brasileira</p>
     </div>
     """,

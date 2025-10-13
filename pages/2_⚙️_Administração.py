@@ -24,12 +24,20 @@ from app.auth import (
     criar_coordenador,
     auth_manager,
 )
+from app.core import settings
 from app.db import db_manager
 from app.models import Evento, Cidade, Funcao, Coordenador, Participante
 from app.utils import formatar_data_exibicao, limpar_texto, validar_email
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+# Configuração da página
+st.set_page_config(
+    page_title=f"Administração - {settings.app_name}",
+    page_icon="⚙️",
+    layout="centered",
+)
 
 # CRITICAL: Check authentication cookie BEFORE require_superadmin
 # This restores the session from cookie if it exists
@@ -61,7 +69,7 @@ with st.sidebar:
             tempo_login = formatar_data_exibicao(user_info["login_time"])
             st.write(f"**Login:** {tempo_login}")
 
-        if st.button("🔒 Sair", key="logout_btn", width="stretch"):
+        if st.button("🔒 Sair", key="logout_btn", width="content"):
             auth_manager.clear_session()
             st.rerun()
 
@@ -322,7 +330,7 @@ def formulario_criar_coordenador() -> bool:
         # )
 
         submit_button = st.form_submit_button(
-            "👤 Criar Coordenador", type="primary", width="stretch"
+            "👤 Criar Coordenador", type="primary", width="content"
         )
 
         if submit_button:
@@ -757,7 +765,7 @@ def formulario_criar_evento() -> bool:
             )
 
         submit_button = st.form_submit_button(
-            "📅 Criar Evento", type="primary", width="stretch"
+            "📅 Criar Evento", type="primary", width="content"
         )
 
         if submit_button:
@@ -1087,7 +1095,7 @@ def formulario_criar_cidade() -> bool:
             )
 
         submit_button = st.form_submit_button(
-            "🏙️ Criar Cidade", type="primary", width="stretch"
+            "🏙️ Criar Cidade", type="primary", width="content"
         )
 
         if submit_button:
@@ -1157,7 +1165,7 @@ def listar_cidades():
             df = pd.DataFrame(dados)
 
             # Exibir tabela
-            st.dataframe(df, width="stretch")
+            st.dataframe(df, width="content")
 
     except Exception as e:
         st.error(f"❌ Erro ao listar cidades: {str(e)}")
@@ -1175,7 +1183,7 @@ def formulario_criar_funcao() -> bool:
         )
 
         submit_button = st.form_submit_button(
-            "🎭 Criar Função", type="primary", width="stretch"
+            "🎭 Criar Função", type="primary", width="content"
         )
 
         if submit_button:
@@ -1238,7 +1246,7 @@ def listar_funcoes():
             df = pd.DataFrame(dados)
 
             # Exibir tabela
-            st.dataframe(df, width="stretch")
+            st.dataframe(df, width="content")
 
     except Exception as e:
         st.error(f"❌ Erro ao listar funções: {str(e)}")
@@ -1346,8 +1354,8 @@ def gerenciar_imagens_certificado():
         - Selecione o ano do evento para configurar
         - Faça upload das imagens que serão usadas nos certificados daquele ano
         - Formatos aceitos: PNG, JPG, WEBP
-        - Tamanho máximo: 3MB por arquivo
-        - **IMPORTANTE**: Cada ano mantém sua própria configuração visual
+        - Tamanho máximo: 2MB por arquivo
+        - **IMPORTANTE**: Cada ano/evento mantém sua própria configuração visual
         """
     )
 
@@ -1396,8 +1404,8 @@ def gerenciar_imagens_certificado():
 
         if pint_logo_file:
             # Validar tamanho
-            if pint_logo_file.size > 3 * 1024 * 1024:  # 3MB
-                st.error("❌ Arquivo muito grande! Máximo: 3MB")
+            if pint_logo_file.size > 2 * 1024 * 1024:  # 2MB
+                st.error("❌ Arquivo muito grande! Máximo: 2MB")
             else:
                 try:
                     # Salvar arquivo
@@ -1431,8 +1439,8 @@ def gerenciar_imagens_certificado():
         )
 
         if signature_file:
-            if signature_file.size > 3 * 1024 * 1024:
-                st.error("❌ Arquivo muito grande! Máximo: 3MB")
+            if signature_file.size > 2 * 1024 * 1024:
+                st.error("❌ Arquivo muito grande! Máximo: 2MB")
             else:
                 try:
                     sig_path = static_path / "pint_signature.png"
@@ -1468,8 +1476,8 @@ def gerenciar_imagens_certificado():
         )
 
         if sponsor_file:
-            if sponsor_file.size > 3 * 1024 * 1024:
-                st.error("❌ Arquivo muito grande! Máximo: 3MB")
+            if sponsor_file.size > 2 * 1024 * 1024:
+                st.error("❌ Arquivo muito grande! Máximo: 2MB")
             else:
                 try:
                     sponsor_path = static_path / "sponsor_logo.png"
@@ -1555,7 +1563,7 @@ def configurar_cores_certificado():
         🎨 **Personalize as cores:**
         - Selecione o ano do evento para configurar
         - Escolha as cores que serão usadas no design do certificado
-        - **IMPORTANTE**: Cada ano mantém sua própria paleta de cores
+        - **IMPORTANTE**: Cada ano/evento mantém sua própria paleta de cores
         """
     )
 
@@ -1651,7 +1659,7 @@ def configurar_cores_certificado():
     if st.button(
         f"💾 Salvar Configuração de Cores para {ano_selecionado}",
         type="primary",
-        width="stretch",
+        width="content",
     ):
         nova_config = {
             "cor_primaria": cor_primaria,
@@ -1704,8 +1712,6 @@ def main():
     )
 
     with tab1:
-        st.markdown("---")
-
         # Show success message if it exists in session state
         if "show_success_coordenador" in st.session_state:
             st.success(st.session_state["show_success_coordenador"])
@@ -1736,8 +1742,6 @@ def main():
         gerenciar_associacoes_coordenador_cidade()
 
     with tab2:
-        st.markdown("---")
-
         # Show success message if it exists in session state
         if "show_success_evento" in st.session_state:
             st.success(st.session_state["show_success_evento"])
@@ -1752,8 +1756,6 @@ def main():
         listar_eventos()
 
     with tab3:
-        st.markdown("---")
-
         # Show success message if it exists in session state
         if "show_success_cidade" in st.session_state:
             st.success(st.session_state["show_success_cidade"])
@@ -1768,8 +1770,6 @@ def main():
         listar_cidades()
 
     with tab4:
-        st.markdown("---")
-
         # Show success message if it exists in session state
         if "show_success_funcao" in st.session_state:
             st.success(st.session_state["show_success_funcao"])
@@ -1784,7 +1784,6 @@ def main():
         listar_funcoes()
 
     with tab5:
-        st.markdown("---")
         # Gerenciamento de imagens
         gerenciar_imagens_certificado()
 
@@ -1793,7 +1792,6 @@ def main():
         configurar_cores_certificado()
 
     # Rodapé
-    st.markdown("---")
     st.markdown(
         """
     <div style='text-align: center; color: #666; padding: 20px;'>

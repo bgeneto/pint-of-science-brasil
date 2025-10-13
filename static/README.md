@@ -33,21 +33,21 @@ static/
 - **Propósito**: Logo principal do Pint of Science
 - **Localização no certificado**: Canto superior direito
 - **Formato**: PNG/JPG/WEBP
-- **Tamanho máximo**: 3MB
+- **Tamanho máximo**: 2MB
 - **Recomendação**: Fundo transparente, dimensões aproximadas 400x400px
 
 ### `{ano}/pint_signature.png`
 - **Propósito**: Assinatura digital do coordenador geral
 - **Localização no certificado**: Parte inferior central
 - **Formato**: PNG/JPG/WEBP
-- **Tamanho máximo**: 3MB
+- **Tamanho máximo**: 2MB
 - **Recomendação**: Fundo transparente, dimensões aproximadas 600x180px
 
 ### `{ano}/sponsor_logo.png`
 - **Propósito**: Logo do(s) patrocinador(es)
 - **Localização no certificado**: Coluna lateral esquerda (ocupa toda a altura)
 - **Formato**: PNG/JPG/WEBP
-- **Tamanho máximo**: 3MB
+- **Tamanho máximo**: 2MB
 - **Recomendação**: Se houver múltiplos patrocinadores, criar uma composição única com todos os logos empilhados verticalmente
 
 ## Arquivo de Configuração

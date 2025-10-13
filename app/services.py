@@ -360,10 +360,10 @@ class ServicoEmail:
 
                     <div style="text-align: center; margin-top: 30px; padding: 20px; background-color: #e8f4f8; border-radius: 8px;">
                         <p style="margin: 0;">
-                            <em>"Levando a ciência para o bar"</em>
+                            <em>“Levando a ciência para o bar”</em>
                         </p>
                         <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #666;">
-                            Pint of Science Brasil
+                            © Pint of Science Brasil
                         </p>
                     </div>
                 </div>
@@ -432,10 +432,10 @@ class ServicoEmail:
 
                     <div style="text-align: center; margin-top: 30px; padding: 20px; background-color: #e8f4f8; border-radius: 8px;">
                         <p style="margin: 0;">
-                            <em>"Levando a ciência para o bar"</em>
+                            <em>“Levando a ciência para o bar”</em>
                         </p>
                         <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #666;">
-                            Pint of Science Brasil
+                            © Pint of Science Brasil
                         </p>
                     </div>
                 </div>
@@ -1012,7 +1012,7 @@ class GeradorCertificado:
             # Rodapé
             c.setFont("Helvetica-Oblique", 9)
             c.setFillColor(colors.HexColor("#7f8c8d"))
-            footer_text = '"Levando a ciência para o bar"'
+            footer_text = "“Levando a ciência para o bar”"
             c.drawCentredString(content_center_x, 50, footer_text)
 
             # Link de validação

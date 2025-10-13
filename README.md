@@ -366,7 +366,7 @@ Superadmins podem configurar através da aba **"🖼️ Certificado"**:
 1. **Upload de Imagens por Ano**:
    - Selecione o ano do evento
    - Faça upload de 3 imagens: Logo Pint, Assinatura, Logo Patrocinador
-   - Formatos aceitos: PNG, JPG, WEBP (máx. 3MB)
+   - Formatos aceitos: PNG, JPG, WEBP (máx. 2MB)
    - Arquivos salvos automaticamente em `static/{ANO}/`
 
 2. **Personalização de Cores por Ano**:

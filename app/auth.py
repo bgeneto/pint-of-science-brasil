@@ -363,7 +363,7 @@ class AuthManager:
         """Verifica se o usuário está autenticado. Se não, mostra erro e para."""
         if not self.is_session_valid():
             st.error("⚠️ Você precisa estar logado para acessar esta página.")
-            if st.button("↩️ Ir para Login", type="primary", width="stretch"):
+            if st.button("↩️ Ir para Login", type="primary", width="content"):
                 st.session_state["redirect_to_login"] = True
                 st.switch_page("🏠_Home.py")
             st.stop()

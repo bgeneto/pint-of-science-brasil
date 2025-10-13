@@ -14,11 +14,12 @@ from app.db import (
     get_cidade_repository,
     get_funcao_repository,
 )
+from app.core import settings
 from app.models import Participante, Evento, Cidade, Funcao
 from app.services import servico_criptografia
 
 st.set_page_config(
-    page_title="Validar Certificado - Pint of Science Brasil",
+    page_title=f"Validar Certificado - {settings.app_name}",
     page_icon="✅",
     layout="centered",
 )
@@ -34,7 +35,7 @@ st.info(
 
     1. Localize o código de validação no rodapé do seu certificado PDF
     2. Cole o código no campo abaixo
-    3. Clique em "Validar Certificado"
+    3. Clique em “Validar Certificado"
 
     O código de validação tem 64 caracteres (letras e números).
     """
@@ -61,7 +62,7 @@ else:
     )
 
 # Botão de validação
-if st.button("🔍 Validar Certificado", type="primary", width="stretch"):
+if st.button("🔍 Validar Certificado", type="primary", width="content"):
     if not hash_validacao or len(hash_validacao) != 64:
         st.error("❌ Código de validação inválido! Deve ter exatamente 64 caracteres.")
     else:
@@ -249,7 +250,7 @@ st.markdown(
 
 st.markdown(
     '<p style="text-align: center; color: #95a5a6; margin-top: 40px;">'
-    '"Levando a ciência para o bar" - Pint of Science Brasil'
+    "“Levando a ciência para o bar” - © Pint of Science Brasil"
     "</p>",
     unsafe_allow_html=True,
 )
