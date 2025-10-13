@@ -15,7 +15,8 @@ O sistema permite:
 O sistema segue uma arquitetura modular com separação clara de responsabilidades:
 
 ```
-pint-of-science/
+pint-of-science-brasil/
+├── 🏠_Home.py               # Página principal (pública)
 ├── app/                    # Módulos principais
 │   ├── __init__.py        # Inicialização do pacote
 │   ├── core.py            # Configurações e ambiente
@@ -25,14 +26,19 @@ pint-of-science/
 │   ├── services.py        # Lógica de negócio
 │   └── utils.py           # Funções utilitárias
 ├── pages/                 # Páginas restritas
-│   ├── 1_✅_Validação_de_Participantes.py  # Área de coordenadores
-│   └── 2_⚙️_Administração.py             # Área de superadmin
-├── static/                # Arquivos estáticos
-│   └── .gitkeep
-├── Home.py               # Página principal (pública)
-├── requirements.txt      # Dependências Python
-├── .env.example         # Exemplo de configuração
-└── README.md           # Este arquivo
+│   ├── 1_👨‍👨‍👦‍👦_Participantes.py    # Área de coordenadores (validação)
+│   ├── 2_⚙️_Administração.py         # Área de superadmin
+│   └── 3_✅_Validar_Certificado.py   # Validação pública de certificados
+├── static/                # Arquivos estáticos e configurações
+│   ├── certificate_config.json     # Configurações visuais e carga horária
+│   └── 2024/, 2025/               # Imagens por ano do evento
+├── data/                  # Banco de dados SQLite
+├── docs/                  # Documentação técnica
+├── tests/                 # Testes automatizados
+├── utils/                 # Scripts utilitários e migrações
+├── requirements.txt       # Dependências Python
+├── .env.example          # Exemplo de configuração
+└── README.md            # Este arquivo
 ```
 
 ## 🚀 Funcionalidades
@@ -72,7 +78,7 @@ pint-of-science/
 
 ## 📦 Tecnologias Utilizadas
 
-- **Python 3.13+**: Linguagem principal
+- **Python 3.11+**: Linguagem principal
 - **Streamlit**: Framework web
 - **SQLite**: Banco de dados
 - **SQLAlchemy**: ORM para banco de dados
@@ -85,7 +91,7 @@ pint-of-science/
 ## 🛠️ Instalação
 
 ### Pré-requisitos
-- Python 3.13 ou superior
+- Python 3.11 ou superior
 - pip ou uv para gerenciamento de pacotes
 
 ### Passo 1: Clonar o Repositório
@@ -127,22 +133,24 @@ nano .env  # ou use seu editor preferido
 
 Variáveis necessárias:
 ```env
-# Configurações do Banco de Dados
-DATABASE_URL=sqlite:///./data/pint_of_science.db
-
-# Criptografia (gerar com: from cryptography.fernet import Fernet; print(Fernet.generate_key().decode()))
-ENCRYPTION_KEY=sua_chave_de_criptografia_aqui
-
-# Validação de Certificados (gerar com: python -c "import secrets; print(secrets.token_hex(32))")
-CERTIFICATE_SECRET_KEY=chave_secreta_64_caracteres_hex
+# Base Application URL
 BASE_URL=https://seu-dominio.com  # URL base para links de validação
 
-# Configurações do Brevo (opcional, para envio de e-mails)
+# Database Configuration
+DATABASE_URL=sqlite:///./data/pint_of_science.db
+
+# Encryption Key (gerar com: from cryptography.fernet import Fernet; print(Fernet.generate_key().decode()))
+ENCRYPTION_KEY=sua_chave_de_criptografia_aqui
+
+# Certificate Secret Key (gerar com: import secrets; print(secrets.token_hex(32)))
+CERTIFICATE_SECRET_KEY=chave_secreta_64_caracteres_hex
+
+# Brevo Email Service Configuration (opcional)
 BREVO_API_KEY=sua_chave_api_brevo
 BREVO_SENDER_EMAIL=seu_email@dominio.com
 BREVO_SENDER_NAME=Pint of Science Brasil
 
-# Superadmin inicial (opcional)
+# Initial superadmin (opcional, para primeira configuração)
 INITIAL_SUPERADMIN_EMAIL=admin@pintofscience.com
 INITIAL_SUPERADMIN_PASSWORD=senha_segura_aqui
 INITIAL_SUPERADMIN_NAME=Administrador
@@ -153,6 +161,7 @@ INITIAL_SUPERADMIN_NAME=Administrador
 - `CERTIFICATE_SECRET_KEY`: Recomendada. Se não configurada, uma chave temporária será gerada (não use em produção!)
 - `BASE_URL`: Usado para gerar links de validação nos certificados. Padrão: `http://localhost:8501`
 - Variáveis Brevo: Opcionais. Sistema funciona sem email, mas participantes não receberão notificações
+- Variáveis `INITIAL_SUPERADMIN_*`: Opcionais. Criam um superadmin na primeira inicialização
 
 ### Passo 5: Inicializar o Banco de Dados
 
@@ -173,7 +182,7 @@ Este script irá:
 #### 5.2: Inicialização Manual
 ```bash
 # Executar o sistema pela primeira vez
-streamlit run Home.py
+streamlit run 🏠_Home.py
 ```
 
 Na primeira execução do Streamlit, o sistema irá inicializar o banco automaticamente.
@@ -193,28 +202,24 @@ python tests/test_system.py
 ✅ Todos os arquivos necessários encontrados!
 ✅ Conexão com o banco de dados bem-sucedida!
 ✅ Banco de dados inicializado corretamente!
-   - 10 cidades cadastradas
-   - 35 funções cadastradas
+   - 98 cidades cadastradas
+   - 34 funções cadastradas
    - 1 eventos cadastrados
 🎉 Todos os testes passaram! O sistema está pronto para uso.
 ```
 
 #### 5.4: Dados Iniciais Criados
 
-**Cidades (10 cidades):**
-- São Paulo (SP), Rio de Janeiro (RJ), Belo Horizonte (MG)
-- Porto Alegre (RS), Recife (PE), Salvador (BA)
-- Brasília (DF), Campinas (SP), Fortaleza (CE), Curitiba (PR)
+**Cidades (98 cidades):**
+- Todas as capitais brasileiras e principais cidades do interior
 
-**Funções (6 funções):**
-- Organizador(a), Voluntário(a), Palestrante
-- Moderador(a), Apoio Técnico, Divulgação
+**Funções (34 funções):**
+- Organizador(a), Voluntário(a), Palestrante, Moderador(a)
+- Coordenador(a) Local/Regional, Apoio Técnico, Divulgação
+- E outras funções específicas do evento
 
 **Eventos:**
 - Pint of Science 2025 (datas: 19-21 de maio)
-
-**Superadmin (opcional):**
-- Criado apenas se as variáveis `INITIAL_SUPERADMIN_*` estiverem configuradas no `.env`
 
 **Coordenadores de Teste:**
 - Um coordenador de teste é criado durante os testes: `teste@exemplo.com` / `senha123`
@@ -264,7 +269,7 @@ with db_manager.get_db_session() as session:
 ```
 ### Passo 6: Executar a Aplicação
 ```bash
-streamlit run Home.py
+streamlit run 🏠_Home.py
 ```
 
 A aplicação estará disponível em `http://localhost:8501`
@@ -405,15 +410,20 @@ Superadmins podem configurar através da aba **"🖼️ Certificado"**:
   },
   "2025": {
     "cores": {
-      "cor_primaria": "#3498db",
-      "cor_secundaria": "#2980b9",
-      "cor_texto": "#34495e",
-      "cor_destaque": "#e67e22"
+      "cor_primaria": "#e74c3c",
+      "cor_secundaria": "#c0392b",
+      "cor_texto": "#2c3e50",
+      "cor_destaque": "#f39c12"
     },
     "imagens": {
       "pint_logo": "2025/pint_logo.png",
       "pint_signature": "2025/pint_signature.png",
       "sponsor_logo": "2025/sponsor_logo.png"
+    },
+    "carga_horaria": {
+      "horas_por_dia": 8,
+      "horas_por_evento": 40,
+      "funcoes_evento_completo": [1, 2, 3, 10, 11]
     }
   },
   "_default": {
@@ -435,6 +445,8 @@ Superadmins podem configurar através da aba **"🖼️ Certificado"**:
 ### Sistema de Cálculo Flexível de Carga Horária
 
 O sistema permite **configurar regras específicas de cálculo de carga horária** para cada ano do evento, garantindo flexibilidade na emissão de certificados baseada em funções e participação.
+
+**Importante**: A carga horária não é mais armazenada no banco de dados. Ela é **calculada dinamicamente** a partir das regras configuradas no `certificate_config.json`, garantindo que mudanças nas regras afetem imediatamente novos certificados gerados.
 
 #### Funcionalidades da Configuração
 
@@ -471,7 +483,7 @@ def calcular_carga_horaria(funcao_id, dias_participacao, ano_evento):
         return config['horas_por_evento']  # Ex: 40h sempre
 
     # Caso contrário, calcular por dias
-    return dias_participacao * config['horas_por_dia']  # Ex: 3 dias × 4h = 12h
+    return dias_participacao * config['horas_por_dia']  # Ex: 3 dias × 8h = 24h
 ```
 
 #### Exemplo Prático de Aplicação
@@ -479,9 +491,9 @@ def calcular_carga_horaria(funcao_id, dias_participacao, ano_evento):
 **Configuração para Pint of Science 2025**:
 ```json
 {
-  "horas_por_dia": 4,
+  "horas_por_dia": 8,
   "horas_por_evento": 40,
-  "funcoes_evento_completo": [1, 2, 3]
+  "funcoes_evento_completo": [1, 2, 3, 10, 11]
 }
 ```
 
@@ -489,9 +501,9 @@ def calcular_carga_horaria(funcao_id, dias_participacao, ano_evento):
 
 | Participante | Função | Dias | Carga Horária | Cálculo |
 |--------------|--------|------|---------------|---------|
-| João Silva | Palestrante | 3 dias | **12h** | 3 × 4h |
+| João Silva | Palestrante | 3 dias | **24h** | 3 × 8h |
 | Maria Santos | Coord. Local (ID 1) | 2 dias | **40h** | Total evento |
-| Pedro Costa | Organizador (ID 5) | 1 dia | **4h** | 1 × 4h |
+| Pedro Costa | Organizador (ID 5) | 1 dia | **8h** | 1 × 8h |
 | Ana Lima | Coord. Regional (ID 2) | 3 dias | **40h** | Total evento |
 
 #### Estrutura de Configuração
@@ -504,9 +516,9 @@ def calcular_carga_horaria(funcao_id, dias_participacao, ano_evento):
     "cores": { ... },
     "imagens": { ... },
     "carga_horaria": {
-      "horas_por_dia": 4,
+      "horas_por_dia": 8,
       "horas_por_evento": 40,
-      "funcoes_evento_completo": [1, 2, 3]
+      "funcoes_evento_completo": [1, 2, 3, 10, 11]
     }
   }
 }
@@ -518,8 +530,8 @@ def calcular_carga_horaria(funcao_id, dias_participacao, ano_evento):
 - **Justiça nas Atribuições**: Funções especiais recebem reconhecimento adequado
 - **Automação**: Cálculo automático sem intervenção manual
 - **Transparência**: Regras claras e documentadas
-- **Retrocompatibilidade**: Configuração afeta apenas novas inscrições
-- **Histórico Preservado**: Participantes já cadastrados mantêm valores originais
+- **Atualização Imediata**: Mudanças nas regras afetam novos certificados instantaneamente
+- **Histórico Preservado**: Certificados regenerados sempre usam regras atuais do ano
 
 #### Interface do Usuário
 
@@ -579,7 +591,7 @@ Configure as credenciais do Brevo no `.env` para testar o envio de e-mails.
 
 ### Exemplo com Docker
 ```dockerfile
-FROM python:3.13-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -590,7 +602,7 @@ COPY . .
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "Home.py", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "🏠_Home.py", "--server.address=0.0.0.0"]
 ```
 
 ## 📝 Estrutura do Banco de Dados
@@ -605,19 +617,23 @@ CMD ["streamlit", "run", "Home.py", "--server.address=0.0.0.0"]
   - `email_hash` (SHA-256 para lookups, STRING 64 chars)
   - `hash_validacao` (HMAC-SHA256 para validação de certificados, STRING 64 chars, UNIQUE)
   - Dados de validação e participação
+  - **Carga horária calculada dinamicamente** (não armazenada no banco)
 - **coordenador_cidade_link**: Relacionamento N:N entre coordenadores e cidades
 - **auditoria**: Registro de ações do sistema (timestamp, coordenador_id, ação, detalhes)
 
 ### Migrations Necessárias
 
-Se estiver atualizando de uma versão anterior, execute:
+Se estiver atualizando de uma versão anterior, execute as migrations em ordem:
 
 ```bash
-# Adicionar coluna hash_validacao se não existir
+# 1. Adicionar coluna hash_validacao se não existir (para validação de certificados)
 python utils/add_hash_validacao_column.py
+
+# 2. Remover coluna carga_horaria_calculada (sistema agora calcula dinamicamente)
+python utils/migrate_drop_carga_horaria_column.py
 ```
 
-Este script verifica e adiciona a coluna `hash_validacao` na tabela `participantes` de forma segura (idempotente).
+Estes scripts verificam e modificam a estrutura do banco de forma segura (idempotente).
 
 ## 🐛 Solução de Problemas
 
@@ -653,9 +669,10 @@ Para dúvidas ou suporte:
 
 - [x] ✅ Sistema de validação de certificados com HMAC-SHA256
 - [x] ✅ Configuração visual de certificados por ano do evento
-- [x] ✅ **Configuração de carga horária flexível por ano do evento**
+- [x] ✅ **Configuração de carga horária flexível por ano do evento (calculada dinamicamente)**
 - [x] ✅ Sessão persistente com cookie para coordenadores
 - [x] ✅ Sistema de notificações por email para participantes
+- [x] ✅ **Refatoração: Remoção da coluna carga_horaria_calculada do banco de dados**
 - [ ] Implementar testes unitários automatizados (pytest)
 - [ ] Adicionar suporte a múltiplos idiomas (i18n)
 - [ ] Dashboard avançado com analytics e gráficos

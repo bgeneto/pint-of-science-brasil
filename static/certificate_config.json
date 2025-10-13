@@ -25,7 +25,7 @@
       "sponsor_logo": "2025/sponsor_logo.png"
     },
     "carga_horaria": {
-      "horas_por_dia": 8,
+      "horas_por_dia": 4,
       "horas_por_evento": 40,
       "funcoes_evento_completo": [
         1,

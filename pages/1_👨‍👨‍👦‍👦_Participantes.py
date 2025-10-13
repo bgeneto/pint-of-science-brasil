@@ -112,7 +112,7 @@ def mostrar_informacoes_usuario():
         )
 
 
-def carregar_dados_validacao() -> tuple:
+def carregar_dados_validacao() -> Optional[tuple]:
     """Carrega dados necessários para a validação."""
     try:
         with db_manager.get_db_session() as session:
@@ -215,9 +215,11 @@ def carregar_dados_validacao() -> tuple:
                         }
                     )
 
+            return evento_info, cidades, funcoes, participantes_data
+
     except Exception as e:
         print(f"DEBUG: Error in data loading: {str(e)}")
-        return None, {}, {}, []
+        return None
 
 
 def preparar_dataframe_participantes(
@@ -865,7 +867,14 @@ def main():
     mostrar_informacoes_usuario()
 
     # Carregar dados
-    evento_info, cidades, funcoes, participantes = carregar_dados_validacao()
+    dados = carregar_dados_validacao()
+    if dados is None:
+        st.error(
+            "❌ Erro ao carregar dados do sistema. Por favor, recarregue a página."
+        )
+        return
+
+    evento_info, cidades, funcoes, participantes = dados
 
     if not evento_info:
         st.error("❌ Nenhum evento encontrado. Contate o administrador.")
