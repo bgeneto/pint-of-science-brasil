@@ -187,6 +187,10 @@ class CidadeRepository(BaseRepository):
             .first()
         )
 
+    def get_by_nome(self, nome: str) -> Optional[Cidade]:
+        """Busca uma cidade pelo nome."""
+        return self.session.query(Cidade).filter(Cidade.nome == nome.strip()).first()
+
     def get_all_ordered(self) -> list[Cidade]:
         """Retorna todas as cidades ordenadas por nome e estado."""
         return self.session.query(Cidade).order_by(Cidade.estado, Cidade.nome).all()
@@ -493,40 +497,39 @@ def _create_initial_data(session: Session) -> None:
 
         # Funções de exemplo
         funcoes_data = [
-            "Coordenador(a) Geral",
-            "Coordenador(a) Local",
-            "Coordenador(a) Regional",
+            "Apoio ao Público",
+            "Apoio Logístico",
+            "Assessor(a) de Bar",
+            "Comissão Audiovisual",
+            "Comissão Científica",
+            "Comissão de Divulgação",
+            "Comissão de Infraestrutura e Logística",
+            "Comissão Financeira",
+            "Comissão Organizadora",
+            "Coordenador(a) Acadêmico(a)",
+            "Coordenador(a) Adjunto(a)",
             "Coordenador(a) de Bar",
             "Coordenador(a) de Comunicação",
             "Coordenador(a) de Mídias",
-            "Coordenador(a) Acadêmico(a)",
-            "Coordenador(a) Adjunto(a)",
-            "Vice-Coordenador(a) Geral",
-            "Vice-Coordenador(a) Local",
-            "Vice-Coordenador(a) Regional",
+            "Coordenador(a) Local",
+            "Coordenador(a) Regional",
+            "Designer Gráfico",
+            "Equipe de Apoio",
+            "Equipe de Arte e Design",
+            "Equipe Executora",
+            "Fotógrafo(a)",
+            "Mediador(a)",
+            "Palestrante",
+            "Técnico Audiovisual",
+            "Vice-Coordenador(a) Acadêmico(a)",
+            "Vice-Coordenador(a) Adjunto(a)",
             "Vice-Coordenador(a) de Bar",
             "Vice-Coordenador(a) de Comunicação",
             "Vice-Coordenador(a) de Mídias",
-            "Vice-Coordenador(a) Acadêmico(a)",
-            "Vice-Coordenador(a) Adjunto(a)",
-            "Designer Gráfico",
-            "Equipe de Arte e Design",
-            "Assessor(a) de Bar",
-            "Comissão Organizadora",
-            "Comissão Audiovisual",
-            "Comissão Científica",
-            "Comissão Financeira",
-            "Comissão de Divulgação",
-            "Comissão de Infraestrutura e Logística",
-            "Apoio ao Público",
-            "Apoio Logístico",
-            "Equipe de Apoio",
+            "Vice-Coordenador(a) Geral",
+            "Vice-Coordenador(a) Local",
+            "Vice-Coordenador(a) Regional",
             "Voluntário(a)",
-            "Mediador(a)",
-            "Fotógrafo(a)",
-            "Técnico Audiovisual",
-            "Equipe Executora",
-            "Palestrante",
         ]
 
         funcao_repo = get_funcao_repository(session)

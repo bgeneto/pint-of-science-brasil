@@ -241,49 +241,40 @@ def modal_associar_cidades_coordenador(coordenador_id: int, coordenador_nome: st
                 c[0] if isinstance(c, tuple) else c for c in cidades_selecionadas
             ]
 
-            col1, col2 = st.columns(2)
-
-            with col1:
-                if st.button(
-                    "⏭️ Pular (fazer depois)",
-                    use_container_width=True,
-                    help="Você poderá associar cidades depois na seção abaixo",
-                ):
-                    st.session_state["show_modal_associacao"] = False
-                    st.rerun()
-
-            with col2:
-                if st.button(
-                    "💾 Salvar Associações",
-                    type="primary",
-                    use_container_width=True,
-                    disabled=len(cidades_ids_selecionados) == 0,
-                ):
-                    try:
-                        # Criar novas associações
-                        for cidade_id in cidades_ids_selecionados:
-                            novo_link = CoordenadorCidadeLink(
-                                coordenador_id=coordenador_id, cidade_id=cidade_id
-                            )
-                            session.add(novo_link)
-
-                        session.commit()
-
-                        # Armazenar mensagem de sucesso
-                        cidades_nomes = [
-                            c[1]
-                            for c in cidades_options
-                            if c[0] in cidades_ids_selecionados
-                        ]
-                        st.session_state["show_success_associacao_modal"] = (
-                            f"✅ {len(cidades_ids_selecionados)} cidade(s) associada(s) a {coordenador_nome}: "
-                            f"{', '.join(cidades_nomes)}"
+            if st.button(
+                "💾 Salvar Associações",
+                type="primary",
+                use_container_width=True,
+                disabled=len(cidades_ids_selecionados) == 0,
+            ):
+                try:
+                    # Criar novas associações
+                    for cidade_id in cidades_ids_selecionados:
+                        novo_link = CoordenadorCidadeLink(
+                            coordenador_id=coordenador_id, cidade_id=cidade_id
                         )
-                        st.session_state["show_modal_associacao"] = False
-                        st.rerun()
-                    except Exception as e:
-                        session.rollback()
-                        st.error(f"❌ Erro ao salvar associações: {str(e)}")
+                        session.add(novo_link)
+
+                    session.commit()
+
+                    # Armazenar mensagem de sucesso
+                    cidades_nomes = [
+                        c[1]
+                        for c in cidades_options
+                        if c[0] in cidades_ids_selecionados
+                    ]
+                    st.session_state["show_success_associacao_modal"] = (
+                        f"✅ {len(cidades_ids_selecionados)} cidade(s) associada(s) a {coordenador_nome}: "
+                        f"{', '.join(cidades_nomes)}"
+                    )
+                    # Clear modal state and trigger rerun
+                    del st.session_state["show_modal_associacao"]
+                    del st.session_state["modal_coord_id"]
+                    del st.session_state["modal_coord_nome"]
+                    st.rerun()
+                except Exception as e:
+                    session.rollback()
+                    st.error(f"❌ Erro ao salvar associações: {str(e)}")
 
     except Exception as e:
         st.error(f"❌ Erro ao carregar cidades: {str(e)}")
@@ -444,9 +435,9 @@ def listar_coordenadores():
                 💡 **Dicas de uso:**
                 - Edite os valores diretamente nas células (clique duplo)
                 - Marque/desmarque a coluna "Superadmin" para alterar permissões
-                - **ATENÇÃO**: Não é possível alterar a senha por aqui (use a função de criar para resetar)
-                - Para deletar, deixe o campo Nome vazio
-                - Clique em **Salvar Alterações** para confirmar
+                - Para **deletar**, deixe o campo "Nome" vazio
+                - SEMPRE clique em **💾 Salvar Alterações** para confirmar as alterações
+                - **ATENÇÃO**: Não é possível alterar a senha por aqui
                 """
             )
 
@@ -532,6 +523,20 @@ def salvar_alteracoes_coordenadores(
                         continue
 
                 try:
+                    # Se não é superadmin, deletar associações com cidades primeiro
+                    if not coordenador.is_superadmin:
+                        from app.models import CoordenadorCidadeLink
+
+                        # Deletar todas as associações coordenador-cidade
+                        links_existentes = (
+                            coord_repo.session.query(CoordenadorCidadeLink)
+                            .filter_by(coordenador_id=coordenador.id)
+                            .all()
+                        )
+                        for link in links_existentes:
+                            coord_repo.session.delete(link)
+
+                    # Agora deletar o coordenador
                     coord_repo.delete(coordenador)
                     alteracoes += 1
                 except Exception as e:
@@ -632,6 +637,10 @@ def gerenciar_associacoes_coordenador_cidade():
         with db_manager.get_db_session() as session:
             from app.db import get_coordenador_repository, get_cidade_repository
             from app.models import CoordenadorCidadeLink
+
+            # Force session to reload all data from database
+            # This ensures we see the latest associations created via modal
+            session.expire_all()
 
             coord_repo = get_coordenador_repository(session)
             cidade_repo = get_cidade_repository(session)

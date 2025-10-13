@@ -351,8 +351,9 @@ class ServicoEmail:
 
                         <p><strong>Próximos passos:</strong></p>
                         <ol>
-                            <li>Aguarde a validação da sua participação pelos organizadores</li>
+                            <li>Prepare-se para que sua participação se torne memorável</li>
                             <li>Após sua apresentação, você receberá um e-mail com instruções para download de seu certificado</li>
+                            <li>Seu certificado estará disponível para download em {settings.base_url}</li>
                             <li>Qualquer dúvida, entre em contato com os organizadores da sua cidade</li>
                         </ol>
                     </div>

@@ -248,9 +248,17 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
         with col2:
             cidade_selecionada = st.selectbox(
                 "Cidade *",
-                options=[(f"{c['nome']} - {c['estado']}", c["id"]) for c in cidades],
-                format_func=lambda x: x[0] if x else "Selecione...",
+                options=[("", None)]
+                + [(f"{c['nome']} - {c['estado']}", c["id"]) for c in cidades],
+                format_func=lambda x: x[0] if x and x[0] else "Selecione...",
                 help="Cidade onde você participará do evento",
+                index=0,
+            )
+
+            # Find default index for "Palestrante"
+            default_funcao_index = next(
+                (i for i, f in enumerate(funcoes) if f["nome_funcao"] == "Palestrante"),
+                0,  # Default to first option if "Palestrante" not found
             )
 
             funcao_selecionada = st.selectbox(
@@ -258,6 +266,7 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
                 options=[(f["nome_funcao"], f["id"]) for f in funcoes],
                 format_func=lambda x: x[0] if x else "Selecione...",
                 help="Sua função no evento",
+                index=default_funcao_index,
             )
 
         titulo_apresentacao = st.text_input(
@@ -291,14 +300,16 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
 
         if submit_button:
             # Validação dos dados
-            if not all(
-                [
-                    nome,
-                    email,
-                    cidade_selecionada,
-                    funcao_selecionada,
-                    datas_participacao,
-                ]
+            if (
+                not all(
+                    [
+                        nome,
+                        email,
+                        datas_participacao,
+                    ]
+                )
+                or not cidade_selecionada[1]
+                or not funcao_selecionada[1]
             ):
                 mostrar_mensagem(
                     "error", "Por favor, preencha todos os campos obrigatórios."
@@ -587,16 +598,11 @@ def main():
     # Verificar se há mensagem de sucesso na sessão
     if st.session_state.get("inscricao_realizada"):
         st.success(
-            "🎉 Inscrição realizada com sucesso! Aguarde a validação dos organizadores."
+            "🎉 Inscrição realizada com sucesso! Uma excelente participação para você!"
         )
         st.info(
             f"📧 Enviamos um e-mail de confirmação para: {st.session_state.get('email_inscricao', '')}"
         )
-
-        if st.button("🔄 Fazer Nova Inscrição"):
-            st.session_state["inscricao_realizada"] = False
-            st.session_state["email_inscricao"] = None
-            st.rerun()
 
     # Carregar dados para os formulários
     evento_atual, todos_eventos, cidades, funcoes = carregar_dados_formulario()
@@ -620,14 +626,14 @@ def main():
     # Abas para organizar o conteúdo (usando segmented control para permitir controle programático)
     active_tab = st.segmented_control(
         "Navegação",
-        options=["📝 Inscrição", "📜 Certificados", "🔐 Coordenadores"],
+        options=["📝 Inscrição", "📜 Certificado", "🔐 Coordenadores"],
         key="active_tab",
         label_visibility="collapsed",
     )
 
     if active_tab == "📝 Inscrição":
         formulario_inscricao(evento_atual, cidades, funcoes)
-    elif active_tab == "📜 Certificados":
+    elif active_tab == "📜 Certificado":
         formulario_download_certificado(evento_atual, todos_eventos)
     elif active_tab == "🔐 Coordenadores":
         if is_user_logged_in():
