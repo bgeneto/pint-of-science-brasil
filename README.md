@@ -63,6 +63,12 @@ pint-of-science/
   - Personalização de paleta de cores por ano
   - Preview visual das cores em tempo real
   - Gerenciamento através de interface intuitiva
+- ✅ **Configuração de carga horária por ano do evento**
+  - Definição de horas por dia de participação (1-24h)
+  - Definição de carga horária total do evento (1-200h)
+  - Seleção de funções que recebem carga horária total (independente dos dias)
+  - Cálculo automático baseado em regras configuráveis
+  - Exemplo: Coordenadores recebem 40h independente dos dias trabalhados
 
 ## 📦 Tecnologias Utilizadas
 
@@ -334,6 +340,7 @@ Qualquer pessoa pode validar um certificado em `/Validar_Certificado`.
 3. **Emissão**: Sistema gera certificados PDF personalizados com:
    - Hash de validação HMAC-SHA256 único e não-forjável
    - Design visual específico do ano do evento (cores e imagens)
+   - **Carga horária calculada baseada em regras configuráveis por ano**
    - Link clicável para verificação online
 4. **Download**: Participantes baixam certificados usando e-mail de cadastro
 5. **Verificação**: Qualquer pessoa pode validar autenticidade do certificado online através do link ou página pública
@@ -422,6 +429,114 @@ Superadmins podem configurar através da aba **"🖼️ Certificado"**:
 - **Flexibilidade**: Cada ano pode ter branding diferente
 - **Regeneração Segura**: Certificados podem ser regenerados no futuro com visual correto
 - **Gestão Simples**: Interface intuitiva sem necessidade de editar arquivos manualmente
+
+## ⏱️ Configuração de Carga Horária por Ano do Evento
+
+### Sistema de Cálculo Flexível de Carga Horária
+
+O sistema permite **configurar regras específicas de cálculo de carga horária** para cada ano do evento, garantindo flexibilidade na emissão de certificados baseada em funções e participação.
+
+#### Funcionalidades da Configuração
+
+Superadmins podem configurar através da aba **"⏱️ Carga Horária"**:
+
+1. **Horas por Dia de Participação**:
+   - Define quantas horas equivalem a 1 dia de participação
+   - Valor padrão: 4 horas
+   - Faixa: 1-24 horas
+   - Aplicado a participantes com funções comuns
+
+2. **Horas Totais do Evento**:
+   - Define carga horária total para funções especiais
+   - Valor padrão: 40 horas
+   - Faixa: 1-200 horas
+   - Independente da quantidade de dias trabalhados
+
+3. **Funções com Carga Horária Total**:
+   - Seleção múltipla de funções que recebem CH total
+   - Aplicado independente dos dias de participação
+   - Exemplos: Coordenador(a) Local, Regional, Organizador(a)
+   - Interface intuitiva com nomes legíveis
+
+#### Lógica de Cálculo
+
+O sistema utiliza lógica condicional inteligente:
+
+```python
+def calcular_carga_horaria(funcao_id, dias_participacao, ano_evento):
+    config = carregar_configuracao(ano_evento)
+
+    # Verificar se função tem direito a carga horária total
+    if funcao_id in config['funcoes_evento_completo']:
+        return config['horas_por_evento']  # Ex: 40h sempre
+
+    # Caso contrário, calcular por dias
+    return dias_participacao * config['horas_por_dia']  # Ex: 3 dias × 4h = 12h
+```
+
+#### Exemplo Prático de Aplicação
+
+**Configuração para Pint of Science 2025**:
+```json
+{
+  "horas_por_dia": 4,
+  "horas_por_evento": 40,
+  "funcoes_evento_completo": [1, 2, 3]
+}
+```
+
+**Resultados nos Certificados**:
+
+| Participante | Função | Dias | Carga Horária | Cálculo |
+|--------------|--------|------|---------------|---------|
+| João Silva | Palestrante | 3 dias | **12h** | 3 × 4h |
+| Maria Santos | Coord. Local (ID 1) | 2 dias | **40h** | Total evento |
+| Pedro Costa | Organizador (ID 5) | 1 dia | **4h** | 1 × 4h |
+| Ana Lima | Coord. Regional (ID 2) | 3 dias | **40h** | Total evento |
+
+#### Estrutura de Configuração
+
+**Arquivo**: `static/certificate_config.json`
+
+```json
+{
+  "2025": {
+    "cores": { ... },
+    "imagens": { ... },
+    "carga_horaria": {
+      "horas_por_dia": 4,
+      "horas_por_evento": 40,
+      "funcoes_evento_completo": [1, 2, 3]
+    }
+  }
+}
+```
+
+#### Benefícios
+
+- **Flexibilidade Total**: Cada ano pode ter regras diferentes
+- **Justiça nas Atribuições**: Funções especiais recebem reconhecimento adequado
+- **Automação**: Cálculo automático sem intervenção manual
+- **Transparência**: Regras claras e documentadas
+- **Retrocompatibilidade**: Configuração afeta apenas novas inscrições
+- **Histórico Preservado**: Participantes já cadastrados mantêm valores originais
+
+#### Interface do Usuário
+
+A configuração oferece:
+- ✅ Seletor de ano do evento
+- ✅ Inputs numéricos com validação
+- ✅ Multiselect de funções com nomes legíveis
+- ✅ Preview de métricas em tempo real
+- ✅ Exemplos práticos de aplicação
+- ✅ Feedback visual de sucesso/erro
+- ✅ Validações automáticas
+
+#### Documentação Técnica
+
+- **[CONFIGURACAO_CARGA_HORARIA.md](docs/CONFIGURACAO_CARGA_HORARIA.md)** - Documentação técnica completa
+- **[RESUMO_IMPLEMENTACAO_CARGA_HORARIA.md](docs/RESUMO_IMPLEMENTACAO_CARGA_HORARIA.md)** - Resumo da implementação
+- **[IMPLEMENTACAO_CONCLUIDA.md](docs/IMPLEMENTACAO_CONCLUIDA.md)** - Guia rápido
 
 ## 🧪 Testes
 
@@ -538,6 +653,7 @@ Para dúvidas ou suporte:
 
 - [x] ✅ Sistema de validação de certificados com HMAC-SHA256
 - [x] ✅ Configuração visual de certificados por ano do evento
+- [x] ✅ **Configuração de carga horária flexível por ano do evento**
 - [x] ✅ Sessão persistente com cookie para coordenadores
 - [x] ✅ Sistema de notificações por email para participantes
 - [ ] Implementar testes unitários automatizados (pytest)
@@ -551,6 +667,9 @@ Para dúvidas ou suporte:
 
 - **[CERTIFICATE_VALIDATION.md](docs/CERTIFICATE_VALIDATION.md)** - Documentação técnica completa do sistema de validação
 - **[QUICKSTART_VALIDATION.md](docs/QUICKSTART_VALIDATION.md)** - Guia rápido de instalação e configuração
+- **[CONFIGURACAO_CARGA_HORARIA.md](docs/CONFIGURACAO_CARGA_HORARIA.md)** - Documentação técnica da configuração de carga horária
+- **[RESUMO_IMPLEMENTACAO_CARGA_HORARIA.md](docs/RESUMO_IMPLEMENTACAO_CARGA_HORARIA.md)** - Resumo da implementação da carga horária
+- **[IMPLEMENTACAO_CONCLUIDA.md](docs/IMPLEMENTACAO_CONCLUIDA.md)** - Guia rápido da implementação concluída
 - **[static/README.md](static/README.md)** - Documentação sobre estrutura de imagens e configurações visuais
 - **[CLAUDE.md](CLAUDE.md)** - Brief original do projeto com requisitos completos
 - **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Guia de arquitetura para desenvolvimento com IA

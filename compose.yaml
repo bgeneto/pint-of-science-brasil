@@ -6,11 +6,14 @@ services:
       dockerfile: Dockerfile
       target: production
     container_name: pint-of-science-app
+    hostname: pintbr
     restart: unless-stopped
     ports:
-      - "8501:8501"
+      - "8502:8501"
     env_file:
       - .env
+    networks:
+      - proxy
 
     volumes:
       # Database persistence
@@ -25,9 +28,6 @@ services:
       retries: 3
       start_period: 40s
 
-    networks:
-      - pint-of-science-network
-
     # Security settings
     security_opt:
       - no-new-privileges:true
@@ -36,22 +36,12 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 1G
+          cpus: '2.0'
+          memory: 2G
         reservations:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '1.0'
+          memory: 1024M
 
 networks:
-  pint-of-science-network:
-    driver: bridge
-    name: pint-of-science-network
-
-# Named volumes for data persistence (if using docker volumes instead of bind mounts)
-volumes:
-  database-data:
-    driver: local
-    name: pint-of-science-db
-  static-files:
-    driver: local
-    name: pint-of-science-static
+  proxy:
+    external: true

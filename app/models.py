@@ -139,7 +139,6 @@ class Participante(Base):
     cidade_id = Column(Integer, ForeignKey("cidades.id"), nullable=False)
     funcao_id = Column(Integer, ForeignKey("funcoes.id"), nullable=False)
     datas_participacao = Column(Text, nullable=False)
-    carga_horaria_calculada = Column(Integer, nullable=False)
     validado = Column(Boolean, nullable=False, default=False)
     hash_validacao = Column(
         String(64), nullable=True, unique=True, index=True
@@ -285,7 +284,6 @@ class ParticipanteBase(BaseModel):
     cidade_id: int = Field(..., gt=0)
     funcao_id: int = Field(..., gt=0)
     datas_participacao: str = Field(..., min_length=1, max_length=200)
-    carga_horaria_calculada: int = Field(..., ge=0)
 
     @field_validator("nome_completo")
     @classmethod
@@ -310,7 +308,6 @@ class ParticipanteRead(BaseModel):
     cidade_id: int
     funcao_id: int
     datas_participacao: str
-    carga_horaria_calculada: int
     validado: bool
     data_inscricao: str
 

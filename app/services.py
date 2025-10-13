@@ -179,10 +179,50 @@ class ServicoCalculoCargaHoraria:
     """Serviço para cálculo de carga horária de participação."""
 
     def __init__(self):
-        self._duracao_padrao_evento = 4  # 4 horas por dia de evento
+        self._duracao_padrao_evento = 4  # 4 horas por dia de evento (padrão)
+
+    def _carregar_configuracao_carga_horaria(self, evento_ano: int) -> Dict[str, Any]:
+        """
+        Carrega configuração de carga horária para um ano específico.
+
+        Args:
+            evento_ano: Ano do evento
+
+        Returns:
+            Dicionário com configuração de carga horária
+        """
+        # Use absolute path based on the location of this file
+        services_dir = Path(__file__).parent
+        project_root = services_dir.parent
+        config_path = project_root / "static" / "certificate_config.json"
+
+        default_config = {
+            "horas_por_dia": 4,
+            "horas_por_evento": 40,
+            "funcoes_evento_completo": [],  # IDs das funções que recebem carga horária total
+        }
+
+        try:
+            if config_path.exists():
+                with open(config_path, "r", encoding="utf-8") as f:
+                    config = json.load(f)
+
+                ano_key = str(evento_ano)
+                if ano_key in config and "carga_horaria" in config[ano_key]:
+                    return config[ano_key]["carga_horaria"]
+
+            return default_config
+
+        except Exception as e:
+            logger.error(f"Erro ao carregar configuração de carga horária: {e}")
+            return default_config
 
     def calcular_carga_horaria(
-        self, datas_participacao: str, evento_datas
+        self,
+        datas_participacao: str,
+        evento_datas,
+        evento_ano: int = None,
+        funcao_id: int = None,
     ) -> Tuple[int, str]:
         """
         Calcula a carga horária com base nas datas de participação.
@@ -190,11 +230,35 @@ class ServicoCalculoCargaHoraria:
         Args:
             datas_participacao: String com datas ISO separadas por vírgula
             evento_datas: Lista de strings ISO ou string (formato antigo)
+            evento_ano: Ano do evento (opcional, para buscar configuração)
+            funcao_id: ID da função do participante (opcional)
 
         Returns:
             Tupla com (carga_horaria_total, detalhes_calculo)
         """
         try:
+            # Carregar configuração se ano foi fornecido
+            if evento_ano:
+                config = self._carregar_configuracao_carga_horaria(evento_ano)
+                horas_por_dia = config.get("horas_por_dia", self._duracao_padrao_evento)
+                horas_por_evento = config.get("horas_por_evento", 40)
+                funcoes_evento_completo = config.get("funcoes_evento_completo", [])
+            else:
+                horas_por_dia = self._duracao_padrao_evento
+                horas_por_evento = 40
+                funcoes_evento_completo = []
+
+            # Verificar se a função tem direito a carga horária total do evento
+            if funcao_id and funcao_id in funcoes_evento_completo:
+                detalhes = (
+                    f"Função com carga horária de evento completo\n"
+                    f"Total: {horas_por_evento}h (configurado para esta função)"
+                )
+                logger.info(
+                    f"📊 Carga horária (evento completo): {horas_por_evento}h para função ID {funcao_id}"
+                )
+                return horas_por_evento, detalhes
+
             # Extrair dias do evento
             if isinstance(evento_datas, list):
                 # Lista de strings ISO
@@ -215,11 +279,11 @@ class ServicoCalculoCargaHoraria:
                     dias_unicos.add(data)
 
             # Calcular carga horária
-            carga_horaria = len(dias_unicos) * self._duracao_padrao_evento
+            carga_horaria = len(dias_unicos) * horas_por_dia
 
             detalhes = (
                 f"Dias de participação: {len(dias_unicos)} ({', '.join(sorted(dias_unicos))})\n"
-                f"Carga horária por dia: {self._duracao_padrao_evento}h\n"
+                f"Carga horária por dia: {horas_por_dia}h\n"
                 f"Total: {carga_horaria}h"
             )
 
@@ -497,7 +561,11 @@ class GeradorCertificado:
         Returns:
             Dicionário com cores configuradas para o ano
         """
-        config_path = Path("static/certificate_config.json")
+        # Use absolute path based on the location of this file
+        services_dir = Path(__file__).parent
+        project_root = services_dir.parent
+        config_path = project_root / "static" / "certificate_config.json"
+
         default_config = {
             "cor_primaria": "#e74c3c",
             "cor_secundaria": "#c0392b",
@@ -544,11 +612,15 @@ class GeradorCertificado:
         Returns:
             Dicionário com Path objects para cada imagem
         """
-        config_path = Path("static/certificate_config.json")
+        # Use absolute path based on the location of this file
+        services_dir = Path(__file__).parent
+        project_root = services_dir.parent
+        config_path = project_root / "static" / "certificate_config.json"
+
         default_images = {
-            "pint_logo": Path("static/pint_logo.png"),
-            "pint_signature": Path("static/pint_signature.png"),
-            "sponsor_logo": Path("static/sponsor_logo.png"),
+            "pint_logo": project_root / "static" / "pint_logo.png",
+            "pint_signature": project_root / "static" / "pint_signature.png",
+            "sponsor_logo": project_root / "static" / "sponsor_logo.png",
         }
 
         try:
@@ -561,7 +633,8 @@ class GeradorCertificado:
                     if ano_key in all_configs and "imagens" in all_configs[ano_key]:
                         images_config = all_configs[ano_key]["imagens"]
                         return {
-                            key: Path("static")
+                            key: project_root
+                            / "static"
                             / images_config.get(key, default_images[key].name)
                             for key in default_images.keys()
                         }
@@ -573,7 +646,8 @@ class GeradorCertificado:
                     ):
                         images_config = all_configs["_default"]["imagens"]
                         return {
-                            key: Path("static")
+                            key: project_root
+                            / "static"
                             / images_config.get(key, default_images[key].name)
                             for key in default_images.keys()
                         }
@@ -782,6 +856,14 @@ class GeradorCertificado:
                 except:
                     datas_texto = datas_participacao_str
 
+            # Calcular carga horária on-the-fly usando configuração
+            carga_horaria, _ = servico_calculo_carga_horaria.calcular_carga_horaria(
+                participante.datas_participacao,
+                evento.datas_evento,
+                evento.ano,
+                participante.funcao_id,
+            )
+
             # Construir o texto completo do certificado em uma linha fluida
             # Calcular a largura disponível
             max_width = page_width - content_x_start - 60
@@ -817,7 +899,7 @@ class GeradorCertificado:
                 (datas_texto, True, cores["cor_destaque"]),
                 (", com carga horária de ", False, cores["cor_texto"]),
                 (
-                    f"{participante.carga_horaria_calculada} horas",
+                    f"{carga_horaria} horas",
                     True,
                     cores["cor_destaque"],
                 ),
@@ -1106,7 +1188,10 @@ class ServicoValidacao:
 
             # Validar carga horária mínima
             carga_horaria, _ = self._servico_calculo.calcular_carga_horaria(
-                dados.datas_participacao, evento.datas_evento
+                dados.datas_participacao,
+                evento.datas_evento,
+                evento.ano,
+                dados.funcao_id,
             )
 
             if carga_horaria == 0:
@@ -1176,7 +1261,12 @@ class ServicoValidacao:
                     cidade_id=participante.cidade_id,
                     funcao_id=participante.funcao_id,
                     datas_participacao=participante.datas_participacao,
-                    carga_horaria_calculada=participante.carga_horaria_calculada,
+                    carga_horaria_calculada=servico_calculo_carga_horaria.calcular_carga_horaria(
+                        participante.datas_participacao,
+                        evento.datas_evento,
+                        evento.ano,
+                        participante.funcao_id,
+                    ),
                     validado=participante.validado,
                     data_inscricao=participante.data_inscricao,
                 )
@@ -1238,7 +1328,10 @@ def inscrever_participante(
 
             # Calcular carga horária
             carga_horaria, _ = servico_calculo_carga_horaria.calcular_carga_horaria(
-                dados_inscricao.datas_participacao, evento.datas_evento
+                dados_inscricao.datas_participacao,
+                evento.datas_evento,
+                evento.ano,
+                dados_inscricao.funcao_id,
             )
 
             print(f"DEBUG: Criando participante...")
@@ -1253,7 +1346,6 @@ def inscrever_participante(
                 cidade_id=dados_inscricao.cidade_id,
                 funcao_id=dados_inscricao.funcao_id,
                 datas_participacao=dados_inscricao.datas_participacao,
-                carga_horaria_calculada=carga_horaria,
                 validado=False,  # Inicia como não validado
             )
 

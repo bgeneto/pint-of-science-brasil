@@ -92,22 +92,6 @@ st.markdown(
         margin: 1rem 0;
     }
 
-    /* Estilo para botões */
-    .stButton > button {
-        background: #e74c3c;
-        color: white;
-        border-radius: 5px;
-        border: none;
-        padding: 0.5rem 1rem;
-        font-weight: bold;
-        transition: all 0.3s ease;
-    }
-
-    .stButton > button:hover {
-        background: #c0392b;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
     /* Melhorar espaçamento das tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
@@ -219,7 +203,7 @@ def carregar_dados_formulario() -> tuple:
         return None, [], [], []
 
 
-def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
+def formulario_inscricao(evento_atual, cidades, funcoes) -> Dict[str, Any]:
     """Exibe o formulário de inscrição de participantes."""
     st.subheader("📝 Formulário de Inscrição")
     st.write("Preencha os dados abaixo para se inscrever no evento atual.")
@@ -227,6 +211,9 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
     # Informações do evento
     if evento_atual:
         st.success(f"🎯 Evento Atual: **Pint of Science {evento_atual['ano']}**")
+
+    # Inicializar resultado
+    resultado = {"sucesso": False, "mensagem": "", "email": ""}
 
     # Formulário
     with st.form("form_inscricao"):
@@ -314,19 +301,19 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
                 mostrar_mensagem(
                     "error", "Por favor, preencha todos os campos obrigatórios."
                 )
-                return False
+                return resultado
 
             if not validar_email(email):
                 mostrar_mensagem(
                     "error", "Por favor, informe um endereço de e-mail válido."
                 )
-                return False
+                return resultado
 
             if not consentimento:
                 mostrar_mensagem(
                     "error", "Você precisa concordar com o termo de consentimento."
                 )
-                return False
+                return resultado
 
             # Preparar dados
             dados_inscricao = ParticipanteCreate(
@@ -341,7 +328,6 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
                 datas_participacao=(
                     ", ".join(datas_participacao) if datas_participacao else ""
                 ),
-                carga_horaria_calculada=0,  # Será calculado automaticamente
             )
 
             # Realizar inscrição
@@ -351,15 +337,15 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
                 )
 
             if sucesso:
-                mostrar_mensagem("success", f"✨ {mensagem}")
+                resultado["sucesso"] = True
+                resultado["mensagem"] = mensagem
+                resultado["email"] = email
                 st.session_state["inscricao_realizada"] = True
                 st.session_state["email_inscricao"] = email
-                return True
             else:
                 mostrar_mensagem("error", mensagem)
-                return False
 
-    return False
+    return resultado
 
 
 def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
@@ -424,7 +410,7 @@ def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
         )
 
         submit_button = st.form_submit_button(
-            "📥 Baixar Certificado", type="primary", width="content"
+            "👁️ Visualizar Certificado", type="primary", width="content"
         )
 
     # Process form submission OUTSIDE the form context
@@ -469,7 +455,7 @@ def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
 
             # Provide download button
             st.download_button(
-                label="⬇️ Baixar PDF",
+                label="📥 Baixar PDF",
                 data=pdf_bytes,
                 file_name=nome_arquivo,
                 mime="application/pdf",
@@ -538,7 +524,7 @@ def mostrar_menu_usuario_logado() -> None:
             tempo_login = formatar_data_exibicao(user_info["login_time"])
             st.sidebar.write(f"**Login:** {tempo_login}")
 
-        if st.sidebar.button("🔒 Sair", width="content"):
+        if st.sidebar.button("🔒 Sair", width="stretch"):
             auth_manager.clear_session()
             st.rerun()
 
@@ -632,7 +618,16 @@ def main():
     )
 
     if active_tab == "📝 Inscrição":
-        formulario_inscricao(evento_atual, cidades, funcoes)
+        resultado_inscricao = formulario_inscricao(evento_atual, cidades, funcoes)
+
+        # Mostrar mensagens de resultado da inscrição
+        if resultado_inscricao["sucesso"]:
+            st.success(
+                "🎉 Inscrição realizada com sucesso! Uma excelente participação para você!"
+            )
+            st.info(
+                f"📧 Enviamos um e-mail de confirmação para: {resultado_inscricao['email']}"
+            )
     elif active_tab == "📜 Certificado":
         formulario_download_certificado(evento_atual, todos_eventos)
     elif active_tab == "🔐 Coordenadores":

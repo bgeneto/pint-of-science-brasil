@@ -3,7 +3,7 @@
 # Optimized for caching and production deployment
 
 # Stage 1: Base setup with dependencies
-FROM python:3.13-slim as base
+FROM python:3.13-slim AS base
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     g++ \
     libffi-dev \
     libssl-dev \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
@@ -31,7 +32,7 @@ RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
 # Stage 2: Production application
-FROM base as production
+FROM base AS production
 
 # Create non-root user for security
 RUN groupadd -r streamlit && \

@@ -526,7 +526,6 @@ def _create_initial_data(session: Session) -> None:
             "Vice-Coordenador(a) de Bar",
             "Vice-Coordenador(a) de Comunicação",
             "Vice-Coordenador(a) de Mídias",
-            "Vice-Coordenador(a) Geral",
             "Vice-Coordenador(a) Local",
             "Vice-Coordenador(a) Regional",
             "Voluntário(a)",

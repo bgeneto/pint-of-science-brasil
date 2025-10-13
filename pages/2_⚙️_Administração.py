@@ -69,7 +69,7 @@ with st.sidebar:
             tempo_login = formatar_data_exibicao(user_info["login_time"])
             st.write(f"**Login:** {tempo_login}")
 
-        if st.button("🔒 Sair", key="logout_btn", width="content"):
+        if st.button("🔒 Sair", key="logout_btn", width="stretch"):
             auth_manager.clear_session()
             st.rerun()
 
@@ -1262,7 +1262,10 @@ def carregar_configuracao_certificado(ano: int) -> Dict[str, Any]:
     Returns:
         Dicionário com configuração de cores para o ano
     """
-    config_path = Path("static/certificate_config.json")
+    # Use absolute path based on the location of this file
+    admin_dir = Path(__file__).parent
+    project_root = admin_dir.parent
+    config_path = project_root / "static" / "certificate_config.json"
 
     # Configuração padrão
     default_config = {
@@ -1472,7 +1475,7 @@ def gerenciar_imagens_certificado():
             "Upload Logo Patrocinador",
             type=["png", "jpg", "jpeg", "webp"],
             key=f"sponsor_upload_{ano_selecionado}",
-            help="Logo único ou composição com todos os patrocinadores",
+            help="Logo único ou composição com todos os patrocinadores. OBS: razão ideal: altura/largura=2.35",
         )
 
         if sponsor_file:
@@ -1684,6 +1687,309 @@ def configurar_cores_certificado():
     )
 
 
+def carregar_configuracao_carga_horaria(ano: int) -> Dict[str, Any]:
+    """
+    Carrega configuração de carga horária para um ano específico.
+
+    Args:
+        ano: Ano do evento
+
+    Returns:
+        Dicionário com configuração de carga horária
+    """
+    # Use absolute path based on the location of this file
+    admin_dir = Path(__file__).parent
+    project_root = admin_dir.parent
+    config_path = project_root / "static" / "certificate_config.json"
+
+    default_config = {
+        "horas_por_dia": 4,
+        "horas_por_evento": 40,
+        "funcoes_evento_completo": [],
+    }
+
+    try:
+        if config_path.exists():
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+
+            ano_key = str(ano)
+            if ano_key in config and "carga_horaria" in config[ano_key]:
+                return config[ano_key]["carga_horaria"]
+
+        return default_config
+
+    except Exception as e:
+        logger.error(
+            f"Erro ao carregar configuração de carga horária para ano {ano}: {str(e)}"
+        )
+        return default_config
+
+
+def salvar_configuracao_carga_horaria(
+    ano: int, horas_por_dia: int, horas_por_evento: int, funcoes_ids: List[int]
+) -> bool:
+    """
+    Salva configuração de carga horária para um ano específico.
+
+    Args:
+        ano: Ano do evento
+        horas_por_dia: Horas de carga horária por dia de participação
+        horas_por_evento: Horas de carga horária para evento completo
+        funcoes_ids: Lista de IDs das funções que recebem carga horária total
+
+    Returns:
+        True se salvou com sucesso
+    """
+    config_path = Path("static/certificate_config.json")
+
+    try:
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Carregar configuração existente
+        if config_path.exists():
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+        else:
+            config = {}
+
+        # Garantir estrutura do ano
+        ano_key = str(ano)
+        if ano_key not in config:
+            config[ano_key] = {"cores": {}, "imagens": {}, "carga_horaria": {}}
+
+        if "carga_horaria" not in config[ano_key]:
+            config[ano_key]["carga_horaria"] = {}
+
+        # Atualizar configuração de carga horária
+        config[ano_key]["carga_horaria"] = {
+            "horas_por_dia": horas_por_dia,
+            "horas_por_evento": horas_por_evento,
+            "funcoes_evento_completo": funcoes_ids,
+        }
+
+        # Salvar
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+        return True
+
+    except Exception as e:
+        logger.error(
+            f"Erro ao salvar configuração de carga horária para ano {ano}: {str(e)}"
+        )
+        return False
+
+
+def configurar_carga_horaria():
+    """Interface para configuração de carga horária por ano."""
+    st.subheader("⏱️ Configuração de Carga Horária")
+
+    st.info(
+        """
+        ⏱️ **Configure a carga horária dos certificados:**
+        - Selecione o ano do evento para configurar
+        - Defina quantas horas equivalem a 1 dia de participação
+        - Defina a carga horária total do evento (para funções específicas)
+        - Selecione quais funções recebem a carga horária total do evento
+        - **IMPORTANTE**: Cada ano/evento mantém sua própria configuração
+        """
+    )
+
+    # Buscar eventos disponíveis
+    with db_manager.get_db_session() as session:
+        from app.db import get_evento_repository, get_funcao_repository
+
+        evento_repo = get_evento_repository(session)
+        eventos = session.query(Evento).order_by(Evento.ano.desc()).all()
+        anos_disponiveis = [evento.ano for evento in eventos]
+
+        # Buscar funções disponíveis
+        funcao_repo = get_funcao_repository(session)
+        funcoes = funcao_repo.get_all_ordered()
+        funcoes_dict = {f.id: f.nome_funcao for f in funcoes}
+    if not anos_disponiveis:
+        st.warning("⚠️ Nenhum evento cadastrado. Crie um evento primeiro.")
+        return
+
+    if not funcoes_dict:
+        st.warning("⚠️ Nenhuma função cadastrada. Cadastre funções primeiro.")
+        return
+
+    # Seletor de ano
+    ano_selecionado = st.selectbox(
+        "📅 Selecione o ano do evento:",
+        options=anos_disponiveis,
+        index=0,
+        key="ano_carga_horaria",
+        help="Configurações de carga horária são isoladas por ano do evento",
+    )
+
+    st.markdown(
+        f"### Configurando carga horária para o evento de **{ano_selecionado}**"
+    )
+    st.markdown("---")
+
+    # Carregar configuração atual do ano
+    config = carregar_configuracao_carga_horaria(ano_selecionado)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("#### Carga Horária por Dia")
+        horas_por_dia = st.number_input(
+            "Horas por dia de participação:",
+            min_value=1,
+            max_value=24,
+            value=config.get("horas_por_dia", 4),
+            step=1,
+            help="Quantas horas equivalem a 1 dia de participação no evento",
+            key=f"horas_por_dia_{ano_selecionado}",
+        )
+        st.caption(
+            f"💡 Exemplo: Se participou de 2 dias → {horas_por_dia * 2}h no certificado"
+        )
+
+    with col2:
+        st.markdown("#### Carga Horária do Evento")
+        horas_por_evento = st.number_input(
+            "Horas para evento completo:",
+            min_value=1,
+            max_value=200,
+            value=config.get("horas_por_evento", 40),
+            step=1,
+            help="Carga horária total que será atribuída a funções específicas (independente dos dias)",
+            key=f"horas_por_evento_{ano_selecionado}",
+        )
+        st.caption(f"💡 Aplicado às funções selecionadas abaixo")
+
+    st.markdown("---")
+    st.markdown("#### 👥 Funções com Carga Horária Total do Evento")
+    st.caption(
+        f"Selecione as funções que devem receber **{horas_por_evento}h** no certificado, "
+        "independente da quantidade de dias de participação:"
+    )
+
+    # Multiselect para funções
+    funcoes_selecionadas_ids = config.get("funcoes_evento_completo", [])
+
+    # Criar lista de opções com nome e ID
+    funcoes_options = list(funcoes_dict.keys())
+    funcoes_labels = [funcoes_dict[fid] for fid in funcoes_options]
+
+    # Encontrar índices das funções já selecionadas
+    default_indices = [
+        i for i, fid in enumerate(funcoes_options) if fid in funcoes_selecionadas_ids
+    ]
+
+    funcoes_selecionadas = st.multiselect(
+        "Selecione as funções:",
+        options=funcoes_options,
+        format_func=lambda x: funcoes_dict[x],
+        default=[fid for fid in funcoes_options if fid in funcoes_selecionadas_ids],
+        help="Exemplos: Coordenador(a) Local, Coordenador(a) Regional, Organizador(a), etc.",
+        key=f"funcoes_evento_completo_{ano_selecionado}",
+    )
+
+    if funcoes_selecionadas:
+        st.success(
+            f"✓ **{len(funcoes_selecionadas)} função(ões)** selecionada(s) para receber {horas_por_evento}h: "
+            + ", ".join([funcoes_dict[fid] for fid in funcoes_selecionadas])
+        )
+    else:
+        st.info(
+            "ℹ️ Nenhuma função selecionada. Todos os participantes receberão carga horária calculada por dias."
+        )
+
+    st.markdown("---")
+
+    # Preview da configuração
+    st.markdown("#### 👁️ Resumo da Configuração")
+
+    preview_col1, preview_col2, preview_col3 = st.columns(3)
+
+    with preview_col1:
+        st.metric(
+            "Horas por dia",
+            f"{horas_por_dia}h",
+            help="Carga horária de 1 dia de participação",
+        )
+
+    with preview_col2:
+        st.metric(
+            "Horas evento completo",
+            f"{horas_por_evento}h",
+            help="Para funções selecionadas",
+        )
+
+    with preview_col3:
+        st.metric(
+            "Funções especiais",
+            len(funcoes_selecionadas),
+            help="Funções com carga horária total",
+        )
+
+    st.markdown("---")
+
+    # Exemplos práticos
+    with st.expander("📋 Ver exemplos de aplicação", expanded=False):
+        st.markdown("**Exemplos de como a carga horária será calculada:**")
+
+        st.markdown(f"- **Participante com função comum** (ex: Palestrante)")
+        st.markdown(
+            f"  - Participou de 2 dias → **{horas_por_dia * 2}h** no certificado"
+        )
+        st.markdown(
+            f"  - Participou de 3 dias → **{horas_por_dia * 3}h** no certificado"
+        )
+
+        if funcoes_selecionadas:
+            funcoes_nomes = ", ".join(
+                [funcoes_dict[fid] for fid in funcoes_selecionadas[:2]]
+            )
+            if len(funcoes_selecionadas) > 2:
+                funcoes_nomes += ", ..."
+
+            st.markdown(f"- **Participante com função especial** ({funcoes_nomes})")
+            st.markdown(
+                f"  - **Sempre {horas_por_evento}h** no certificado (independente dos dias)"
+            )
+
+    st.markdown("---")
+
+    # Botão para salvar
+    if st.button(
+        f"💾 Salvar Configuração de Carga Horária para {ano_selecionado}",
+        type="primary",
+        use_container_width=True,
+    ):
+        if salvar_configuracao_carga_horaria(
+            ano_selecionado, horas_por_dia, horas_por_evento, funcoes_selecionadas
+        ):
+            st.success(
+                f"✅ Configuração de carga horária salva com sucesso para o evento de {ano_selecionado}!"
+            )
+            st.balloons()
+
+            # Mostrar resumo do que foi salvo
+            st.info(
+                f"**Configuração salva:**\n\n"
+                f"- Horas por dia: {horas_por_dia}h\n"
+                f"- Horas evento completo: {horas_por_evento}h\n"
+                f"- Funções especiais: {len(funcoes_selecionadas)}"
+            )
+        else:
+            st.error("❌ Erro ao salvar configuração.")
+
+    # Aviso importante
+    st.markdown("---")
+    st.info(
+        f"💡 **Importante**: A configuração de carga horária para {ano_selecionado} será aplicada "
+        f"automaticamente em todos os certificados gerados para esse ano. Participantes com funções "
+        f"selecionadas receberão {horas_por_evento}h, enquanto os demais receberão carga horária "
+        f"calculada com base nos dias de participação ({horas_por_dia}h por dia)."
+    )
+
+
 def main():
     """Função principal da página."""
 
@@ -1707,8 +2013,15 @@ def main():
     mostrar_estatisticas_gerais()
 
     # Abas para organizar o conteúdo
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        ["👤 Coordenadores", "📅 Eventos", "🏙️ Cidades", "🎭 Funções", "🖼️ Certificado"]
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+        [
+            "👤 Coordenadores",
+            "📅 Eventos",
+            "🏙️ Cidades",
+            "🎭 Funções",
+            "🖼️ Certificado",
+            "⏱️ Carga Horária",
+        ]
     )
 
     with tab1:
@@ -1770,7 +2083,7 @@ def main():
         listar_cidades()
 
     with tab4:
-        # Show success message if it exists in session state
+        # Show success message if it exists in st.session_state
         if "show_success_funcao" in st.session_state:
             st.success(st.session_state["show_success_funcao"])
             del st.session_state["show_success_funcao"]
@@ -1790,6 +2103,10 @@ def main():
         st.markdown("---")
         # Configuração de cores
         configurar_cores_certificado()
+
+    with tab6:
+        # Configuração de carga horária
+        configurar_carga_horaria()
 
     # Rodapé
     st.markdown(

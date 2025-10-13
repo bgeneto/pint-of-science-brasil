@@ -16,7 +16,7 @@ from app.db import (
 )
 from app.core import settings
 from app.models import Participante, Evento, Cidade, Funcao
-from app.services import servico_criptografia
+from app.services import servico_criptografia, servico_calculo_carga_horaria
 
 st.set_page_config(
     page_title=f"Validar Certificado - {settings.app_name}",
@@ -128,6 +128,16 @@ if st.button("🔍 Validar Certificado", type="primary", width="content"):
                                 Funcao, participante.funcao_id
                             )
 
+                            # Calcular carga horária on-the-fly
+                            carga_horaria, _ = (
+                                servico_calculo_carga_horaria.calcular_carga_horaria(
+                                    participante.datas_participacao,
+                                    evento.datas_evento,
+                                    evento.ano,
+                                    participante.funcao_id,
+                                )
+                            )
+
                             # Certificado válido
                             st.success("✅ **CERTIFICADO AUTÊNTICO**")
                             st.balloons()
@@ -163,7 +173,7 @@ if st.button("🔍 Validar Certificado", type="primary", width="content"):
                                 )
                                 st.metric(
                                     "⏱️ Carga Horária",
-                                    f"{participante.carga_horaria_calculada}h",
+                                    f"{carga_horaria}h",
                                 )
                                 st.metric(
                                     "✅ Status",

@@ -17,7 +17,11 @@ from app.auth import require_login, get_current_user_info, auth_manager, SESSION
 from app.core import settings
 from app.db import db_manager
 from app.models import Evento, Cidade, Funcao, Participante
-from app.services import servico_criptografia, validar_participantes
+from app.services import (
+    servico_criptografia,
+    validar_participantes,
+    servico_calculo_carga_horaria,
+)
 from app.utils import formatar_data_exibicao, limpar_texto
 
 # Configure logging
@@ -60,7 +64,7 @@ with st.sidebar:
             tempo_login = formatar_data_exibicao(user_info["login_time"])
             st.write(f"**Login:** {tempo_login}")
 
-        if st.button("🔒 Sair", key="logout_btn", width="content"):
+        if st.button("🔒 Sair", key="logout_btn", width="stretch"):
             auth_manager.clear_session()
             st.rerun()
 
@@ -206,15 +210,10 @@ def carregar_dados_validacao() -> tuple:
                             "funcao_id": participante.funcao_id,
                             "titulo_apresentacao": participante.titulo_apresentacao,
                             "datas_participacao": participante.datas_participacao,
-                            "carga_horaria_calculada": participante.carga_horaria_calculada,
                             "validado": participante.validado,
                             "data_inscricao": participante.data_inscricao,
                         }
                     )
-            else:
-                participantes_data = []
-
-            return evento_info, cidades, funcoes, participantes_data
 
     except Exception as e:
         print(f"DEBUG: Error in data loading: {str(e)}")
@@ -225,6 +224,7 @@ def preparar_dataframe_participantes(
     participantes: List[Dict[str, Any]],
     cidades: Dict[int, Dict[str, Any]],
     funcoes: Dict[int, Dict[str, Any]],
+    evento_info: Dict[str, Any],
 ) -> pd.DataFrame:
     """Prepara um DataFrame com os dados dos participantes para exibição."""
 
@@ -244,6 +244,14 @@ def preparar_dataframe_participantes(
             cidade = cidades.get(participante["cidade_id"])
             funcao = funcoes.get(participante["funcao_id"])
 
+            # Calcular carga horária on-the-fly
+            carga_horaria, _ = servico_calculo_carga_horaria.calcular_carga_horaria(
+                participante["datas_participacao"],
+                evento_info["datas_evento"],
+                evento_info["ano"],
+                participante["funcao_id"],
+            )
+
             # Preparar dados da linha
             linha = {
                 "ID": participante["id"],
@@ -253,7 +261,7 @@ def preparar_dataframe_participantes(
                 "Função": funcao["nome_funcao"] if funcao else "N/A",
                 "Título Apresentação": participante["titulo_apresentacao"] or "-",
                 "Datas Participação": participante["datas_participacao"],
-                "Carga Horária": f"{participante['carga_horaria_calculada']}h",
+                "Carga Horária": f"{carga_horaria}h",
                 "Validado": participante["validado"],
                 "Data Inscrição": formatar_data_exibicao(
                     participante["data_inscricao"]
@@ -657,7 +665,7 @@ def processar_validacao(
         if can_edit and mudancas:
             if st.button("💾 Salvar Edições", type="primary", width="content"):
                 with st.spinner("Salvando edições..."):
-                    # Check if any changes affect hash (nome or email)
+                    # Check if any changes affect hash (nome ou email)
                     hash_affected = any(
                         "nome" in m["changes"] or "email" in m["changes"]
                         for m in mudancas
@@ -871,7 +879,9 @@ def main():
     )
 
     # Preparar DataFrame
-    df_participantes = preparar_dataframe_participantes(participantes, cidades, funcoes)
+    df_participantes = preparar_dataframe_participantes(
+        participantes, cidades, funcoes, evento_info
+    )
 
     if df_participantes.empty:
         st.warning("⚠️ Nenhum participante encontrado para este evento.")

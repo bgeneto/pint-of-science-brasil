@@ -451,9 +451,6 @@ def seed_speakers_from_csv(verbose: bool = False) -> bool:
                         nome_criptografado = crypto_service.criptografar_nome(nome)
                         email_criptografado = crypto_service.criptografar_email(email)
 
-                        # Calcular carga horária (assumindo 1 hora por palestra)
-                        carga_horaria = 1
-
                         # Criar participante
                         participante = participante_repo.create_participante(
                             nome_completo_encrypted=nome_criptografado,
@@ -464,7 +461,6 @@ def seed_speakers_from_csv(verbose: bool = False) -> bool:
                             cidade_id=cidade.id,
                             funcao_id=funcao_palestrante.id,
                             datas_participacao=data_iso,  # Apenas uma data
-                            carga_horaria_calculada=carga_horaria,
                             validado=False,  # Palestrantes precisam ser validados manualmente
                             data_inscricao=datetime.now().isoformat(),
                         )

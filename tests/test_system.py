@@ -201,7 +201,6 @@ def test_participant_registration():
             "funcao_id": 1,  # Supondo que existe uma função com ID 1
             "datas_participacao": "2025-05-19, 2025-05-20",  # ISO format dates
             "validado": False,
-            "carga_horaria_calculada": 8,  # Campo obrigatório adicionado (8 horas para 2 dias)
         }
 
         # Registrar participante
