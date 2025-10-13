@@ -56,7 +56,7 @@ st.markdown(
     """
 <style>
     .main-header {
-        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        background: linear-gradient(135deg, #c67b5c 0%, #a0563f 100%);
         padding: 2rem;
         border-radius: 10px;
         color: white;
@@ -222,7 +222,7 @@ def carregar_dados_formulario() -> tuple:
 def formulario_inscricao(evento_atual, cidades, funcoes) -> bool:
     """Exibe o formulário de inscrição de participantes."""
     st.subheader("📝 Formulário de Inscrição")
-    st.write("Preencha os dados abaixo para se inscrever no evento:")
+    st.write("Preencha os dados abaixo para se inscrever no evento atual.")
 
     # Informações do evento
     if evento_atual:

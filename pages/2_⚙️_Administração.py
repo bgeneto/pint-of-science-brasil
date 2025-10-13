@@ -193,6 +193,103 @@ def mostrar_estatisticas_gerais():
         st.error(f"Erro ao carregar estatísticas: {str(e)}")
 
 
+@st.dialog("🗺️ Associar Cidades ao Coordenador", width="large")
+def modal_associar_cidades_coordenador(coordenador_id: int, coordenador_nome: str):
+    """Modal para associar cidades a um coordenador recém-criado."""
+    st.markdown(
+        f"""
+        ### Associar cidades a **{coordenador_nome}**
+
+        💡 **Importante:**
+        - Selecione as cidades que este coordenador poderá gerenciar
+        - Coordenadores só podem visualizar e validar participantes das cidades associadas
+        - Você pode pular esta etapa e fazer a associação depois, se preferir
+        """
+    )
+
+    try:
+        with db_manager.get_db_session() as session:
+            from app.db import get_cidade_repository
+            from app.models import CoordenadorCidadeLink
+
+            cidade_repo = get_cidade_repository(session)
+            cidades = cidade_repo.get_all_ordered()
+
+            if not cidades:
+                st.warning(
+                    "⚠️ Nenhuma cidade cadastrada. Cadastre cidades primeiro na aba **🏙️ Cidades**."
+                )
+                if st.button("✅ Fechar", type="primary", use_container_width=True):
+                    st.session_state["show_modal_associacao"] = False
+                    st.rerun()
+                return
+
+            # Preparar options como tuplas
+            cidades_options = [(c.id, f"{c.nome}-{c.estado}") for c in cidades]
+
+            # Multiselect com cidades
+            cidades_selecionadas = st.multiselect(
+                "Selecione as cidades",
+                options=cidades_options,
+                format_func=lambda x: x[1] if isinstance(x, tuple) else str(x),
+                help="Escolha uma ou mais cidades para associar ao coordenador",
+                key=f"modal_cidades_coord_{coordenador_id}",
+            )
+
+            # Extrair apenas os IDs
+            cidades_ids_selecionados = [
+                c[0] if isinstance(c, tuple) else c for c in cidades_selecionadas
+            ]
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if st.button(
+                    "⏭️ Pular (fazer depois)",
+                    use_container_width=True,
+                    help="Você poderá associar cidades depois na seção abaixo",
+                ):
+                    st.session_state["show_modal_associacao"] = False
+                    st.rerun()
+
+            with col2:
+                if st.button(
+                    "💾 Salvar Associações",
+                    type="primary",
+                    use_container_width=True,
+                    disabled=len(cidades_ids_selecionados) == 0,
+                ):
+                    try:
+                        # Criar novas associações
+                        for cidade_id in cidades_ids_selecionados:
+                            novo_link = CoordenadorCidadeLink(
+                                coordenador_id=coordenador_id, cidade_id=cidade_id
+                            )
+                            session.add(novo_link)
+
+                        session.commit()
+
+                        # Armazenar mensagem de sucesso
+                        cidades_nomes = [
+                            c[1]
+                            for c in cidades_options
+                            if c[0] in cidades_ids_selecionados
+                        ]
+                        st.session_state["show_success_associacao_modal"] = (
+                            f"✅ {len(cidades_ids_selecionados)} cidade(s) associada(s) a {coordenador_nome}: "
+                            f"{', '.join(cidades_nomes)}"
+                        )
+                        st.session_state["show_modal_associacao"] = False
+                        st.rerun()
+                    except Exception as e:
+                        session.rollback()
+                        st.error(f"❌ Erro ao salvar associações: {str(e)}")
+
+    except Exception as e:
+        st.error(f"❌ Erro ao carregar cidades: {str(e)}")
+        logger.error(f"Erro em modal_associar_cidades_coordenador: {str(e)}")
+
+
 def formulario_criar_coordenador() -> bool:
     """Formulário para criar novo coordenador."""
     st.subheader("➕ Criar Novo Coordenador")
@@ -258,22 +355,46 @@ def formulario_criar_coordenador() -> bool:
             # Criar coordenador
             with st.spinner("Criando coordenador..."):
                 try:
-                    sucesso = criar_coordenador(
-                        nome=limpar_texto(nome),
-                        email=limpar_texto(email).lower(),
-                        senha=senha,
-                        is_superadmin=is_superadmin,
-                    )
+                    # Get coordenador ID after creation
+                    with db_manager.get_db_session() as session:
+                        from app.db import get_coordenador_repository
 
-                    if sucesso:
-                        # Store success message in session state to show after rerun
-                        st.session_state["show_success_coordenador"] = (
-                            "✅ Coordenador criado com sucesso!"
+                        # Create coordenador
+                        sucesso = criar_coordenador(
+                            nome=limpar_texto(nome),
+                            email=limpar_texto(email).lower(),
+                            senha=senha,
+                            is_superadmin=is_superadmin,
                         )
-                        return True
-                    else:
-                        st.error("❌ Erro ao criar coordenador.")
-                        return False
+
+                        if sucesso:
+                            # Get the coordenador ID to pass to modal
+                            coord_repo = get_coordenador_repository(session)
+                            coordenador = coord_repo.get_by_email(
+                                limpar_texto(email).lower()
+                            )
+
+                            if coordenador:
+                                # Store info to show modal and success message
+                                st.session_state["show_success_coordenador"] = (
+                                    "✅ Coordenador criado com sucesso!"
+                                )
+                                # Only show modal if not superadmin
+                                if not is_superadmin:
+                                    st.session_state["show_modal_associacao"] = True
+                                    st.session_state["modal_coord_id"] = coordenador.id
+                                    st.session_state["modal_coord_nome"] = (
+                                        coordenador.nome
+                                    )
+                                return True
+                            else:
+                                st.error(
+                                    "❌ Coordenador criado, mas não foi possível carregar seus dados."
+                                )
+                                return False
+                        else:
+                            st.error("❌ Erro ao criar coordenador.")
+                            return False
 
                 except Exception as e:
                     st.error(f"❌ Erro ao criar coordenador: {str(e)}")
@@ -285,6 +406,11 @@ def formulario_criar_coordenador() -> bool:
 def listar_coordenadores():
     """Lista e gerencia coordenadores existentes usando data_editor."""
     st.subheader("👤 Coordenadores Cadastrados")
+
+    # Show success message if it exists in session state
+    if "show_success_coordenador_edit" in st.session_state:
+        st.success(st.session_state["show_success_coordenador_edit"])
+        del st.session_state["show_success_coordenador_edit"]
 
     try:
         with db_manager.get_db_session() as session:
@@ -408,9 +534,6 @@ def salvar_alteracoes_coordenadores(
                 try:
                     coord_repo.delete(coordenador)
                     alteracoes += 1
-                    st.success(
-                        f"✅ Coordenador {coordenador.nome} deletado com sucesso!"
-                    )
                 except Exception as e:
                     erros.append(f"Erro ao deletar {coordenador.nome}: {str(e)}")
                 continue
@@ -458,14 +581,15 @@ def salvar_alteracoes_coordenadores(
 
             if mudou:
                 alteracoes += 1
-                tipo = "Superadmin" if is_superadmin_novo else "Coordenador"
-                st.success(f"✅ {nome_novo} atualizado com sucesso! Tipo: {tipo}")
 
         if alteracoes > 0:
             # Commit explicitamente
             try:
                 coord_repo.session.commit()
-                st.success(f"🎉 {alteracoes} alteração(ões) salva(s) com sucesso!")
+                # Store success message in session state to show after rerun
+                st.session_state["show_success_coordenador_edit"] = (
+                    f"🎉 {alteracoes} alteração(ões) salva(s) com sucesso!"
+                )
                 st.rerun()
             except Exception as commit_error:
                 coord_repo.session.rollback()
@@ -688,6 +812,11 @@ def listar_eventos():
     """Lista e permite editar eventos existentes usando data_editor."""
     st.subheader("📅 Eventos Cadastrados")
 
+    # Show success message if it exists in session state
+    if "show_success_evento_edit" in st.session_state:
+        st.success(st.session_state["show_success_evento_edit"])
+        del st.session_state["show_success_evento_edit"]
+
     try:
         with db_manager.get_db_session() as session:
             from app.db import get_evento_repository
@@ -821,7 +950,6 @@ def salvar_alteracoes_eventos(
                     try:
                         evento_repo.delete(evento)
                         alteracoes += 1
-                        st.success(f"✅ Evento {evento.ano} deletado com sucesso!")
                     except Exception as e:
                         erros.append(f"Erro ao deletar evento {evento.ano}: {str(e)}")
                 continue
@@ -866,7 +994,6 @@ def salvar_alteracoes_eventos(
 
                 if mudou:
                     alteracoes += 1
-                    st.success(f"✅ Evento {ano_int} atualizado com sucesso!")
 
             # Skip rows that have ID but no valid ano (these might be unmodified existing rows)
 
@@ -874,7 +1001,10 @@ def salvar_alteracoes_eventos(
             # Commit explicitamente antes do rerun
             try:
                 evento_repo.session.commit()
-                st.success(f"🎉 {alteracoes} alteração(ões) salva(s) com sucesso!")
+                # Store success message in session state to show after rerun
+                st.session_state["show_success_evento_edit"] = (
+                    f"🎉 {alteracoes} alteração(ões) salva(s) com sucesso!"
+                )
                 st.rerun()
             except Exception as commit_error:
                 evento_repo.session.rollback()
@@ -1572,9 +1702,21 @@ def main():
             st.success(st.session_state["show_success_coordenador"])
             del st.session_state["show_success_coordenador"]
 
+        # Show success message from modal association
+        if "show_success_associacao_modal" in st.session_state:
+            st.success(st.session_state["show_success_associacao_modal"])
+            del st.session_state["show_success_associacao_modal"]
+
         # Formulário de criação
         if formulario_criar_coordenador():
             st.rerun()
+
+        # Show modal for city association if needed
+        if st.session_state.get("show_modal_associacao", False):
+            modal_associar_cidades_coordenador(
+                st.session_state.get("modal_coord_id"),
+                st.session_state.get("modal_coord_nome", "Coordenador"),
+            )
 
         st.markdown("---")
         # Lista de coordenadores

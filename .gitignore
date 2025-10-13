@@ -26,6 +26,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+**/*.Identifier
+**/pint_signature.png
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -138,7 +140,7 @@ dmypy.json
 *.db
 *.sqlite
 *.sqlite3
-pint_of_science.db
+**/pint_of_science.db
 
 # IDEs
 .vscode/
