@@ -20,7 +20,7 @@ O sistema tem que permitir a emissão do certificado pelo palestrante, numa pág
 ```
 Certificamos que <nome_completo>
 participou como <função>
-do Pint of Science Brasil, realizado em
+do Pint of Science Brasil, realizado na cidade de
 <cidade - sigla_estado>, no dia <dia> de <mês> de
 <ano>, com carga horária de <carga> horas.
 

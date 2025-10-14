@@ -154,7 +154,7 @@ A interface oferece:
 A carga horária configurada é exibida no certificado PDF na seguinte linha:
 
 ```
-"...realizado em [Cidade] - [Estado], no(s) dia(s) [Datas],
+"...realizado na cidade de [Cidade] - [Estado], no(s) dia(s) [Datas],
 com carga horária de [XX] horas."
 ```
 

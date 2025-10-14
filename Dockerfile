@@ -49,9 +49,6 @@ RUN mkdir -p /app/data /app/static && \
 # Switch to non-root user
 USER streamlit
 
-# Copy application code (no chown needed since we run as host user)
-COPY . .
-
 # Expose Streamlit port
 EXPOSE 8501
 

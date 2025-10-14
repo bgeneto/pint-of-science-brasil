@@ -890,7 +890,7 @@ class GeradorCertificado:
                 (" participou como ", False, cores["cor_texto"]),
                 (funcao.nome_funcao, True, cores["cor_destaque"]),
                 (
-                    " do Pint of Science Brasil, realizado em ",
+                    " do Pint of Science Brasil, realizado na cidade de ",
                     False,
                     cores["cor_texto"],
                 ),
