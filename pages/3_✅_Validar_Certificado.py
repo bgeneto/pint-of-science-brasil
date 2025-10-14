@@ -24,6 +24,29 @@ st.set_page_config(
     layout="centered",
 )
 
+# Custom CSS para reduzir tamanho da fonte nos metrics
+st.markdown(
+    """
+    <style>
+    /* Reduzir tamanho da fonte do valor do metric */
+    [data-testid="stMetricValue"] {
+        font-size: 1.33rem !important;
+    }
+
+    /* Reduzir tamanho da fonte do label do metric */
+    [data-testid="stMetricLabel"] {
+        font-size: 0.9rem !important;
+    }
+
+    /* Ajustar espaçamento */
+    [data-testid="metric-container"] {
+        padding: 0.5rem 0 !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # Título da página
 st.title("✅ Validação de Certificado")
 st.markdown("---")
