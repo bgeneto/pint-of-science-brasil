@@ -196,9 +196,9 @@ def carregar_dados_validacao() -> Optional[tuple]:
                     email_decrypted = servico_criptografia.descriptografar(
                         participante.email_encrypted
                     )
-                    if i == 0:  # Log first participant
+                    if i < 3:  # Log first 3 participants with validation status
                         print(
-                            f"DEBUG: Data loading - First participant: ID={participante.id}, Name='{nome_decrypted}', Email='{email_decrypted}'"
+                            f"DEBUG: Participant {i+1}: ID={participante.id}, Name='{nome_decrypted}', Validado={participante.validado}"
                         )
 
                     participantes_data.append(
@@ -363,27 +363,26 @@ def tabela_validacao_participantes(
     # Coordenadores podem editar participantes de suas cidades
     can_edit = is_superadmin or bool(allowed_cities)
 
+    st.write(
+        "Marque os participantes que deseja confirmar a participação (apenas para permitir a emissão do certificado)"
+    )
+
     if is_superadmin:
-        st.write(
-            "Marque os participantes que deseja confirmar a participação (apenas para permitir a emissão do certificado)"
-        )
         st.info(
-            "💡 **Superadmin:** Você pode editar nome, email, cidade, função e título da apresentação."
+            "💡 **Atenção superadmin:**\n\n"
+            "- Você pode editar nome, email, cidade, função, título, datas etc...\n"
+            "- Não esqueça de clicar no botão “💾 Salvar Alterações” para confirmar as mudanças!"
         )
     elif allowed_cities:
-        st.write(
-            "Marque os participantes que deseja confirmar (para que seja possível emitir certificado):"
-        )
         st.info(
-            "💡 **Coordenador:** Você pode editar os dados dos participantes das suas cidades associadas."
-        )
-    else:
-        st.write(
-            "Marque os participantes que deseja confirmar (para que seja possível emitir certificado):"
+            "💡 **Coordenador:** Você pode editar os dados dos participantes das suas cidades associadas. Não esqueça de salvar as alterações!"
         )
 
     # Preparar DataFrame para edição
     df_editavel = df_participantes.copy()
+
+    # Ordenar por Nome em ordem ascendente
+    df_editavel = df_editavel.sort_values(by="Nome", ascending=True)
 
     # Adicionar coluna de seleção
     df_editavel["Selecionado"] = False
@@ -410,7 +409,10 @@ def tabela_validacao_participantes(
     # Editar apenas colunas selecionadas
     df_para_editor = df_editavel[colunas_exibicao].copy()
 
-    # Prepare options for Cidade and Função dropdowns
+    # Set ID as index so hide_index=True will hide it
+    df_para_editor = df_para_editor.set_index("ID")
+
+    # Preparar options para Cidade e Função dropdowns
     cidade_options = [""] + [f"{c['nome']}-{c['estado']}" for c in cidades.values()]
     funcao_options = [""] + [f["nome_funcao"] for f in funcoes.values()]
 
@@ -418,9 +420,6 @@ def tabela_validacao_participantes(
     edited_df = st.data_editor(
         df_para_editor,
         column_config={
-            "ID": st.column_config.NumberColumn(
-                "ID", width="small", disabled=True, help="ID do participante"
-            ),
             "Selecionado": st.column_config.CheckboxColumn(
                 "Validar", help="Marque para validar este participante"
             ),
@@ -522,119 +521,103 @@ def processar_validacao(
     # Coordenadores podem editar participantes de suas cidades
     can_edit = is_superadmin or bool(allowed_cities)
 
+    # CRITICAL FIX: Ensure df_original uses ID as index to match df_editado
+    # df_editado already has ID as index from tabela_validacao_participantes
+    # But df_original (df_filtrado) comes with default numeric index
+    if "ID" in df_original.columns:
+        df_original = df_original.set_index("ID")
+
     # Identificar participantes que foram marcados para validação
     selecionados = df_editado[df_editado["Selecionado"] == True]
 
-    # Para toggle: determinar ação baseada no status atual
-    if not selecionados.empty:
-        # Verificar se todos os selecionados estão validados ou não
-        current_statuses = []
-        for idx in selecionados.index:
-            if idx in df_original.index:
-                original_row = df_original.loc[idx]
-                current_statuses.append(original_row["Validado"])
-
-        # Se todos estão validados, desvalidar; senão, validar
-        should_validate = not all(current_statuses)  # True se nem todos estão validados
-
-        action_text = "validar" if should_validate else "desvalidar"
-        button_text = (
-            f"{'✅' if should_validate else '❌'} {action_text.title()} Selecionados"
-        )
+    # Helper function to normalize values for comparison
+    def normalize_value(val):
+        """Normalize values for comparison, handling None, NaN, empty strings, etc."""
+        if pd.isna(val) or val is None:
+            return ""
+        s = str(val).strip()
+        if s in ["-", "nan", "None", "N/A"]:
+            return ""
+        return s
 
     # Detectar mudanças em campos editáveis (para superadmins e coordenadores)
     mudancas = []
     if can_edit:
-        print(
-            f"DEBUG: Change detection - df_original shape: {df_original.shape}, df_editado shape: {df_editado.shape}"
-        )
-        print(
-            f"DEBUG: Change detection - df_original index: {df_original.index.tolist()[:5]}"
-        )
-        print(
-            f"DEBUG: Change detection - df_editado index: {df_editado.index.tolist()[:5]}"
-        )
-
         for idx, row in df_editado.iterrows():
+            # idx is now the participant ID since we set ID as index
+            participante_id = idx
+
             # Use the index to get the corresponding row from df_original
             if idx in df_original.index:
                 original_row = df_original.loc[idx]
-                participante_id = original_row["ID"]
-
-                print(f"DEBUG: Checking row {idx}, Participant ID {participante_id}")
 
                 # Check for changes in editable fields
                 changes = {}
-                if str(row["Nome"]).strip() != str(original_row["Nome"]).strip():
-                    changes["nome"] = str(row["Nome"]).strip()
-                    logger.info(
-                        f"Mudança detectada - Nome: '{original_row['Nome']}' -> '{row['Nome']}'"
-                    )
-                if str(row["Email"]).strip() != str(original_row["Email"]).strip():
-                    changes["email"] = str(row["Email"]).strip()
-                    logger.info(
-                        f"Mudança detectada - Email: '{original_row['Email']}' -> '{row['Email']}'"
-                    )
-                if str(row["Cidade"]).strip() != str(original_row["Cidade"]).strip():
-                    # Map back to cidade_id
-                    cidade_nome = str(row["Cidade"]).strip()
-                    cidade_id = next(
-                        (
-                            cid
-                            for cid, c in cidades.items()
-                            if f"{c['nome']}-{c['estado']}" == cidade_nome
-                        ),
-                        None,
-                    )
-                    if cidade_id:
-                        changes["cidade_id"] = cidade_id
-                        logger.info(
-                            f"Mudança detectada - Cidade: '{original_row['Cidade']}' -> '{row['Cidade']}' (ID: {cidade_id})"
-                        )
-                if str(row["Função"]).strip() != str(original_row["Função"]).strip():
-                    # Map back to funcao_id
-                    funcao_nome = str(row["Função"]).strip()
-                    funcao_id = next(
-                        (
-                            fid
-                            for fid, f in funcoes.items()
-                            if f["nome_funcao"] == funcao_nome
-                        ),
-                        None,
-                    )
-                    if funcao_id:
-                        changes["funcao_id"] = funcao_id
-                        logger.info(
-                            f"Mudança detectada - Função: '{original_row['Função']}' -> '{row['Função']}' (ID: {funcao_id})"
-                        )
-                if (
-                    str(row["Título Apresentação"]).strip()
-                    != str(original_row.get("Título Apresentação", "")).strip()
+
+                # Compare Nome
+                if normalize_value(row["Nome"]) != normalize_value(
+                    original_row["Nome"]
                 ):
-                    changes["titulo_apresentacao"] = str(
-                        row["Título Apresentação"]
-                    ).strip()
-                    logger.info(
-                        f"Mudança detectada - Título: '{original_row.get('Título Apresentação', '')}' -> '{row['Título Apresentação']}'"
-                    )
-                if (
-                    str(row["Datas Participação"]).strip()
-                    != str(original_row["Datas Participação"]).strip()
+                    changes["nome"] = normalize_value(row["Nome"])
+
+                # Compare Email
+                if normalize_value(row["Email"]) != normalize_value(
+                    original_row["Email"]
                 ):
-                    changes["datas_participacao"] = str(
+                    changes["email"] = normalize_value(row["Email"])
+
+                # Compare Cidade
+                if normalize_value(row["Cidade"]) != normalize_value(
+                    original_row["Cidade"]
+                ):
+                    cidade_nome = normalize_value(row["Cidade"])
+                    if cidade_nome:  # Only if not empty
+                        cidade_id = next(
+                            (
+                                cid
+                                for cid, c in cidades.items()
+                                if f"{c['nome']}-{c['estado']}" == cidade_nome
+                            ),
+                            None,
+                        )
+                        if cidade_id:
+                            changes["cidade_id"] = cidade_id
+
+                # Compare Função
+                if normalize_value(row["Função"]) != normalize_value(
+                    original_row["Função"]
+                ):
+                    funcao_nome = normalize_value(row["Função"])
+                    if funcao_nome:  # Only if not empty
+                        funcao_id = next(
+                            (
+                                fid
+                                for fid, f in funcoes.items()
+                                if f["nome_funcao"] == funcao_nome
+                            ),
+                            None,
+                        )
+                        if funcao_id:
+                            changes["funcao_id"] = funcao_id
+
+                # Compare Título Apresentação
+                if normalize_value(
+                    row.get("Título Apresentação", "")
+                ) != normalize_value(original_row.get("Título Apresentação", "")):
+                    changes["titulo_apresentacao"] = normalize_value(
+                        row.get("Título Apresentação", "")
+                    )
+
+                # Compare Datas Participação
+                if normalize_value(row["Datas Participação"]) != normalize_value(
+                    original_row["Datas Participação"]
+                ):
+                    changes["datas_participacao"] = normalize_value(
                         row["Datas Participação"]
-                    ).strip()
-                    logger.info(
-                        f"Mudança detectada - Datas: '{original_row['Datas Participação']}' -> '{row['Datas Participação']}'"
                     )
 
                 if changes:
                     mudancas.append({"id": participante_id, "changes": changes})
-                    logger.info(
-                        f"Mudanças agregadas para participante {participante_id}: {changes}"
-                    )
-
-        logger.info(f"Total de mudanças detectadas: {len(mudancas)}")
 
     # Debug: Show detected changes (remove this after testing)
     # if is_superadmin and mudancas:
@@ -648,25 +631,54 @@ def processar_validacao(
 
     with col1:
         if not selecionados.empty:
-            if st.button(button_text, type="primary", width="content"):
-                with st.spinner(f"{action_text.title()}ndo participantes..."):
-                    # Preparar lista de status para toggle
-                    validation_statuses = [should_validate] * len(selecionados)
-                    sucesso, mensagem = validar_participantes(
-                        selecionados["ID"].tolist(), validation_statuses
+            if st.button("🔄 Validar/Desvalidar", type="primary", width="content"):
+                with st.spinner("Alternando status de validação..."):
+                    # Para cada participante selecionado, toggle seu status atual
+                    validation_statuses = []
+                    ids_para_validar = []
+
+                    for idx in selecionados.index:
+                        if idx in df_original.index:
+                            original_row = df_original.loc[idx]
+                            # Toggle: se está validado (True), vira False; se não está (False), vira True
+                            current_status = original_row["Validado"]
+                            new_status = not current_status
+                            validation_statuses.append(new_status)
+                            ids_para_validar.append(idx)
+                            logger.info(
+                                f"Toggling participant {idx}: {current_status} -> {new_status}"
+                            )
+                        else:
+                            # Se não encontrar no original, validar por padrão
+                            validation_statuses.append(True)
+                            ids_para_validar.append(idx)
+                            logger.info(
+                                f"Participant {idx} not found in original, defaulting to True"
+                            )
+
+                    logger.info(
+                        f"Calling validar_participantes with {len(ids_para_validar)} participants"
                     )
+                    sucesso, mensagem = validar_participantes(
+                        ids_para_validar, validation_statuses
+                    )
+                    logger.info(
+                        f"validar_participantes returned: sucesso={sucesso}, mensagem={mensagem}"
+                    )
+
                 if sucesso:
-                    st.success(f"🎉 Participantes {action_text}dos com sucesso!")
+                    st.success(f"🎉 Status de validação alternado com sucesso!")
                     if "atualizados com sucesso" in mensagem:
                         st.info(mensagem)
-                    return "validacao"
+                    time.sleep(1)  # Brief pause to show the message
+                    st.rerun()  # Force immediate refresh
                 else:
-                    st.error(f"❌ Erro ao {action_text} participantes: {mensagem}")
+                    st.error(f"❌ Erro ao alternar validação: {mensagem}")
 
     with col2:
         if can_edit and mudancas:
-            if st.button("💾 Salvar Edições", type="primary", width="content"):
-                with st.spinner("Salvando edições..."):
+            if st.button("💾 Salvar Alterações", type="primary", width="content"):
+                with st.spinner("Salvando alterações..."):
                     # Check if any changes affect hash (nome ou email)
                     hash_affected = any(
                         "nome" in m["changes"] or "email" in m["changes"]
@@ -676,85 +688,83 @@ def processar_validacao(
                     sucesso = salvar_edicoes_participantes(mudancas)
 
                 if sucesso:
-                    st.success("🎉 Edições salvas com sucesso!")
-                    return "edicao"
+                    st.success("🎉 Alterações salvas com sucesso!")
+                    time.sleep(1)  # Brief pause to show the message
+                    st.rerun()  # Force immediate refresh
                 else:
-                    st.error("❌ Erro ao salvar edições.")
+                    st.error("❌ Erro ao salvar alteraçãoes.")
 
     return ""
 
 
 def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> bool:
-    """Salva edições nos participantes e regenera hash de validação se necessário."""
+    """Salva alterações nos participantes e regenera hash de validação se necessário."""
     try:
+        logger.info(f"📝 Iniciando salvamento de {len(mudancas)} alterações")
+
         with db_manager.get_db_session() as session:
-            # Ensure Participante model is imported
             from app.models import Participante
 
-            print(f"DEBUG: Saving {len(mudancas)} changes to participants")
-
             for mudanca in mudancas:
-                print(
-                    f"DEBUG: Processing change for participant ID {mudanca['id']}: {mudanca['changes']}"
+                logger.info(
+                    f"Processando participante ID {mudanca['id']}: {mudanca['changes']}"
                 )
 
-                # Use session.get() first, then fallback to manual search
                 participante = session.get(Participante, mudanca["id"])
-                print(f"DEBUG: Session.get result: {participante}")
 
                 if not participante:
-                    print(f"DEBUG: Trying manual search...")
-                    all_parts = session.query(Participante).all()
-                    participante = next(
-                        (p for p in all_parts if p.id == mudanca["id"]), None
-                    )
-                    print(f"DEBUG: Manual search result: {participante}")
-
-                if not participante:
-                    print(
-                        f"DEBUG: ERROR - Participant {mudanca['id']} not found in database!"
-                    )
-                    print(
-                        f"DEBUG: All participants in DB: {[(p.id, p.evento_id) for p in all_parts]}"
-                    )
+                    logger.error(f"❌ Participante {mudanca['id']} não encontrado!")
                     continue
-
-                print(
-                    f"DEBUG: Found participant {participante.id}, current name: {servico_criptografia.descriptografar(participante.nome_completo_encrypted)}"
-                )
 
                 # Track if we need to regenerate hash (nome ou email changed)
                 needs_hash_regeneration = False
 
                 for campo, valor in mudanca["changes"].items():
                     if campo == "nome":
+                        old_name = servico_criptografia.descriptografar(
+                            participante.nome_completo_encrypted
+                        )
                         participante.nome_completo_encrypted = (
                             servico_criptografia.criptografar(valor)
                         )
                         needs_hash_regeneration = True
-                        print(f"DEBUG: Updated name to: {valor}")
+                        logger.info(f"✏️ Nome atualizado: '{old_name}' -> '{valor}'")
                     elif campo == "email":
+                        old_email = servico_criptografia.descriptografar(
+                            participante.email_encrypted
+                        )
+                        # Update both encrypted email and hash
                         participante.email_encrypted = (
                             servico_criptografia.criptografar_email(valor)
                         )
+                        participante.email_hash = servico_criptografia.gerar_hash_email(
+                            valor
+                        )
                         needs_hash_regeneration = True
-                        print(f"DEBUG: Updated email to: {valor}")
+                        logger.info(f"✉️ Email atualizado: '{old_email}' -> '{valor}'")
                     elif campo == "cidade_id":
+                        logger.info(
+                            f"🏙️ Cidade atualizada: {participante.cidade_id} -> {valor}"
+                        )
                         participante.cidade_id = valor
-                        print(f"DEBUG: Updated cidade_id to: {valor}")
                     elif campo == "funcao_id":
+                        logger.info(
+                            f"👔 Função atualizada: {participante.funcao_id} -> {valor}"
+                        )
                         participante.funcao_id = valor
-                        print(f"DEBUG: Updated funcao_id to: {valor}")
                     elif campo == "titulo_apresentacao":
-                        participante.titulo_apresentacao = valor
-                        print(f"DEBUG: Updated titulo to: {valor}")
+                        logger.info(
+                            f"📄 Título atualizado: '{participante.titulo_apresentacao}' -> '{valor}'"
+                        )
+                        participante.titulo_apresentacao = valor if valor else None
                     elif campo == "datas_participacao":
+                        logger.info(
+                            f"📅 Datas atualizadas: '{participante.datas_participacao}' -> '{valor}'"
+                        )
                         participante.datas_participacao = valor
-                        print(f"DEBUG: Updated datas_participacao to: {valor}")
 
-                # Regenerate hash if nome or email changed
+                # Regenerate validation hash if nome or email changed
                 if needs_hash_regeneration and participante.hash_validacao:
-                    # Get decrypted data
                     nome_atual = servico_criptografia.descriptografar(
                         participante.nome_completo_encrypted
                     )
@@ -762,25 +772,30 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> bool:
                         participante.email_encrypted
                     )
 
-                    # Regenerate hash with new data
                     novo_hash = servico_criptografia.gerar_hash_validacao_certificado(
                         participante.id, participante.evento_id, email_atual, nome_atual
                     )
-
+                    old_hash = participante.hash_validacao
                     participante.hash_validacao = novo_hash
-                    print(f"DEBUG: ⚠️ Hash regenerated due to name/email change")
-                    print(f"DEBUG: New hash: {novo_hash}")
+                    logger.info(f"🔐 Hash de validação regenerado")
 
-                print(
-                    f"DEBUG: After update - name: {servico_criptografia.descriptografar(participante.nome_completo_encrypted)}"
+                # Merge changes
+                session.merge(participante)
+                logger.info(
+                    f"✅ Participante {mudanca['id']} atualizado (merge realizado)"
                 )
 
-            print(f"DEBUG: Context manager will commit automatically")
-            # Don't call session.commit() here - the context manager does it
+            # Flush changes to ensure they're written before commit
+            session.flush()
+            logger.info(
+                f"💾 Flush realizado - {len(mudancas)} alterações preparadas para commit"
+            )
 
+            # Context manager will auto-commit
+        logger.info(f"✅ Commit automático concluído - alterações salvas no banco")
         return True
     except Exception as e:
-        print(f"DEBUG: ERROR during save: {str(e)}")
+        logger.error(f"❌ Erro ao salvar alterações: {str(e)}")
         import traceback
 
         traceback.print_exc()
@@ -856,7 +871,7 @@ def main():
     st.markdown(
         """
     <div class="header-validation">
-        <h1>✅ Validação de Participação</h1>
+        <h1>👨‍👨‍👦‍👦 Participantes</h1>
         <p>Área exclusiva para coordenadores</p>
     </div>
     """,
@@ -906,14 +921,8 @@ def main():
     df_editado = tabela_validacao_participantes(df_filtrado, cidades, funcoes)
 
     if df_editado is not None:
-        # Processar validação e edições
-        acao = processar_validacao(df_filtrado, df_editado, cidades, funcoes)
-
-        if acao in ["validacao", "edicao"]:
-            # Reload data immediately instead of relying on st.rerun()
-            st.success("✅ Dados atualizados! Recarregando...")
-            time.sleep(1)  # Brief pause to show the message
-            st.rerun()
+        # Processar validação e edições (rerun happens inside this function if needed)
+        processar_validacao(df_filtrado, df_editado, cidades, funcoes)
 
     # Rodapé
     st.markdown(

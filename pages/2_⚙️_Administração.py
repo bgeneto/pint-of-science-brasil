@@ -1873,7 +1873,7 @@ def configurar_carga_horaria():
     funcoes_selecionadas_ids = config.get("funcoes_evento_completo", [])
 
     # Criar lista de opções com nome e ID
-    funcoes_options = list(funcoes_dict.keys())
+    funcoes_options = sorted(funcoes_dict.keys(), key=lambda x: funcoes_dict[x])
     funcoes_labels = [funcoes_dict[fid] for fid in funcoes_options]
 
     # Encontrar índices das funções já selecionadas

@@ -28,6 +28,15 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    .header-main {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        padding: 2rem;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
     /* Reduzir tamanho da fonte do valor do metric */
     [data-testid="stMetricValue"] {
         font-size: 1.33rem !important;
@@ -48,13 +57,19 @@ st.markdown(
 )
 
 # Título da página
-st.title("✅ Validação de Certificado")
-st.markdown("---")
+st.markdown(
+    """
+    <div class="header-main">
+        <h1>✅ Validação de Certificado</h1>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # Instruções
 st.info(
     """
-    **Como validar seu certificado:**
+    **ℹ️ Como validar seu certificado:**
 
     1. Localize o código de validação no rodapé do seu certificado PDF
     2. Cole o código no campo abaixo

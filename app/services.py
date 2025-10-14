@@ -287,9 +287,6 @@ class ServicoCalculoCargaHoraria:
                 f"Total: {carga_horaria}h"
             )
 
-            logger.info(
-                f"📊 Carga horária calculada: {carga_horaria}h para {len(dias_unicos)} dias"
-            )
             return carga_horaria, detalhes
 
         except Exception as e:
@@ -462,7 +459,7 @@ class ServicoEmail:
 
                     <div style="background-color: #f8fff8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #27ae60;">
                         <h3>Parabéns, {nome}!</h3>
-                        <p>Sua participação no Pint of Science Brasil foi validada e seu certificado já está disponível para download!</p>
+                        <p>Sua participação no Pint of Science Brasil foi confirmada e seu certificado já está disponível para download!</p>
 
                         <div style="text-align: center; margin: 30px 0;">
                             <a href="{link_download}" style="
@@ -477,7 +474,13 @@ class ServicoEmail:
                                 BAIXAR CERTIFICADO
                             </a>
                         </div>
-
+                        <p><strong>Como baixar:</strong></p>
+                        <ul>
+                            <li>Vá até a página principal do site</li>
+                            <li>Clique na aba “📜 Certificado”</li>
+                            <li>Digite o seu e-mail</li>
+                            <li>Clique no botão “👁️ Visualizar Certificado”</li>
+                        </ul>
                         <p><strong>O certificado inclui:</strong></p>
                         <ul>
                             <li>Seu nome completo e função no evento</li>
@@ -489,8 +492,7 @@ class ServicoEmail:
 
                     <div style="background-color: #fff3cd; padding: 15px; border-radius: 6px; margin: 20px 0;">
                         <p style="margin: 0; color: #856404;">
-                            <strong>⏰ Importante:</strong> O link de download é pessoal e intransferível.
-                            Mantenha seu certificado em local seguro.
+                            <strong>⏰ Importante:</strong> Clique na aba “Certificado” na página principal e informe o seu e-mail para visualizar ou baixar o seu certificado em formato pdf.
                         </p>
                     </div>
 
@@ -543,6 +545,71 @@ class ServicoEmail:
         except Exception as e:
             logger.error(f"❌ Erro na API Brevo: {e}")
             return False
+
+    def enviar_emails_certificado_liberado_batch(
+        self, destinatarios: List[Dict[str, str]]
+    ) -> Tuple[int, int]:
+        """
+        Envia e-mails em lote usando processamento otimizado.
+
+        Args:
+            destinatarios: Lista de dicionários com 'nome', 'email', 'link_download'
+
+        Returns:
+            Tupla com (sucessos, falhas)
+        """
+        if not self._configured:
+            logger.warning("⚠️ E-mails não enviados: serviço não configurado")
+            return 0, len(destinatarios)
+
+        if not destinatarios:
+            return 0, 0
+
+        try:
+            # Processar em batches para evitar timeout e sobrecarga
+            BATCH_SIZE = 100  # Processar 100 emails por vez
+            total_sucesso = 0
+            total_falha = 0
+
+            for i in range(0, len(destinatarios), BATCH_SIZE):
+                batch = destinatarios[i : i + BATCH_SIZE]
+
+                logger.info(
+                    f"📧 Processando batch {i//BATCH_SIZE + 1}: {len(batch)} emails"
+                )
+
+                for dest in batch:
+                    nome = dest.get("nome", "Participante")
+                    email = dest.get("email")
+                    link_download = dest.get("link_download", settings.base_url)
+
+                    if not email:
+                        total_falha += 1
+                        continue
+
+                    # Enviar email individual usando o método existente
+                    sucesso = self.enviar_email_certificado_liberado(
+                        nome, email, link_download
+                    )
+
+                    if sucesso:
+                        total_sucesso += 1
+                    else:
+                        total_falha += 1
+
+                logger.info(
+                    f"✅ Batch {i//BATCH_SIZE + 1} concluído: "
+                    f"{total_sucesso} sucessos até agora"
+                )
+
+            logger.info(
+                f"🎉 Envio em lote concluído: {total_sucesso} sucessos, {total_falha} falhas"
+            )
+            return total_sucesso, total_falha
+
+        except Exception as e:
+            logger.error(f"❌ Erro no envio em lote: {e}")
+            return total_sucesso, len(destinatarios) - total_sucesso
 
 
 class GeradorCertificado:
@@ -1455,6 +1522,9 @@ def validar_participantes(
             success_count = 0
             error_count = 0
 
+            # Coletar emails para envio em batch
+            emails_para_enviar = []
+
             for i, participante_id in enumerate(participante_ids):
                 try:
                     participante = participante_repo.get_by_id(
@@ -1486,8 +1556,8 @@ def validar_participantes(
                             detalhes=detalhes,
                         )
 
-                        # Enviar e-mail se validado
-                        if novo_status and servico_email.is_configured():
+                        # Coletar dados para envio de email em batch (apenas se validado)
+                        if novo_status:
                             try:
                                 nome = servico_criptografia.descriptografar(
                                     participante.nome_completo_encrypted
@@ -1495,16 +1565,18 @@ def validar_participantes(
                                 email = servico_criptografia.descriptografar(
                                     participante.email_encrypted
                                 )
-
-                                # Vamos usar o BASE_URL para construir o link
                                 link_download = f"{settings.base_url}/"
 
-                                servico_email.enviar_email_certificado_liberado(
-                                    nome, email, link_download
+                                emails_para_enviar.append(
+                                    {
+                                        "nome": nome,
+                                        "email": email,
+                                        "link_download": link_download,
+                                    }
                                 )
                             except Exception as e:
                                 logger.warning(
-                                    f"⚠️ Não foi possível enviar e-mail de certificado: {e}"
+                                    f"⚠️ Erro ao preparar email para participante {participante_id}: {e}"
                                 )
 
                         success_count += 1
@@ -1518,11 +1590,30 @@ def validar_participantes(
                     )
                     error_count += 1
 
+            # Flush changes to database BEFORE sending emails
+            session.flush()
+
+            # Enviar emails em batch (fora da sessão do banco para evitar locks)
+            emails_enviados = 0
+            emails_falhados = 0
+
+            if emails_para_enviar and servico_email.is_configured():
+                logger.info(f"📧 Enviando {len(emails_para_enviar)} emails em batch...")
+                emails_enviados, emails_falhados = (
+                    servico_email.enviar_emails_certificado_liberado_batch(
+                        emails_para_enviar
+                    )
+                )
+
             mensagem = f"Processados {success_count + error_count} participantes. "
             if success_count > 0:
                 mensagem += f"{success_count} atualizados com sucesso. "
             if error_count > 0:
-                mensagem += f"{error_count} erros."
+                mensagem += f"{error_count} erros. "
+            if emails_enviados > 0:
+                mensagem += f"{emails_enviados} emails enviados. "
+            if emails_falhados > 0:
+                mensagem += f"{emails_falhados} emails falharam."
 
             logger.info(f"✅ Validação em lote concluída: {mensagem}")
             return True, mensagem
