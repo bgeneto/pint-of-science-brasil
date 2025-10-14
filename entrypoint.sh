@@ -34,4 +34,5 @@ fi
 
 # Switch to streamlit user and execute the command
 echo "Switching to streamlit user and executing: $@"
-exec su -s /bin/bash streamlit -c "$@"
+# Use sudo to switch user and execute command with proper argument handling
+exec sudo -u streamlit "$@"
