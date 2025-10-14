@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libssl-dev \
     sqlite3 \
-    sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
@@ -35,29 +34,11 @@ RUN pip install --upgrade pip && \
 # Stage 2: Production application
 FROM base AS production
 
-# Create non-root user for security
-RUN groupadd -r streamlit && \
-    useradd -r -g streamlit streamlit
-
-# Create necessary directories first
+# Create necessary directories
 RUN mkdir -p /app/data /app/static
 
-# Copy application code
-COPY --chown=streamlit:streamlit . .
-
-# Copy and set up entrypoint script
-COPY entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-# Fix permissions for volumes that will be mounted
-RUN chown -R streamlit:streamlit /app && \
-    chmod -R 755 /app/data /app/static
-
-# Set entrypoint (runs as root before switching to streamlit)
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
-# Switch to non-root user
-USER streamlit
+# Copy application code (no chown needed since we run as host user)
+COPY . .
 
 # Expose Streamlit port
 EXPOSE 8501
