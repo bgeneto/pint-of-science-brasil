@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libssl-dev \
     sqlite3 \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
