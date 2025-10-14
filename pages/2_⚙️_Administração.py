@@ -759,9 +759,9 @@ def formulario_criar_evento() -> bool:
 
         with col2:
             datas_evento = st.text_input(
-                "Datas do Evento (YYYY-MM-DD) *",
-                placeholder="Ex: 2025-05-19, 2025-05-20, 2025-05-21",
-                help="Datas no formato YYYY-MM-DD (ISO), separadas por vírgula",
+                "Datas do Evento (DD/MM/YYYY) *",
+                placeholder="Ex: 19/05/2025, 20/05/2025, 21/05/2025",
+                help="Datas no formato brasileiro DD/MM/YYYY, separadas por vírgula",
             )
 
         submit_button = st.form_submit_button(
@@ -773,24 +773,11 @@ def formulario_criar_evento() -> bool:
                 st.error("❌ Preencha todos os campos obrigatórios.")
                 return False
 
-            # Parse datas_evento - expect ISO format YYYY-MM-DD
+            # Parse datas_evento - expect Brazilian format DD/MM/YYYY
             try:
-                datas_list = []
-                for d in datas_evento.split(","):
-                    d = d.strip()
-                    if d:
-                        # Validate ISO format
-                        try:
-                            datetime.fromisoformat(d)
-                            datas_list.append(d)
-                        except ValueError:
-                            raise ValueError(f"Data inválida: {d}")
-                if not datas_list:
-                    raise ValueError("Nenhuma data válida fornecida")
+                datas_list = Evento.parse_datas_br_to_iso(datas_evento)
             except Exception as e:
-                st.error(
-                    f"❌ Formato de datas inválido. Use YYYY-MM-DD separado por vírgula. Erro: {str(e)}"
-                )
+                st.error(f"❌ Formato de datas inválido. {str(e)}")
                 return False
 
             try:
@@ -848,9 +835,11 @@ def listar_eventos():
             # Preparar dados para exibição e edição
             dados = []
             for evento in eventos:
-                # Converter datas_evento (JSON) para string legível
+                # Converter datas_evento (JSON) para string legível no formato brasileiro
                 datas_str = (
-                    ", ".join(evento.datas_evento) if evento.datas_evento else ""
+                    Evento.format_datas_iso_to_br(evento.datas_evento)
+                    if evento.datas_evento
+                    else ""
                 )
                 dados.append(
                     {
@@ -869,9 +858,9 @@ def listar_eventos():
                 """
                     💡 **Dicas de uso:**
                     - Edite os valores diretamente nas células (use clique duplo)
-                    - Para adicionar novo evento, clique em + (na parte superior-direita da tabela ou na última linha)
-                    - Para deletar, deixe o campo Ano vazio (só funciona se não houver participantes)
-                    - Clique em **Salvar Alterações** para confirmar
+                    - Para adicionar novo evento, clique em **+**
+                    - Para **deletar**, deixe o campo **“Ano” vazio** (só funciona se não houver participantes)
+                    - Clique em “💾 Salvar Alterações” para confirmar
                 """
             )
 
@@ -893,7 +882,7 @@ def listar_eventos():
                     ),
                     "Datas": st.column_config.TextColumn(
                         "Datas",
-                        help="Datas do evento no formato YYYY-MM-DD, separadas por vírgula",
+                        help="Datas do evento no formato DD/MM/YYYY, separadas por vírgula",
                     ),
                     "Data Criação": st.column_config.TextColumn(
                         "Data Criação",
@@ -971,17 +960,10 @@ def salvar_alteracoes_eventos(
                         erros.append(f"Erro ao deletar evento {evento.ano}: {str(e)}")
                 continue
 
-            # Parse datas
+            # Parse datas - expect Brazilian format DD/MM/YYYY
             try:
                 if datas_str:
-                    datas_list = []
-                    for d in datas_str.split(","):
-                        d = d.strip()
-                        if d:
-                            datetime.fromisoformat(d)  # Validar formato
-                            datas_list.append(d)
-                    if not datas_list:
-                        raise ValueError("Nenhuma data válida")
+                    datas_list = Evento.parse_datas_br_to_iso(datas_str)
                 else:
                     raise ValueError("Datas são obrigatórias")
             except Exception as e:

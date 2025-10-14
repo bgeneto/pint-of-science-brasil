@@ -52,6 +52,58 @@ class Evento(Base):
     def __repr__(self):
         return f"<Evento(id={self.id}, ano={self.ano})>"
 
+    @classmethod
+    def parse_datas_br_to_iso(cls, datas_str: str) -> List[str]:
+        """
+        Converte string de datas no formato brasileiro DD/MM/YYYY para ISO YYYY-MM-DD.
+
+        Args:
+            datas_str: String com datas separadas por vírgula (ex: "19/05/2025, 20/05/2025")
+
+        Returns:
+            Lista de strings no formato ISO (ex: ["2025-05-19", "2025-05-20"])
+
+        Raises:
+            ValueError: Se alguma data estiver em formato inválido
+        """
+        datas_list = []
+        for d in datas_str.split(","):
+            d = d.strip()
+            if d:
+                try:
+                    # Tentar parser DD/MM/YYYY
+                    data_obj = datetime.strptime(d, "%d/%m/%Y")
+                    datas_list.append(data_obj.date().isoformat())
+                except ValueError:
+                    raise ValueError(f"Data inválida: {d}. Use o formato DD/MM/YYYY")
+
+        if not datas_list:
+            raise ValueError("Nenhuma data válida fornecida")
+
+        return datas_list
+
+    @classmethod
+    def format_datas_iso_to_br(cls, datas_list: List[str]) -> str:
+        """
+        Converte lista de datas ISO YYYY-MM-DD para formato brasileiro DD/MM/YYYY.
+
+        Args:
+            datas_list: Lista de strings no formato ISO (ex: ["2025-05-19", "2025-05-20"])
+
+        Returns:
+            String com datas formatadas separadas por vírgula (ex: "19/05/2025, 20/05/2025")
+        """
+        datas_br = []
+        for d in datas_list:
+            try:
+                data_obj = datetime.fromisoformat(d)
+                datas_br.append(data_obj.strftime("%d/%m/%Y"))
+            except (ValueError, AttributeError):
+                # Se falhar, retornar a data original
+                datas_br.append(d)
+
+        return ", ".join(datas_br)
+
 
 class Cidade(Base):
     """Modelo SQLAlchemy para a tabela cidades."""
@@ -154,6 +206,63 @@ class Participante(Base):
 
     def __repr__(self):
         return f"<Participante(id={self.id}, validado={self.validado})>"
+
+    @classmethod
+    def parse_datas_participacao_br_to_iso(cls, datas_str: str) -> str:
+        """
+        Converte string de datas de participação no formato brasileiro DD/MM/YYYY para ISO YYYY-MM-DD.
+
+        Args:
+            datas_str: String com datas separadas por vírgula (ex: "19/05/2025, 20/05/2025")
+
+        Returns:
+            String com datas no formato ISO separadas por vírgula (ex: "2025-05-19, 2025-05-20")
+
+        Raises:
+            ValueError: Se alguma data estiver em formato inválido
+        """
+        datas_list = []
+        for d in datas_str.split(","):
+            d = d.strip()
+            if d:
+                try:
+                    # Tentar parser DD/MM/YYYY
+                    data_obj = datetime.strptime(d, "%d/%m/%Y")
+                    datas_list.append(data_obj.date().isoformat())
+                except ValueError:
+                    raise ValueError(f"Data inválida: {d}. Use o formato DD/MM/YYYY")
+
+        if not datas_list:
+            raise ValueError("Nenhuma data válida fornecida")
+
+        return ", ".join(datas_list)
+
+    @classmethod
+    def format_datas_participacao_iso_to_br(cls, datas_str: str) -> str:
+        """
+        Converte string de datas de participação ISO YYYY-MM-DD para formato brasileiro DD/MM/YYYY.
+
+        Args:
+            datas_str: String com datas no formato ISO separadas por vírgula (ex: "2025-05-19, 2025-05-20")
+
+        Returns:
+            String com datas formatadas separadas por vírgula (ex: "19/05/2025, 20/05/2025")
+        """
+        if not datas_str:
+            return ""
+
+        datas_br = []
+        for d in datas_str.split(","):
+            d = d.strip()
+            if d:
+                try:
+                    data_obj = datetime.fromisoformat(d)
+                    datas_br.append(data_obj.strftime("%d/%m/%Y"))
+                except (ValueError, AttributeError):
+                    # Se falhar, retornar a data original
+                    datas_br.append(d)
+
+        return ", ".join(datas_br)
 
 
 class Auditoria(Base):

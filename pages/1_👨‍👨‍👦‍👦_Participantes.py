@@ -262,7 +262,9 @@ def preparar_dataframe_participantes(
                 "Cidade": f"{cidade['nome']}-{cidade['estado']}" if cidade else "N/A",
                 "Função": funcao["nome_funcao"] if funcao else "N/A",
                 "Título Apresentação": participante["titulo_apresentacao"] or "-",
-                "Datas Participação": participante["datas_participacao"],
+                "Datas Participação": Participante.format_datas_participacao_iso_to_br(
+                    participante["datas_participacao"]
+                ),
                 "Carga Horária": f"{carga_horaria}h",
                 "Validado": participante["validado"],
                 "Data Inscrição": formatar_data_exibicao(
@@ -480,7 +482,7 @@ def tabela_validacao_participantes(
                 width="medium",
                 disabled=not can_edit,
                 help=(
-                    "Editar datas (coordenadores e superadmin)"
+                    "Editar datas no formato DD/MM/YYYY, separadas por vírgula (coordenadores e superadmin)"
                     if can_edit
                     else "Somente leitura"
                 ),
@@ -758,10 +760,19 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> bool:
                         )
                         participante.titulo_apresentacao = valor if valor else None
                     elif campo == "datas_participacao":
-                        logger.info(
-                            f"📅 Datas atualizadas: '{participante.datas_participacao}' -> '{valor}'"
-                        )
-                        participante.datas_participacao = valor
+                        # Convert from Brazilian format (DD/MM/YYYY) to ISO (YYYY-MM-DD)
+                        try:
+                            valor_iso = Participante.parse_datas_participacao_br_to_iso(
+                                valor
+                            )
+                            logger.info(
+                                f"📅 Datas atualizadas: '{participante.datas_participacao}' -> '{valor_iso}' (convertido de '{valor}')"
+                            )
+                            participante.datas_participacao = valor_iso
+                        except ValueError as e:
+                            logger.error(f"❌ Erro ao converter datas: {str(e)}")
+                            # Keep original value if conversion fails
+                            continue
 
                 # Regenerate validation hash if nome or email changed
                 if needs_hash_regeneration and participante.hash_validacao:

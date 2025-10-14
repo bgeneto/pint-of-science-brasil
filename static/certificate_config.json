@@ -28,11 +28,9 @@
       "horas_por_dia": 4,
       "horas_por_evento": 40,
       "funcoes_evento_completo": [
-        10,
-        11,
-        15,
-        16,
-        14
+        1,
+        2,
+        3
       ]
     }
   },
@@ -47,6 +45,17 @@
       "pint_logo": "pint_logo.png",
       "pint_signature": "pint_signature.png",
       "sponsor_logo": "sponsor_logo.png"
+    }
+  },
+  "2026": {
+    "cores": {
+      "cor_primaria": "#e74c3c",
+      "cor_secundaria": "#c0392b",
+      "cor_texto": "#2c3e50",
+      "cor_destaque": "#f39c12"
+    },
+    "imagens": {
+      "pint_signature": "2026/pint_signature.png"
     }
   }
 }
