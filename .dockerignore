@@ -62,7 +62,6 @@ docker-compose*.yml
 docs/
 
 # Test files
-tests/
 .coverage
 .pytest_cache/
 htmlcov/

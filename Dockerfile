@@ -38,15 +38,25 @@ FROM base AS production
 RUN groupadd -r streamlit && \
     useradd -r -g streamlit streamlit
 
+# Create necessary directories first
+RUN mkdir -p /app/data /app/static
+
 # Copy application code
 COPY --chown=streamlit:streamlit . .
 
-# Create necessary directories and set permissions
-RUN mkdir -p /app/data /app/static && \
-    chown -R streamlit:streamlit /app
+# Copy and set up entrypoint script
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Fix permissions for volumes that will be mounted
+RUN chown -R streamlit:streamlit /app && \
+    chmod -R 755 /app/data /app/static
 
 # Switch to non-root user
 USER streamlit
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Expose Streamlit port
 EXPOSE 8501
