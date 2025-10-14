@@ -894,7 +894,7 @@ class GeradorCertificado:
                     False,
                     cores["cor_texto"],
                 ),
-                (f"{cidade.nome} - {cidade.estado}", True, cores["cor_destaque"]),
+                (f" {cidade.nome} - {cidade.estado}", True, cores["cor_destaque"]),
                 (", no(s) dia(s) ", False, cores["cor_texto"]),
                 (datas_texto, True, cores["cor_destaque"]),
                 (", com carga horária de ", False, cores["cor_texto"]),
