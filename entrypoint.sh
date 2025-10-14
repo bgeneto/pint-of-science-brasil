@@ -34,4 +34,4 @@ fi
 
 # Switch to streamlit user and execute the command
 echo "Switching to streamlit user and executing: $@"
-exec su-exec streamlit:streamlit "$@"
+exec su -s /bin/bash streamlit -c "$@"
