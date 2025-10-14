@@ -43,7 +43,8 @@ services:
           memory: 1024M
 
     # Run container as host user for correct volume permissions
-    user: "1000:1000"
+    # Replace 1000 with your actual host user UID (run 'id -u' on host)
+    user: "${HOST_UID:-1000}:${HOST_UID:-1000}"
 
 networks:
   proxy:

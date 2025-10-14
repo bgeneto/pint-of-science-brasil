@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libssl-dev \
     sqlite3 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
@@ -34,8 +35,19 @@ RUN pip install --upgrade pip && \
 # Stage 2: Production application
 FROM base AS production
 
-# Create necessary directories
-RUN mkdir -p /app/data /app/static
+# Create non-root user for security
+RUN groupadd -r streamlit && \
+    useradd -r -g streamlit streamlit
+
+# Copy application code
+COPY --chown=streamlit:streamlit . .
+
+# Create necessary directories and set permissions
+RUN mkdir -p /app/data /app/static && \
+    chown -R streamlit:streamlit /app
+
+# Switch to non-root user
+USER streamlit
 
 # Copy application code (no chown needed since we run as host user)
 COPY . .
