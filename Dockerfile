@@ -52,11 +52,11 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 RUN chown -R streamlit:streamlit /app && \
     chmod -R 755 /app/data /app/static
 
+# Set entrypoint (runs as root before switching to streamlit)
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
 # Switch to non-root user
 USER streamlit
-
-# Set entrypoint
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Expose Streamlit port
 EXPOSE 8501
