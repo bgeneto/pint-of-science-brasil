@@ -58,7 +58,8 @@ Existem **duas formas** de validar um certificado:
 5. **O resultado aparece imediatamente**
 
 !!! success "Método mais rápido"
-Este é o método mais rápido e conveniente!
+
+    Este é o método mais rápido e conveniente!
 
 ### Método 2: Código Manual
 
@@ -82,7 +83,8 @@ Código de validação: abc123def456...
 6. **Clique** em "Validar Certificado"
 
 !!! info "Quando usar?"
-Use este método quando: - O link direto não funcionar - Você tem apenas o código impresso - Está validando offline/posteriormente
+
+    Use este método quando: - O link direto não funcionar - Você tem apenas o código impresso - Está validando offline/posteriormente
 
 ## 🖥️ Interface de Validação
 
@@ -135,7 +137,8 @@ Sistema Pint of Science Brasil.
 | **Validado por**          | João Coordenador (coordenador@email.com) |
 
 !!! success "Certificado Autêntico"
-Todas essas informações garantem que o certificado é legítimo!
+
+    Todas essas informações garantem que o certificado é legítimo!
 
 ### Certificado Inválido
 
@@ -159,7 +162,8 @@ em nosso sistema.
 | **Hash corrompido**        | PDF foi modificado após emissão        |
 
 !!! danger "Atenção!"
-Um certificado inválido pode indicar falsificação!
+
+    Um certificado inválido pode indicar falsificação!
 
 ## 🔍 Verificando Detalhes
 
@@ -206,9 +210,6 @@ Ao validar, o sistema mostra:
 4. Confirme a carga horária
 5. Anote o resultado
 
-!!! tip "Dica RH"
-Tire um print da tela de validação para anexar ao processo seletivo!
-
 ### Para Instituições de Ensino
 
 **Situação:** Aluno quer usar para horas complementares
@@ -222,7 +223,8 @@ Tire um print da tela de validação para anexar ao processo seletivo!
 5. Confirme se a função se enquadra nas regras da instituição
 
 !!! info "Horas Complementares"
-Verifique se a função do aluno (ex: Voluntário, Participante) é aceita pela sua instituição.
+
+    Verifique se a função do aluno (ex: Voluntário, Participante) é aceita pela sua instituição.
 
 ### Para o Próprio Participante
 

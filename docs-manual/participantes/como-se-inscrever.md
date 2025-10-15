@@ -14,7 +14,8 @@ Antes de se inscrever, certifique-se de que:
 - ✅ Você tem um **e-mail válido** (que você acessa regularmente)
 
 !!! warning "Importante"
-Você só deve se inscrever **após** ter estar de posse desses dados.
+
+    Você só deve se inscrever **após** ter estar de posse desses dados.
 
 ## 🖥️ Acessando o Sistema
 
@@ -54,7 +55,8 @@ O formulário de inscrição contém os seguintes campos:
 - ❌ Errado: `J. P. Oliveira` (abreviado)
 
 !!! tip "Dica"
-Este nome aparecerá **exatamente assim** no seu certificado!
+
+    Este nome aparecerá **exatamente assim** no seu certificado!
 
 #### 2. E-mail
 
@@ -70,7 +72,9 @@ Este nome aparecerá **exatamente assim** no seu certificado!
 - ✅ Correto: `joao.pedro@universidade.edu.br`
 - ❌ Errado: `maria.silva@gmaiil.com` (erro de digitação)
 
-!!! warning "Atenção" - Você usará este e-mail para **baixar seu certificado** - Digite com **atenção** - diferença de maiúsculas/minúsculas importa - Guarde este e-mail, você precisará dele depois
+!!! warning "Atenção"
+
+    Você usará este e-mail para **baixar seu    certificado** - Digite com **atenção** - diferença de maiúsculas/minúsculas importa - Guarde este e-mail, você precisará dele depois
 
 **Validação automática:**
 
@@ -91,7 +95,8 @@ Pint of Science 2025
 ```
 
 !!! info "Múltiplas edições"
-Se você participou de mais de uma edição, faça uma inscrição para cada ano.
+
+    Se você participou de mais de uma edição, faça uma inscrição para cada ano.
 
 #### 4. Cidade
 
@@ -108,7 +113,8 @@ Se você participou de mais de uma edição, faça uma inscrição para cada ano
 - `Porto Alegre - RS`
 
 !!! tip "Cidade não aparece?"
-Se sua cidade não aparece na lista, entre em contato com os organizadores.
+
+    Se sua cidade não aparece na lista, entre em contato com os organizadores.
 
 #### 5. Função
 
@@ -124,7 +130,8 @@ Se sua cidade não aparece na lista, entre em contato com os organizadores.
 - **Organizador**: Você fez parte da organização geral
 
 !!! question "Qual função escolher?"
-Escolha a função **principal** que você exerceu. Se você teve múltiplas funções, escolha a de maior responsabilidade.
+
+    Escolha a função **principal** que você exerceu. Se você teve múltiplas funções, escolha a de maior responsabilidade.
 
 #### 6. Datas de Participação
 
@@ -143,7 +150,11 @@ Escolha a função **principal** que você exerceu. Se você teve múltiplas fun
 ☐ 22/05/2025
 ```
 
-!!! warning "Importante" - Selecione **apenas** os dias em que você **efetivamente participou** - Não marque datas em que você não esteve presente - A carga horária do certificado será calculada com base nessas datas
+!!! warning "Importante"
+
+    - Selecione **apenas** os dias em que você **efetivamente participou**
+    - Não marque datas em que você não esteve presente
+    - A carga horária do certificado será calculada com base nessas datas
 
 **Exemplo prático:**
 
@@ -217,7 +228,8 @@ O tempo de validação varia:
 - ⏱️ **Máximo**: 7-10 dias úteis (em períodos de pico)
 
 !!! info "Paciência"
-Os coordenadores são voluntários e podem levar alguns dias para validar todas as inscrições.
+
+    Os coordenadores são voluntários e podem levar alguns dias para validar todas as inscrições.
 
 ### Como saber se fui validado?
 
@@ -249,7 +261,8 @@ Se você percebeu um erro **após** a validação:
    - Re-validar a participação
 
 !!! warning "Cuidado"
-Alterações após validação são mais trabalhosas. Revise bem seus dados antes de enviar!
+
+    Alterações após validação são mais trabalhosas. Revise bem seus dados antes de enviar!
 
 ## 📱 Inscrição pelo Celular
 
@@ -290,9 +303,21 @@ Sem problemas! O sistema aceita todos os caracteres do alfabeto português.
 
 ## ✨ Dicas Finais
 
-!!! success "Boas práticas" - ✅ Preencha com calma e atenção - ✅ Revise todos os campos antes de enviar - ✅ Guarde o e-mail usado (anote em algum lugar) - ✅ Aguarde pacientemente a validação - ✅ Verifique spam se houver e-mails automáticos
+!!! success "Boas práticas"
 
-!!! danger "Evite" - ❌ Apressar o preenchimento - ❌ Usar e-mail que você não acessa - ❌ Marcar datas em que não participou - ❌ Fazer múltiplas inscrições com o mesmo e-mail - ❌ Usar dados falsos
+    - ✅ Preencha com calma e atenção
+    - ✅ Revise todos os campos antes de enviar
+    - ✅ Guarde o e-mail usado (anote em algum lugar)
+    - ✅ Aguarde pacientemente a validação
+    - ✅ Verifique spam se houver e-mails automáticos
+
+!!! danger "Evite"
+
+   - ❌ Apressar o preenchimento
+   - ❌ Usar e-mail que você não acessa
+   - ❌ Marcar datas em que não participou
+   - ❌ Fazer múltiplas inscrições com o mesmo e-mail
+   - ❌ Usar dados falsos
 
 ---
 
@@ -305,4 +330,5 @@ Após se inscrever:
 - Você também pode [validar certificados](validar-certificado.md) de outras pessoas
 
 !!! question "Ainda com dúvidas?"
-Consulte nosso [FAQ](faq.md) ou entre em [contato](../suporte.md)!
+
+    Consulte nosso [FAQ](faq.md) ou entre em [contato](../suporte.md)!

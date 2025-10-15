@@ -316,4 +316,5 @@ Se sua pergunta não está aqui:
 ---
 
 !!! tip "Dica"
-Use Ctrl+F (Cmd+F no Mac) para buscar palavras-chave nesta página e encontrar respostas mais rápido!
+
+    Use Ctrl+F (Cmd+F no Mac) para buscar palavras-chave nesta página e encontrar respostas mais rápido!

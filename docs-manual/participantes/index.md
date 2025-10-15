@@ -49,7 +49,8 @@ Após participar do evento:
 3. Aguarde a confirmação
 
 !!! tip "Importante"
-Use um **e-mail válido** e que você tenha acesso, pois é através dele que você baixará seu certificado!
+
+    Use um **e-mail válido** e que você tenha acesso, pois é através dele que você baixará seu certificado!
 
 ### 3️⃣ Aguarde a Validação
 
@@ -60,7 +61,8 @@ Após a inscrição:
 - Quando validada, você poderá baixar seu certificado
 
 !!! info "Tempo de validação"
-O tempo de validação varia de acordo com cada cidade. Geralmente leva de 1 a 7 dias úteis.
+
+    O tempo de validação varia de acordo com cada cidade. Geralmente leva de 1 a 7 dias úteis.
 
 ### 4️⃣ Baixe seu Certificado
 
@@ -94,7 +96,11 @@ Para se inscrever no sistema, você precisa fornecer:
 | **Função**        | Sua função no evento (participante, voluntário, etc.) | ✅ Sim      |
 | **Datas**         | Dias específicos em que você participou               | ✅ Sim      |
 
-!!! warning "Atenção aos dados" - Use seu **nome completo** exatamente como deseja no certificado - Verifique se o **e-mail está correto** (você precisará dele depois) - Selecione apenas as **datas em que realmente participou**
+!!! warning "Atenção aos dados"
+
+    - Use seu **nome completo** exatamente como deseja no certificado
+    - Verifique se o **e-mail está correto** (você precisará dele depois)
+    - Selecione apenas as **datas em que realmente participou**
 
 ## 🎓 Tipos de Participação
 
@@ -136,7 +142,8 @@ O sistema pode enviar e-mails automáticos em certas situações:
 | **Envio de Certificado**     | Opcional pelo coordenador | PDF do certificado em anexo     |
 
 !!! tip "Verifique o spam"
-Caso não receba nossos e-mails, verifique sua caixa de spam ou lixo eletrônico!
+
+    Caso não receba nossos e-mails, verifique sua caixa de spam ou lixo eletrônico!
 
 ## 🔒 Sua Privacidade
 
@@ -182,4 +189,5 @@ Agora que você conhece o processo, escolha o guia adequado:
 - **Dúvidas?** → [Perguntas Frequentes](faq.md)
 
 !!! question "Precisa de ajuda?"
-Se não encontrou o que procura, visite nossa página de [Suporte](../suporte.md)!
+
+    Se não encontrou o que procura, visite nossa página de [Suporte](../suporte.md)!

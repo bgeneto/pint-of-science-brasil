@@ -356,7 +356,8 @@ Recomendamos salvar em **múltiplos locais**:
 4. **Pendrive/HD externo** (backup adicional)
 
 !!! tip "Múltiplas cópias"
-Tenha sempre pelo menos **duas cópias** do certificado em locais diferentes!
+
+    Tenha sempre pelo menos **duas cópias** do certificado em locais diferentes!
 
 ## 📱 Baixando pelo Celular
 
@@ -434,4 +435,5 @@ Agora que você tem seu certificado:
 - Precisa de ajuda? [Entre em contato](../suporte.md)
 
 !!! success "Parabéns!"
-Você completou o processo! Aproveite seu certificado de participação no Pint of Science! 🎉
+
+    Você completou o processo! Aproveite seu certificado de participação no Pint of Science! 🎉

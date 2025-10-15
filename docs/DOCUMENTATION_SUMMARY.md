@@ -419,16 +419,20 @@ Usamos 4 tipos principais:
 
 ```markdown
 !!! note "Nota"
-Informação adicional
+
+    Informação adicional
 
 !!! tip "Dica"
-Dica útil
+
+    Dica útil
 
 !!! warning "Atenção"
-Cuidado com isso
+
+    Cuidado com isso
 
 !!! danger "Importante"
-Crítico!
+
+    Crítico!
 ```
 
 ### 3. Tabs
