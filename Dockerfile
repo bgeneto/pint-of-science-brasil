@@ -30,9 +30,20 @@ COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt && \
+    pip install mkdocs-material
 
-# Stage 2: Production application
+# Stage 2: Build documentation
+FROM base AS docs-builder
+
+# Copy documentation source
+COPY docs-manual/ /app/docs-manual/
+COPY mkdocs.yml /app/
+
+# Build MkDocs documentation
+RUN mkdocs build --clean
+
+# Stage 3: Production application
 FROM base AS production
 
 # Create non-root user for security
@@ -41,6 +52,9 @@ RUN groupadd -r streamlit && \
 
 # Copy application code
 COPY --chown=streamlit:streamlit . .
+
+# Copy built documentation from docs-builder stage
+COPY --from=docs-builder --chown=streamlit:streamlit /app/docs-site /app/docs-site
 
 # Create necessary directories and set permissions
 RUN mkdir -p /app/data /app/static && \

@@ -822,15 +822,15 @@ def main():
         "--output",
         "-o",
         type=Path,
-        default=Path("site/pdf/manual-completo-pint-brasil.pdf"),
-        help="Output PDF path (default: site/pdf/manual-completo-pint-brasil.pdf)",
+        default=Path("docs-site/pdf/manual-completo-pint-brasil.pdf"),
+        help="Output PDF path (default: docs-site/pdf/manual-completo-pint-brasil.pdf)",
     )
     parser.add_argument(
         "--site-dir",
         "-s",
         type=Path,
-        default=Path("site"),
-        help="MkDocs site directory (default: site)",
+        default=Path("docs-site"),
+        help="MkDocs site directory (default: docs-site)",
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Enable verbose logging"

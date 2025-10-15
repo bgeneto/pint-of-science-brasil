@@ -1,7 +1,7 @@
 site_name: Sistema Pint of Science Brasil
 site_description: Manual do Usuário - Sistema de Certificados
 site_author: Pint of Science Brasil
-# site_url: https://bgeneto.github.io/pint-of-science-brasil  # Uncomment for production deploy
+site_url: https://pint.sistema.pro.br/docs
 
 # Repository
 repo_name: bgeneto/pint-of-science-brasil
@@ -12,7 +12,8 @@ copyright: Copyright &copy; 2025 Pint of Science Brasil
 
 # Configuration
 docs_dir: docs-manual
-site_dir: static/docs  # Generate documentation inside static folder for Streamlit serving
+site_dir: docs-site # Generate documentation to be served separately
+use_directory_urls: true # Keep directory URLs for better structure
 
 theme:
   name: material

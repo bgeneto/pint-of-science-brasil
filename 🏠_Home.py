@@ -11,6 +11,7 @@ Esta é a página principal do sistema que inclui:
 import streamlit as st
 from datetime import datetime, date
 from typing import Optional, Dict, Any
+from pathlib import Path
 
 # Importar módulos do sistema
 from app.core import settings
@@ -559,6 +560,36 @@ def main():
         if is_user_logged_in():
             mostrar_menu_usuario_logado()
 
+        # Documentação
+        st.markdown("### 📄 Documentação")
+
+        # Link para PDF do manual
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Verifica se o PDF existe
+            pdf_path = Path("docs-site/pdf/manual-completo-pint-brasil.pdf")
+            if pdf_path.exists():
+                with open(pdf_path, "rb") as pdf_file:
+                    st.download_button(
+                        label="📄 Manual",
+                        data=pdf_file,
+                        file_name="Manual-Pint-of-Science-Brasil.pdf",
+                        mime="application/pdf",
+                        use_container_width=True,
+                        help="Baixe o manual completo do sistema em PDF",
+                    )
+
+        with col2:
+            # Link para documentação HTML local via MkDocs
+            st.link_button(
+                "🌍 Docs",
+                "http://localhost:8000",
+                use_container_width=True,
+                help="Página de documentação do sistema",
+            )
+
+        st.markdown("---")
         st.markdown("### 📊 Status do Sistema")
 
         # Mostrar informações do sistema
