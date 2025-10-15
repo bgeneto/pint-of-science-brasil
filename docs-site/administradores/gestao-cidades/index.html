@@ -1,0 +1,2369 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Manual do Usuário - Sistema de Certificados">
+      
+      
+        <meta name="author" content="Pint of Science Brasil">
+      
+      
+        <link rel="canonical" href="https://pint.sistema.pro.br/docs/administradores/gestao-cidades/">
+      
+      
+        <link rel="prev" href="../gestao-coordenadores/">
+      
+      
+        <link rel="next" href="../gestao-eventos/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+    
+    
+      
+        <title>Gestão de Cidades - Sistema Pint of Science Brasil</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="pink">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gestao-de-cidades" class="md-skip">
+          Pular para conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href="../.." title="Sistema Pint of Science Brasil" class="md-header__button md-logo" aria-label="Sistema Pint of Science Brasil" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 3c-1.11 0-2 .89-2 2v10a2 2 0 0 0 2 2h8v5l3-3 3 3v-5h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4m8 2 3 2 3-2v3.5l3 1.5-3 1.5V15l-3-2-3 2v-3.5L9 10l3-1.5zM4 5h5v2H4zm0 4h3v2H4zm0 4h5v2H4z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Sistema Pint of Science Brasil
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Gestão de Cidades
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="pink"  aria-label="Mudar para modo escuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Mudar para modo escuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="pink"  aria-label="Mudar para modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Mudar para modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Compartilhar" aria-label="Compartilhar" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando busca
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bgeneto/pint-of-science-brasil" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bgeneto/pint-of-science-brasil
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Abas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  Início
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../participantes/" class="md-tabs__link">
+          
+  
+  
+  Para Participantes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../coordenadores/" class="md-tabs__link">
+          
+  
+  
+  Para Coordenadores
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Para Administradores
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../configuracao/" class="md-tabs__link">
+          
+  
+  
+  Configuração do Sistema
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../solucao-problemas/" class="md-tabs__link">
+          
+  
+  
+  Solução de Problemas
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Sistema Pint of Science Brasil" class="md-nav__button md-logo" aria-label="Sistema Pint of Science Brasil" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 3c-1.11 0-2 .89-2 2v10a2 2 0 0 0 2 2h8v5l3-3 3 3v-5h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4m8 2 3 2 3-2v3.5l3 1.5-3 1.5V15l-3-2-3 2v-3.5L9 10l3-1.5zM4 5h5v2H4zm0 4h3v2H4zm0 4h5v2H4z"/></svg>
+
+    </a>
+    Sistema Pint of Science Brasil
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bgeneto/pint-of-science-brasil" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bgeneto/pint-of-science-brasil
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Início
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Início
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Bem-vindo
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guia-rapido/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Guia Rápido
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sobre-sistema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sobre o Sistema
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Para Participantes
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Para Participantes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../participantes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visão Geral
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../participantes/como-se-inscrever/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Como se Inscrever
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../participantes/baixar-certificado/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Baixar Certificado
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../participantes/validar-certificado/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Validar Certificado
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../participantes/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Perguntas Frequentes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Para Coordenadores
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Para Coordenadores
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../coordenadores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visão Geral
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../coordenadores/acesso-sistema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Acesso ao Sistema
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../coordenadores/validar-participantes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Validar Participantes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../coordenadores/gerenciar-participantes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gerenciar Participantes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../coordenadores/enviar-certificados/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Enviar Certificados
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../coordenadores/relatorios/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Relatórios e Estatísticas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Para Administradores
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Para Administradores
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visão Geral
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gestao-coordenadores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gestão de Coordenadores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Gestão de Cidades
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gestão de Cidades
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-sao-cidades" class="md-nav__link">
+    <span class="md-ellipsis">
+      🎯 O que são Cidades?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acessando-a-gestao" class="md-nav__link">
+    <span class="md-ellipsis">
+      🚀 Acessando a Gestão
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#criando-nova-cidade" class="md-nav__link">
+    <span class="md-ellipsis">
+      ➕ Criando Nova Cidade
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="➕ Criando Nova Cidade">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#passo-a-passo" class="md-nav__link">
+    <span class="md-ellipsis">
+      Passo a Passo
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#campos-obrigatorios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Campos Obrigatórios
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estados-disponiveis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estados Disponíveis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-de-criacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemplo de Criação
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validacoes-automaticas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Validações Automáticas
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#visualizando-cidades" class="md-nav__link">
+    <span class="md-ellipsis">
+      📊 Visualizando Cidades
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Visualizando Cidades">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tabela-de-cidades-cadastradas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tabela de Cidades Cadastradas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-de-dados" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemplo de Dados
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ordenacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ordenação
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deletando-cidades" class="md-nav__link">
+    <span class="md-ellipsis">
+      🗑️ Deletando Cidades
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🗑️ Deletando Cidades">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#como-deletar-cidade-se-necessario" class="md-nav__link">
+    <span class="md-ellipsis">
+      Como Deletar Cidade (se necessário)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regras-de-protecao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Regras de Proteção
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#casos-de-uso-comuns" class="md-nav__link">
+    <span class="md-ellipsis">
+      🎯 Casos de Uso Comuns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 Casos de Uso Comuns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#caso-1-cadastrar-cidades-para-novo-evento" class="md-nav__link">
+    <span class="md-ellipsis">
+      Caso 1: Cadastrar Cidades para Novo Evento
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caso-2-correcao-de-nome-errado" class="md-nav__link">
+    <span class="md-ellipsis">
+      Caso 2: Correção de Nome Errado
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caso-3-expandir-para-novo-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      Caso 3: Expandir para Novo Estado
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caso-4-verificar-cidades-existentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Caso 4: Verificar Cidades Existentes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#impacto-em-outras-funcionalidades" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔄 Impacto em Outras Funcionalidades
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 Impacto em Outras Funcionalidades">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#participantes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Participantes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coordenadores" class="md-nav__link">
+    <span class="md-ellipsis">
+      Coordenadores
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relatorios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Relatórios
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formato-nome-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      📍 Formato Nome-Estado
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📍 Formato Nome-Estado">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#por-que-nome-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      Por que "Nome-Estado"?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemplos
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estatisticas-de-cidades" class="md-nav__link">
+    <span class="md-ellipsis">
+      📊 Estatísticas de Cidades
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Estatísticas de Cidades">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#informacoes-no-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Informações no Dashboard
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dados-uteis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dados Úteis
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validacoes-e-restricoes" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚠️ Validações e Restrições
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚠️ Validações e Restrições">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#validacoes-no-formulario" class="md-nav__link">
+    <span class="md-ellipsis">
+      Validações no Formulário
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mensagens-de-erro-comuns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mensagens de Erro Comuns
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dicas-e-boas-praticas" class="md-nav__link">
+    <span class="md-ellipsis">
+      💡 Dicas e Boas Práticas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💡 Dicas e Boas Práticas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#para-cadastro" class="md-nav__link">
+    <span class="md-ellipsis">
+      Para Cadastro
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#para-organizacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Para Organização
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#para-manutencao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Para Manutenção
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#seguranca-e-auditoria" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔒 Segurança e Auditoria
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔒 Segurança e Auditoria">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registro-de-acoes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Registro de Ações
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quem-pode-fazer-o-que" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quem Pode Fazer O Quê
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cidades-por-regiao" class="md-nav__link">
+    <span class="md-ellipsis">
+      🗺️ Cidades por Região
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🗺️ Cidades por Região">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#distribuicao-tipica" class="md-nav__link">
+    <span class="md-ellipsis">
+      Distribuição Típica
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problemas-comuns" class="md-nav__link">
+    <span class="md-ellipsis">
+      🆘 Problemas Comuns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🆘 Problemas Comuns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problema-cidade-ja-cadastrada" class="md-nav__link">
+    <span class="md-ellipsis">
+      Problema: "Cidade já cadastrada"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problema-cidade-nao-aparece-no-dropdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      Problema: Cidade não Aparece no Dropdown
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problema-nome-com-caractere-especial" class="md-nav__link">
+    <span class="md-ellipsis">
+      Problema: Nome com Caractere Especial
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problema-coordenador-nao-ve-cidade" class="md-nav__link">
+    <span class="md-ellipsis">
+      Problema: Coordenador Não Vê Cidade
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gestao-eventos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gestão de Eventos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gestao-funcoes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gestão de Funções
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auditoria/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Logs de Auditoria
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Configuração do Sistema
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Configuração do Sistema
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuracao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visão Geral
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuracao/imagens-certificado/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Imagens do Certificado
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuracao/carga-horaria/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Carga Horária
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuracao/cores-fontes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Cores e Personalização
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuracao/avancadas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configurações Avançadas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Solução de Problemas
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Solução de Problemas
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../solucao-problemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Problemas Comuns
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../suporte/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contato e Suporte
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gestao-de-cidades">Gestão de Cidades<a class="headerlink" href="#gestao-de-cidades" title="Permanent link">&para;</a></h1>
+<p>Guia completo para cadastrar e gerenciar cidades participantes do Pint of Science Brasil.</p>
+<h2 id="o-que-sao-cidades">🎯 O que são Cidades?<a class="headerlink" href="#o-que-sao-cidades" title="Permanent link">&para;</a></h2>
+<p>Cidades representam os <strong>municípios participantes</strong> do evento Pint of Science. Cada cidade tem:</p>
+<ul>
+<li><strong>Nome</strong>: Nome do município (ex: Brasília, São Paulo)</li>
+<li><strong>Estado</strong>: Sigla UF (ex: DF, SP, RJ)</li>
+<li><strong>Identificador único</strong>: Nome-Estado (ex: Brasília-DF)</li>
+</ul>
+<div class="admonition info">
+<p class="admonition-title">Importância</p>
+<p>As cidades são fundamentais para:
+- Organizar participantes por localidade
+- Associar coordenadores às suas regiões
+- Gerar estatísticas regionais
+- Filtrar dados por localização</p>
+</div>
+<h2 id="acessando-a-gestao">🚀 Acessando a Gestão<a class="headerlink" href="#acessando-a-gestao" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Faça login como superadmin</li>
+<li>Acesse <strong>⚙️ Administração</strong> no menu lateral</li>
+<li>Clique na aba <strong>🏙️ Cidades</strong></li>
+</ol>
+<p>Você verá duas seções:</p>
+<ul>
+<li><strong>Criar Nova Cidade</strong> (formulário)</li>
+<li><strong>Cidades Cadastradas</strong> (tabela de visualização)</li>
+</ul>
+<h2 id="criando-nova-cidade">➕ Criando Nova Cidade<a class="headerlink" href="#criando-nova-cidade" title="Permanent link">&para;</a></h2>
+<h3 id="passo-a-passo">Passo a Passo<a class="headerlink" href="#passo-a-passo" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>Preencha o formulário "Criar Nova Cidade":</p>
+</li>
+<li>
+<p><strong>Nome da Cidade</strong>: Digite o nome do município</p>
+</li>
+<li>
+<p><strong>Estado (UF)</strong>: Selecione o estado no dropdown</p>
+</li>
+<li>
+<p>Clique em <strong>"🏙️ Criar Cidade"</strong></p>
+</li>
+</ol>
+<h3 id="campos-obrigatorios">Campos Obrigatórios<a class="headerlink" href="#campos-obrigatorios" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Validação</th>
+<th>Observação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Nome</strong></td>
+<td>Texto</td>
+<td>Obrigatório, único por estado</td>
+<td>Nome do município</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Seleção</td>
+<td>Obrigatório</td>
+<td>Sigla UF com 2 letras</td>
+</tr>
+</tbody>
+</table>
+<h3 id="estados-disponiveis">Estados Disponíveis<a class="headerlink" href="#estados-disponiveis" title="Permanent link">&para;</a></h3>
+<p>O dropdown contém todos os 27 estados brasileiros:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA,
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO
+</span></code></pre></div>
+<h3 id="exemplo-de-criacao">Exemplo de Criação<a class="headerlink" href="#exemplo-de-criacao" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Nome da Cidade: Brasília
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>Estado (UF): DF
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>Resultado: Cidade &quot;Brasília-DF&quot; criada
+</span></code></pre></div>
+<h3 id="validacoes-automaticas">Validações Automáticas<a class="headerlink" href="#validacoes-automaticas" title="Permanent link">&para;</a></h3>
+<p>O sistema valida:</p>
+<ul>
+<li>✅ Nome e estado são obrigatórios</li>
+<li>✅ Combinação nome + estado deve ser única</li>
+<li>✅ Não permite duplicatas (mesma cidade no mesmo estado)</li>
+<li>✅ Sigla do estado deve ter exatamente 2 letras</li>
+</ul>
+<h2 id="visualizando-cidades">📊 Visualizando Cidades<a class="headerlink" href="#visualizando-cidades" title="Permanent link">&para;</a></h2>
+<h3 id="tabela-de-cidades-cadastradas">Tabela de Cidades Cadastradas<a class="headerlink" href="#tabela-de-cidades-cadastradas" title="Permanent link">&para;</a></h3>
+<p>A tabela mostra todas as cidades em ordem alfabética:</p>
+<table>
+<thead>
+<tr>
+<th>Coluna</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ID</strong></td>
+<td>Identificador único do banco de dados</td>
+</tr>
+<tr>
+<td><strong>Nome</strong></td>
+<td>Nome do município</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Sigla UF</td>
+</tr>
+<tr>
+<td><strong>Completo</strong></td>
+<td>Nome-Estado (formato usado no sistema)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="exemplo-de-dados">Exemplo de Dados<a class="headerlink" href="#exemplo-de-dados" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ID: 15
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Nome: Goiânia
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Estado: GO
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>Completo: Goiânia-GO
+</span></code></pre></div>
+<h3 id="ordenacao">Ordenação<a class="headerlink" href="#ordenacao" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Cidades são automaticamente ordenadas por <strong>Nome-Estado</strong> (ordem alfabética)</li>
+<li>Facilita localização visual de cidades</li>
+</ul>
+<h2 id="deletando-cidades">🗑️ Deletando Cidades<a class="headerlink" href="#deletando-cidades" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Funcionalidade Limitada</p>
+<p>A interface atual não permite deleção direta de cidades pela aba. Isso é intencional para prevenir deleção acidental.</p>
+</div>
+<h3 id="como-deletar-cidade-se-necessario">Como Deletar Cidade (se necessário)<a class="headerlink" href="#como-deletar-cidade-se-necessario" title="Permanent link">&para;</a></h3>
+<p>Para deletar uma cidade, você precisa:</p>
+<ol>
+<li>Verificar que <strong>não há participantes</strong> associados</li>
+<li>Verificar que <strong>não há coordenadores</strong> associados</li>
+<li>Usar acesso direto ao banco de dados ou ferramenta administrativa</li>
+</ol>
+<h3 id="regras-de-protecao">Regras de Proteção<a class="headerlink" href="#regras-de-protecao" title="Permanent link">&para;</a></h3>
+<p>O sistema protege contra deleção se:</p>
+<p>❌ <strong>Há participantes da cidade</strong></p>
+<ul>
+<li>Dados históricos devem ser preservados</li>
+<li>Certificados já foram gerados</li>
+</ul>
+<p>❌ <strong>Há coordenadores associados</strong></p>
+<ul>
+<li>Remove associações primeiro</li>
+<li>Ou reatribua coordenadores</li>
+</ul>
+<p>✅ <strong>Cidade sem vínculos</strong></p>
+<ul>
+<li>Pode ser deletada com segurança</li>
+<li>Geralmente é erro de cadastro</li>
+</ul>
+<h2 id="casos-de-uso-comuns">🎯 Casos de Uso Comuns<a class="headerlink" href="#casos-de-uso-comuns" title="Permanent link">&para;</a></h2>
+<h3 id="caso-1-cadastrar-cidades-para-novo-evento">Caso 1: Cadastrar Cidades para Novo Evento<a class="headerlink" href="#caso-1-cadastrar-cidades-para-novo-evento" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Situação: Pint of Science 2026 terá novos municípios
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Ação:
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>1. Acessar aba &quot;🏙️ Cidades&quot;
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>2. Para cada nova cidade:
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>   - Digite nome
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>   - Selecione estado
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>   - Clique &quot;Criar Cidade&quot;
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>3. Exemplo:
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>   - Palmas-TO
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>   - Boa Vista-RR
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>   - Rio Branco-AC
+</span></code></pre></div>
+<h3 id="caso-2-correcao-de-nome-errado">Caso 2: Correção de Nome Errado<a class="headerlink" href="#caso-2-correcao-de-nome-errado" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Situação: Cidade foi cadastrada com nome errado
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Problema: Cadastrou &quot;Goiania&quot; sem acento
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>Correto: Deveria ser &quot;Goiânia&quot;
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>Ação:
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>Como a tabela não é editável diretamente:
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>1. Criar cidade correta: &quot;Goiânia-GO&quot;
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>2. Reatribuir participantes e coordenadores
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>3. Deletar cidade errada (via banco de dados)
+</span></code></pre></div>
+<h3 id="caso-3-expandir-para-novo-estado">Caso 3: Expandir para Novo Estado<a class="headerlink" href="#caso-3-expandir-para-novo-estado" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Situação: Pint of Science chega pela primeira vez em Roraima
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>Ação:
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>1. Cadastrar &quot;Boa Vista-RR&quot;
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>2. Criar coordenador para Boa Vista
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>3. Associar coordenador à cidade
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>4. Aguardar inscrições
+</span></code></pre></div>
+<h3 id="caso-4-verificar-cidades-existentes">Caso 4: Verificar Cidades Existentes<a class="headerlink" href="#caso-4-verificar-cidades-existentes" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>Situação: Antes de criar coordenador, verificar cidades disponíveis
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>Ação:
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>1. Acessar aba &quot;🏙️ Cidades&quot;
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>2. Visualizar lista completa
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>3. Anotar cidades para associar ao coordenador
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>4. Se cidade não existe, criar primeiro
+</span></code></pre></div>
+<h2 id="impacto-em-outras-funcionalidades">🔄 Impacto em Outras Funcionalidades<a class="headerlink" href="#impacto-em-outras-funcionalidades" title="Permanent link">&para;</a></h2>
+<h3 id="participantes">Participantes<a class="headerlink" href="#participantes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Participantes escolhem <strong>cidade</strong> no formulário de inscrição</li>
+<li>Dropdown mostra apenas cidades cadastradas</li>
+<li>Certificado exibe nome da cidade</li>
+</ul>
+<h3 id="coordenadores">Coordenadores<a class="headerlink" href="#coordenadores" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Coordenadores são <strong>associados a cidades</strong></li>
+<li>Só veem participantes das cidades associadas</li>
+<li>Permissões baseadas em geografia</li>
+</ul>
+<h3 id="relatorios">Relatórios<a class="headerlink" href="#relatorios" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Estatísticas por cidade</li>
+<li>Distribuição geográfica</li>
+<li>Performance regional</li>
+</ul>
+<h2 id="formato-nome-estado">📍 Formato Nome-Estado<a class="headerlink" href="#formato-nome-estado" title="Permanent link">&para;</a></h2>
+<h3 id="por-que-nome-estado">Por que "Nome-Estado"?<a class="headerlink" href="#por-que-nome-estado" title="Permanent link">&para;</a></h3>
+<p>O sistema usa formato <strong>"Nome-Estado"</strong> como identificador único porque:</p>
+<ul>
+<li>✅ Evita ambiguidade (ex: "São João" existe em vários estados)</li>
+<li>✅ Facilita busca e filtros</li>
+<li>✅ Melhora legibilidade</li>
+<li>✅ Padrão reconhecido nacionalmente</li>
+</ul>
+<h3 id="exemplos">Exemplos<a class="headerlink" href="#exemplos" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Correto:
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>- Brasília-DF
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>- São Paulo-SP
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>- Rio de Janeiro-RJ
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>- Belo Horizonte-MG
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>Incorreto:
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>- Brasília (falta estado)
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>- Brasília/DF (barra em vez de hífen)
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>- BRASILIA-DF (caps lock desnecessário)
+</span></code></pre></div>
+<h2 id="estatisticas-de-cidades">📊 Estatísticas de Cidades<a class="headerlink" href="#estatisticas-de-cidades" title="Permanent link">&para;</a></h2>
+<h3 id="informacoes-no-dashboard">Informações no Dashboard<a class="headerlink" href="#informacoes-no-dashboard" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>🏙️ Cidades Cadastradas: 45
+</span></code></pre></div>
+<h3 id="dados-uteis">Dados Úteis<a class="headerlink" href="#dados-uteis" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Total de cidades por região (N, NE, CO, SE, S)</li>
+<li>Total de cidades por estado</li>
+<li>Cidades com mais participantes</li>
+<li>Cidades sem coordenador</li>
+</ul>
+<h2 id="validacoes-e-restricoes">⚠️ Validações e Restrições<a class="headerlink" href="#validacoes-e-restricoes" title="Permanent link">&para;</a></h2>
+<h3 id="validacoes-no-formulario">Validações no Formulário<a class="headerlink" href="#validacoes-no-formulario" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>✅ Nome obrigatório
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>✅ Estado obrigatório
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>✅ Combinação nome+estado única
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>✅ Estado com 2 letras maiúsculas
+</span></code></pre></div>
+<h3 id="mensagens-de-erro-comuns">Mensagens de Erro Comuns<a class="headerlink" href="#mensagens-de-erro-comuns" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Erro</th>
+<th>Causa</th>
+<th>Solução</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Cidade já existe"</td>
+<td>Nome-Estado duplicado</td>
+<td>Verifique lista, pode já estar cadastrada</td>
+</tr>
+<tr>
+<td>"Estado inválido"</td>
+<td>Sigla não reconhecida</td>
+<td>Use dropdown fornecido</td>
+</tr>
+<tr>
+<td>"Nome obrigatório"</td>
+<td>Campo vazio</td>
+<td>Preencha nome da cidade</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dicas-e-boas-praticas">💡 Dicas e Boas Práticas<a class="headerlink" href="#dicas-e-boas-praticas" title="Permanent link">&para;</a></h2>
+<h3 id="para-cadastro">Para Cadastro<a class="headerlink" href="#para-cadastro" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Use nomes oficiais</strong> - Nome completo do município (ex: "Belo Horizonte" não "BH")</li>
+<li><strong>Mantenha padrão</strong> - Primeira letra maiúscula, demais minúsculas (ex: "São Paulo")</li>
+<li><strong>Use acentuação correta</strong> - "Goiânia" não "Goiania"</li>
+<li><strong>Verifique antes de criar</strong> - Confira se cidade não existe</li>
+</ol>
+<h3 id="para-organizacao">Para Organização<a class="headerlink" href="#para-organizacao" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Cadastre todas de uma vez</strong> - No início da preparação do evento</li>
+<li><strong>Agrupe por região</strong> - Facilita gestão de coordenadores</li>
+<li><strong>Documente mudanças</strong> - Anote novas cidades a cada ano</li>
+<li><strong>Revise periodicamente</strong> - Identifique cidades inativas</li>
+</ol>
+<h3 id="para-manutencao">Para Manutenção<a class="headerlink" href="#para-manutencao" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Não delete cidades com histórico</strong> - Preserve dados passados</li>
+<li><strong>Corrija erros imediatamente</strong> - Antes de associar coordenadores</li>
+<li><strong>Mantenha consistência</strong> - Use sempre mesmo padrão de nomenclatura</li>
+</ol>
+<h2 id="seguranca-e-auditoria">🔒 Segurança e Auditoria<a class="headerlink" href="#seguranca-e-auditoria" title="Permanent link">&para;</a></h2>
+<h3 id="registro-de-acoes">Registro de Ações<a class="headerlink" href="#registro-de-acoes" title="Permanent link">&para;</a></h3>
+<p>Ações em cidades são registradas:</p>
+<ul>
+<li>✅ Criação de cidade</li>
+<li>✅ (Edição não disponível na interface atual)</li>
+<li>✅ (Deleção apenas via banco de dados)</li>
+</ul>
+<p>Acesse os logs na aba <strong>"📊 Auditoria"</strong>.</p>
+<h3 id="quem-pode-fazer-o-que">Quem Pode Fazer O Quê<a class="headerlink" href="#quem-pode-fazer-o-que" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Ação</th>
+<th>Superadmin</th>
+<th>Coordenador</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ver cidades</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Criar cidade</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Editar cidade</td>
+<td>⚠️ (via BD)</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Deletar cidade</td>
+<td>⚠️ (via BD)</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cidades-por-regiao">🗺️ Cidades por Região<a class="headerlink" href="#cidades-por-regiao" title="Permanent link">&para;</a></h2>
+<h3 id="distribuicao-tipica">Distribuição Típica<a class="headerlink" href="#distribuicao-tipica" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Região Norte: 7 capitais + municípios do interior
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>Região Nordeste: 9 capitais + municípios do interior
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>Região Centro-Oeste: 4 capitais + municípios do interior
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>Região Sudeste: 4 capitais + municípios do interior
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>Região Sul: 3 capitais + municípios do interior
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>Total estimado: 40-50 cidades em eventos nacionais
+</span></code></pre></div>
+<h2 id="problemas-comuns">🆘 Problemas Comuns<a class="headerlink" href="#problemas-comuns" title="Permanent link">&para;</a></h2>
+<h3 id="problema-cidade-ja-cadastrada">Problema: "Cidade já cadastrada"<a class="headerlink" href="#problema-cidade-ja-cadastrada" title="Permanent link">&para;</a></h3>
+<p><strong>Causa</strong>: Tentando criar cidade que já existe</p>
+<p><strong>Solução</strong>:</p>
+<ol>
+<li>Verifique tabela de cidades</li>
+<li>Se existe, não precisa criar novamente</li>
+<li>Use a cidade existente ao associar coordenador</li>
+</ol>
+<hr />
+<h3 id="problema-cidade-nao-aparece-no-dropdown">Problema: Cidade não Aparece no Dropdown<a class="headerlink" href="#problema-cidade-nao-aparece-no-dropdown" title="Permanent link">&para;</a></h3>
+<p><strong>Causa</strong>: Participante ou coordenador não vê cidade esperada</p>
+<p><strong>Solução</strong>:</p>
+<ol>
+<li>Verifique se cidade foi realmente criada (aba Cidades)</li>
+<li>Se não existe, crie primeiro</li>
+<li>Faça logout e login para atualizar cache</li>
+</ol>
+<hr />
+<h3 id="problema-nome-com-caractere-especial">Problema: Nome com Caractere Especial<a class="headerlink" href="#problema-nome-com-caractere-especial" title="Permanent link">&para;</a></h3>
+<p><strong>Causa</strong>: Cidade tem hífen ou apóstrofo no nome</p>
+<p><strong>Solução</strong>:</p>
+<ul>
+<li>Use o nome oficial: "Feira de Santana" ✅</li>
+<li>Use acentuação: "São José dos Pinhais" ✅</li>
+<li>Mantenha hífens oficiais: "Passa-Quatro" ✅</li>
+</ul>
+<hr />
+<h3 id="problema-coordenador-nao-ve-cidade">Problema: Coordenador Não Vê Cidade<a class="headerlink" href="#problema-coordenador-nao-ve-cidade" title="Permanent link">&para;</a></h3>
+<p><strong>Causa</strong>: Coordenador não está associado à cidade</p>
+<p><strong>Solução</strong>:</p>
+<ol>
+<li>Vá em aba "👤 Coordenadores"</li>
+<li>Seção "Associações Coordenador-Cidade"</li>
+<li>Selecione coordenador</li>
+<li>Associe cidade correta</li>
+<li>Coordenador deve fazer logout/login</li>
+</ol>
+<hr />
+<div class="admonition success">
+<p class="admonition-title">Pronto!</p>
+<p>Agora você sabe como gerenciar as cidades participantes do Pint of Science!</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar para o topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Pint of Science Brasil
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/bgeneto/pint-of-science-brasil" target="_blank" rel="noopener" title="GitHub Repository" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "toc.integrate", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "mais 1 nesta p\u00e1gina", "search.result.more.other": "# mais nesta p\u00e1gina", "search.result.none": "Nenhum documento encontrado", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

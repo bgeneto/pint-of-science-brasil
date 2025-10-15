@@ -250,6 +250,3 @@ tramp
 # user_data/
 # exported_data/
 
-# MkDocs documentation site
-docs-site/
-site/
