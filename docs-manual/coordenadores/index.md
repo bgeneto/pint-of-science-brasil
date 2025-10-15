@@ -14,49 +14,35 @@ Como coordenador, você é responsável por:
 
 ## 🚀 Começando
 
-<div class="grid cards" markdown>
+### 🔐 Fazer Login
 
-- :material-login:{ .lg .middle } **Fazer Login**
+Aprenda como acessar o sistema e gerenciar sua sessão.
 
-  ***
+- [Guia de acesso](acesso-sistema.md)
 
-  Aprenda como acessar o sistema e gerenciar sua sessão.
+### ✅ Validar Participantes
 
-  [:octicons-arrow-right-24: Guia de acesso](acesso-sistema.md)
+Passo a passo para validar inscrições de participantes.
 
-- :material-check-circle:{ .lg .middle } **Validar Participantes**
+- [Como validar](validar-participantes.md)
 
-  ***
+### 👥 Gerenciar Dados
 
-  Passo a passo para validar inscrições de participantes.
+Editar informações e corrigir dados dos participantes.
 
-  [:octicons-arrow-right-24: Como validar](validar-participantes.md)
+- [Gerenciar participantes](gerenciar-participantes.md)
 
-- :material-account-edit:{ .lg .middle } **Gerenciar Dados**
+### 📧 Enviar Certificados
 
-  ***
+Envie certificados por e-mail para os participantes.
 
-  Editar informações e corrigir dados dos participantes.
+- [Envio de certificados](enviar-certificados.md)
 
-  [:octicons-arrow-right-24: Gerenciar participantes](gerenciar-participantes.md)
+### 📊 Relatórios
 
-- :material-email-send:{ .lg .middle } **Enviar Certificados**
+Visualize estatísticas e gere relatórios de participação.
 
-  ***
-
-  Envie certificados por e-mail para os participantes.
-
-  [:octicons-arrow-right-24: Envio de certificados](enviar-certificados.md)
-
-- :material-chart-bar:{ .lg .middle } **Relatórios**
-
-  ***
-
-  Visualize estatísticas e gere relatórios de participação.
-
-  [:octicons-arrow-right-24: Ver relatórios](relatorios.md)
-
-</div>
+- [Ver relatórios](relatorios.md)
 
 ## 🔐 Acesso ao Sistema
 

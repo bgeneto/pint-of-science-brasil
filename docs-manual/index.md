@@ -18,37 +18,34 @@ O Sistema Pint of Science Brasil é uma plataforma web desenvolvida para facilit
 
 Escolha o guia adequado ao seu perfil:
 
-<div class="grid cards" markdown>
+### 👥 Participante
 
-- :material-account-plus:{ .lg .middle } **Participante**
+Você participou do evento Pint of Science e deseja obter seu certificado?
 
-  Você participou do evento Pint of Science e deseja obter seu certificado?
+- [Como se inscrever](participantes/como-se-inscrever.md)
+- [Baixar certificado](participantes/baixar-certificado.md)
+- [Validar certificado](participantes/validar-certificado.md)
 
-  [:octicons-arrow-right-24: Como se inscrever](participantes/como-se-inscrever.md)
-  [:octicons-arrow-right-24: Baixar certificado](participantes/baixar-certificado.md)
+### ✅ Coordenador
 
-- :material-account-check:{ .lg .middle } **Coordenador**
+Você é coordenador de cidade e precisa validar participantes?
 
-  Você é coordenador de cidade e precisa validar participantes?
+- [Fazer login](coordenadores/acesso-sistema.md)
+- [Validar participantes](coordenadores/validar-participantes.md)
 
-  [:octicons-arrow-right-24: Fazer login](coordenadores/acesso-sistema.md)
-  [:octicons-arrow-right-24: Validar participantes](coordenadores/validar-participantes.md)
+### ⚙️ Administrador
 
-- :material-cog:{ .lg .middle } **Administrador**
+Você é administrador e precisa gerenciar o sistema?
 
-  Você é administrador e precisa gerenciar o sistema?
+- [Gestão completa](administradores/index.md)
+- [Configurações](configuracao/index.md)
 
-  - [Gestão completa](administradores/index.md)
-  - [Configurações](configuracao/index.md)
+### ❓ Precisa de ajuda?
 
-- :material-help-circle:{ .lg .middle } **Precisa de ajuda?**
+Encontrando problemas ou tem dúvidas?
 
-  Encontrando problemas ou tem dúvidas?
-
-  [:octicons-arrow-right-24: FAQ](participantes/faq.md)
-  [:octicons-arrow-right-24: Solução de problemas](solucao-problemas.md)
-
-</div>
+- [FAQ](participantes/faq.md)
+- [Solução de problemas](solucao-problemas.md)
 
 ## ✨ Principais Funcionalidades
 

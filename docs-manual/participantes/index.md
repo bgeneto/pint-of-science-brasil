@@ -6,41 +6,29 @@ Bem-vindo à seção de documentação para **participantes** do evento Pint of 
 
 Como participante do evento Pint of Science, você tem acesso a:
 
-<div class="grid cards" markdown>
+### 📝 Inscrever-se no Sistema
 
-- :material-clipboard-edit:{ .lg .middle } **Inscrever-se no Sistema**
+Registre sua participação no evento fornecendo seus dados básicos.
 
-  ***
+- [Como se inscrever](como-se-inscrever.md)
 
-  Registre sua participação no evento fornecendo seus dados básicos.
+### 📥 Baixar seu Certificado
 
-  [:octicons-arrow-right-24: Como se inscrever](como-se-inscrever.md)
+Após validação, baixe seu certificado digital em PDF.
 
-- :material-download:{ .lg .middle } **Baixar seu Certificado**
+- [Baixar certificado](baixar-certificado.md)
 
-  ***
+### ✅ Validar Certificado
 
-  Após validação, baixe seu certificado digital em PDF.
+Verifique a autenticidade de qualquer certificado emitido.
 
-  [:octicons-arrow-right-24: Baixar certificado](baixar-certificado.md)
+- [Validar certificado](validar-certificado.md)
 
-- :material-check-decagram:{ .lg .middle } **Validar Certificado**
+### ❓ Perguntas Frequentes
 
-  ***
+Respostas para as dúvidas mais comuns.
 
-  Verifique a autenticidade de qualquer certificado emitido.
-
-  [:octicons-arrow-right-24: Validar certificado](validar-certificado.md)
-
-- :material-help-circle:{ .lg .middle } **Perguntas Frequentes**
-
-  ***
-
-  Respostas para as dúvidas mais comuns.
-
-  [:octicons-arrow-right-24: Ver FAQ](faq.md)
-
-</div>
+- [Ver FAQ](faq.md)
 
 ## 🚀 Começando - Passo a Passo
 
