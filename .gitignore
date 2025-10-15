@@ -195,8 +195,6 @@ test_data/
 
 # Generated certificates
 certificates/
-*.pdf
-Certificado-*.pdf
 
 # Email templates and logs
 email_logs/
@@ -249,3 +247,4 @@ tramp
 # For example:
 # user_data/
 # exported_data/
+

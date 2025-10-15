@@ -98,3 +98,6 @@ yarn-error.log*
 .env.local
 .env.development
 .env.test
+
+# MkDocs documentation site
+docs-manual/
