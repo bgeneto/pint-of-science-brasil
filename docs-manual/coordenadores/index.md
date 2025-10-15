@@ -310,15 +310,15 @@ Explore os guias completos para cada funcionalidade:
 
 Após um evento, siga este checklist:
 
-- [ ] Fazer login no sistema
-- [ ] Acessar página de Participantes
-- [ ] Filtrar participantes da sua cidade
-- [ ] Verificar lista de presença física
-- [ ] Validar participantes confirmados
-- [ ] Corrigir erros de dados se necessário
-- [ ] Enviar certificados por e-mail (opcional)
-- [ ] Verificar estatísticas finais
-- [ ] Responder dúvidas de participantes
+- ✔ Fazer login no sistema
+- ✔ Acessar página de Participantes
+- ✔ Filtrar participantes da sua cidade
+- ✔ Verificar lista de presença física
+- ✔ Validar participantes confirmados
+- ✔ Corrigir erros de dados se necessário
+- ✔ Enviar certificados por e-mail (opcional)
+- ✔ Verificar estatísticas finais
+- ✔ Responder dúvidas de participantes
 
 ---
 

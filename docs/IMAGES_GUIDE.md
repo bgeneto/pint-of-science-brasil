@@ -70,9 +70,11 @@ Para arquivos em subpastas (`participantes/*.md`, `coordenadores/*.md`):
 
 ```markdown
 # De participantes/faq.md
+
 ![Screenshot](../images/screenshot.png)
 
 # De administradores/gestao.md
+
 ![Logo](../images/pint_logo.png)
 ```
 
@@ -93,12 +95,12 @@ Para arquivos em subpastas (`participantes/*.md`, `coordenadores/*.md`):
 
 Antes de adicionar uma imagem:
 
-- [ ] Nome descritivo (sem espaços, use `-` ou `_`)
-- [ ] Tamanho otimizado (<500KB idealmente)
-- [ ] Formato adequado (PNG para logos, JPG para fotos)
-- [ ] Copiar para `docs-manual/images/`
-- [ ] Testar caminho relativo correto
-- [ ] Adicionar texto alternativo (alt text)
+- ✔ Nome descritivo (sem espaços, use `-` ou `_`)
+- ✔ Tamanho otimizado (<500KB idealmente)
+- ✔ Formato adequado (PNG para logos, JPG para fotos)
+- ✔ Copiar para `docs-manual/images/`
+- ✔ Testar caminho relativo correto
+- ✔ Adicionar texto alternativo (alt text)
 
 ## 🚀 Testando Imagens
 
@@ -141,12 +143,14 @@ ENABLE_PDF_EXPORT=1 mkdocs build
 ### Nomes de Arquivo
 
 ✅ **Bom:**
+
 - `pint_logo.png`
 - `tela-inscricao.png`
 - `validacao-certificado.png`
 - `dashboard-coordenador.png`
 
 ❌ **Evite:**
+
 - `Tela Inscrição.png` (espaços)
 - `IMG_12345.png` (não descritivo)
 - `screenshot.png` (genérico demais)
@@ -154,12 +158,12 @@ ENABLE_PDF_EXPORT=1 mkdocs build
 
 ### Tamanhos Recomendados
 
-| Tipo | Largura | Tamanho |
-|------|---------|---------|
-| Logo | 200-400px | <50KB |
-| Screenshot full | 1200-1600px | <300KB |
-| Icon/Thumbnail | 64-128px | <20KB |
-| Banner | 800-1200px | <200KB |
+| Tipo            | Largura     | Tamanho |
+| --------------- | ----------- | ------- |
+| Logo            | 200-400px   | <50KB   |
+| Screenshot full | 1200-1600px | <300KB  |
+| Icon/Thumbnail  | 64-128px    | <20KB   |
+| Banner          | 800-1200px  | <200KB  |
 
 ### Formatos
 
@@ -206,11 +210,13 @@ Screenshots pendentes (mencionados na doc mas não existem ainda):
 ### Imagem não aparece no site
 
 1. **Verifique o caminho:**
+
    ```bash
    ls -lh docs-manual/images/sua-imagem.png
    ```
 
 2. **Verifique caminho relativo:**
+
    - Raiz: `images/arquivo.png`
    - Subpasta: `../images/arquivo.png`
 
@@ -230,9 +236,11 @@ Screenshots pendentes (mencionados na doc mas não existem ainda):
 
 ```markdown
 # Reduzir tamanho inline
+
 ![Texto](images/grande.png){ width="600" }
 
 # Ou usar CSS
+
 <img src="images/grande.png" style="max-width: 800px;">
 ```
 
@@ -245,5 +253,5 @@ Screenshots pendentes (mencionados na doc mas não existem ainda):
 
 ---
 
-**Última atualização:** 2025-10-15  
+**Última atualização:** 2025-10-15
 **Status:** ✅ Problema resolvido - Imagens funcionando corretamente

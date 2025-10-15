@@ -174,10 +174,10 @@ Você já se inscreveu com este e-mail antes.
 
 **Checklist de verificação:**
 
-- [ ] Estou usando o e-mail correto?
-- [ ] Passou mais de 24h desde a inscrição?
-- [ ] Confirmei inscrição com coordenador?
-- [ ] Tentei variações do e-mail (maiúsculas)?
+- ✔ Estou usando o e-mail correto?
+- ✔ Passou mais de 24h desde a inscrição?
+- ✔ Confirmei inscrição com coordenador?
+- ✔ Tentei variações do e-mail (maiúsculas)?
 
 ### PDF não baixa / download falha
 

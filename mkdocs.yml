@@ -8,11 +8,11 @@ repo_name: bgeneto/pint-of-science-brasil
 repo_url: https://github.com/bgeneto/pint-of-science-brasil
 
 # Copyright
-copyright: Copyright &copy; 2024-2025 Pint of Science Brasil
+copyright: Copyright &copy; 2025 Pint of Science Brasil
 
 # Configuration
 docs_dir: docs-manual
-site_dir: site
+site_dir: static/docs  # Generate documentation inside static folder for Streamlit serving
 
 theme:
   name: material
@@ -61,24 +61,28 @@ plugins:
       lang: pt
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
   - with-pdf:
-      author: Pint of Science Brasil
-      copyright: 2024-2025 Pint of Science Brasil
+      author: by bgeneto
+      copyright: 2025 Pint of Science Brasil
       cover: true
       cover_title: Manual do Usuário
       cover_subtitle: Sistema de Certificados Pint of Science Brasil
       cover_logo: null
+      back_cover: false
       toc_title: Índice
       toc_level: 3
       ordered_chapter_level: 2
       excludes_children: []
       exclude_pages: []
-      render_js: true
-      headless_chrome_path: null
+      convert_iframe: []
+      two_columns_level: 3
+      render_js: false
+      headless_chrome_path: chromium-browser
       output_path: pdf/manual-usuario-pint-of-science.pdf
       enabled_if_env: ENABLE_PDF_EXPORT
+      verbose: false
       debug_html: false
       show_anchors: false
-      verbose: false
+      custom_template_path: templates
 
 # Extensions
 markdown_extensions:
@@ -158,11 +162,9 @@ nav:
       - Problemas Comuns: solucao-problemas.md
       - Contato e Suporte: suporte.md
 
-# Additional CSS
-extra_css: []
-
-# Additional JavaScript
-extra_js: []
+# Additional CSS (apenas para o site HTML)
+# extra_css:
+# - pdf-style.css
 
 # Social links
 extra:

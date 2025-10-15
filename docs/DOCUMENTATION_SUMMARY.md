@@ -50,6 +50,7 @@ Foi implementada uma **documentação completa em português** do Sistema de Cer
 ### Páginas Criadas: 15 páginas completas
 
 **Páginas Principais:**
+
 - ✅ `index.md` - Página inicial com cards e navegação
 - ✅ `guia-rapido.md` - Quick start com abas por perfil
 - ✅ `sobre-sistema.md` - Arquitetura técnica completa
@@ -57,6 +58,7 @@ Foi implementada uma **documentação completa em português** do Sistema de Cer
 - ✅ `suporte.md` - Informações de contato
 
 **Seção Participantes (5 páginas):**
+
 - ✅ `index.md` - Overview com cards
 - ✅ `como-se-inscrever.md` - 400+ linhas, super detalhado
 - ✅ `baixar-certificado.md` - 400+ linhas, passo a passo
@@ -64,12 +66,14 @@ Foi implementada uma **documentação completa em português** do Sistema de Cer
 - ✅ `faq.md` - 50+ perguntas respondidas
 
 **Seção Coordenadores (4 páginas):**
+
 - ✅ `index.md` - Overview para coordenadores
 - ✅ `acesso-sistema.md` - Login detalhado
 - ✅ `validar-participantes.md` - 500+ linhas, processo completo
 - ⏳ 3 páginas restantes (criar conforme necessidade)
 
 **Seções Pendentes:**
+
 - ⏳ Administradores (6 páginas)
 - ⏳ Configuração (5 páginas)
 
@@ -78,6 +82,7 @@ Foi implementada uma **documentação completa em português** do Sistema de Cer
 ## 🎨 Recursos Implementados
 
 ### 1. MkDocs Material Theme
+
 - ✅ Tema moderno e responsivo
 - ✅ Paleta de cores personalizável (deep orange + pink)
 - ✅ Modo claro/escuro
@@ -86,6 +91,7 @@ Foi implementada uma **documentação completa em português** do Sistema de Cer
 - ✅ Icons e emojis
 
 ### 2. Markdown Extensions
+
 - ✅ **Admonitions** - Blocos de nota/aviso/dica
 - ✅ **Code blocks** - Syntax highlighting
 - ✅ **Tables** - Tabelas Markdown
@@ -95,6 +101,7 @@ Foi implementada uma **documentação completa em português** do Sistema de Cer
 - ✅ **Task lists** - Checklists
 
 ### 3. Export to PDF
+
 - ✅ Plugin `mkdocs-with-pdf` configurado
 - ✅ Geração automática de PDF
 - ✅ Capa personalizada
@@ -102,6 +109,7 @@ Foi implementada uma **documentação completa em português** do Sistema de Cer
 - ✅ Output: `site/pdf/manual-usuario-pint-of-science.pdf`
 
 ### 4. Navigation
+
 - ✅ 5 seções principais
 - ✅ Navegação hierárquica
 - ✅ Breadcrumbs
@@ -135,6 +143,7 @@ mkdocs serve
 Acesse: http://localhost:8000
 
 **Recursos:**
+
 - Hot reload (atualiza automaticamente ao editar)
 - Preview em tempo real
 - Ideal para desenvolvimento
@@ -164,6 +173,7 @@ Criamos um script interativo:
 ```
 
 **Opções:**
+
 1. Servir localmente
 2. Build estático
 3. Build + PDF
@@ -188,6 +198,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 ### Para Participantes
 
 #### Como se Inscrever
+
 - Pré-requisitos
 - Acesso ao formulário
 - Preenchimento campo a campo
@@ -197,6 +208,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 - FAQ específico
 
 #### Baixar Certificado
+
 - Pré-requisitos (validação)
 - Busca por e-mail
 - Troubleshooting de busca
@@ -207,6 +219,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 - Código de validação
 
 #### Validar Certificado
+
 - O que é validação
 - Quem pode validar
 - Método 1: Link direto
@@ -216,6 +229,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 - Segurança técnica
 
 #### FAQ
+
 - 50+ perguntas organizadas por categoria
 - Inscrição, Download, Validação
 - Carga horária, Correções
@@ -226,6 +240,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 ### Para Coordenadores
 
 #### Acesso ao Sistema
+
 - Credenciais
 - Login passo a passo
 - Sessão persistente (30 dias)
@@ -237,6 +252,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 - Tipos de acesso (Coordenador vs Superadmin)
 
 #### Validar Participantes
+
 - O que é validação
 - Checklist pré-validação
 - Interface (dashboard, filtros, tabela)
@@ -253,24 +269,28 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 ## 🎯 Destaques da Documentação
 
 ### 1. Extremamente Detalhada
+
 - Cada página tem 200-500 linhas
 - Screenshots mencionados (a adicionar)
 - Exemplos práticos
 - Do/Don't claros
 
 ### 2. User-Friendly
+
 - Linguagem clara e objetiva
 - Tom amigável, não técnico
 - Passo a passo numerado
 - Visual com emojis e icons
 
 ### 3. Organização Impecável
+
 - Por perfil de usuário
 - Hierarquia lógica
 - Fácil navegação
 - Busca eficiente
 
 ### 4. Recursos Visuais
+
 - Admonitions (notes, tips, warnings)
 - Code blocks
 - Tables
@@ -279,6 +299,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 - Cards (grid)
 
 ### 5. SEO e Acessibilidade
+
 - Meta descriptions
 - Tags HTML semânticas
 - Alt text (a adicionar nas imagens)
@@ -290,11 +311,13 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 ### Curto Prazo (Essencial)
 
 1. **Criar placeholders restantes:**
+
    - `coordenadores/gerenciar-participantes.md`
    - `coordenadores/enviar-certificados.md`
    - `coordenadores/relatorios.md`
 
 2. **Adicionar screenshots:**
+
    - Criar pasta `docs-manual/images/`
    - Tirar prints das telas principais
    - Inserir nas páginas
@@ -309,6 +332,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 ### Médio Prazo (Importante)
 
 4. **Seção Administradores (6 páginas):**
+
    - `index.md`
    - `gestao-coordenadores.md`
    - `gestao-cidades.md`
@@ -317,6 +341,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
    - `auditoria.md`
 
 5. **Seção Configuração (5 páginas):**
+
    - `index.md`
    - `imagens-certificado.md`
    - `carga-horaria.md`
@@ -332,6 +357,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 ### Longo Prazo (Opcional)
 
 7. **Recursos avançados:**
+
    - Vídeos tutoriais embarcados
    - GIFs animados
    - Busca com Algolia
@@ -340,6 +366,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
    - Blog de atualizações
 
 8. **Tradução:**
+
    - Inglês (internacional)
    - Espanhol (América Latina)
 
@@ -351,6 +378,7 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 ## 🛠️ Arquivos de Configuração
 
 ### mkdocs.yml
+
 - 200+ linhas de configuração
 - Theme Material completo
 - Plugins configurados
@@ -360,12 +388,14 @@ rsync -av site/ usuario@servidor:/var/www/docs/
 - Search em português
 
 ### build-docs.sh
+
 - Script bash interativo
 - Menu de opções
 - Instalação automática
 - Build facilitado
 
 ### requirements.txt
+
 - Já inclui `mkdocs-material`
 - Já inclui `mkdocs-with-pdf`
 
@@ -389,16 +419,16 @@ Usamos 4 tipos principais:
 
 ```markdown
 !!! note "Nota"
-    Informação adicional
+Informação adicional
 
 !!! tip "Dica"
-    Dica útil
+Dica útil
 
 !!! warning "Atenção"
-    Cuidado com isso
+Cuidado com isso
 
 !!! danger "Importante"
-    Crítico!
+Crítico!
 ```
 
 ### 3. Tabs
@@ -407,10 +437,10 @@ Para múltiplos perfis:
 
 ```markdown
 === "Sou Participante"
-    Conteúdo para participante
+Conteúdo para participante
 
 === "Sou Coordenador"
-    Conteúdo para coordenador
+Conteúdo para coordenador
 ```
 
 ### 4. Tables
@@ -423,21 +453,24 @@ Checklists interativos:
 
 ```markdown
 - [x] Tarefa concluída
-- [ ] Tarefa pendente
+- ✔ Tarefa pendente
 ```
 
 ## 🎓 Como Aprender Mais
 
 ### MkDocs Material
+
 - Docs: https://squidfunk.github.io/mkdocs-material/
 - Getting Started: https://squidfunk.github.io/mkdocs-material/getting-started/
 - Reference: https://squidfunk.github.io/mkdocs-material/reference/
 
 ### Markdown
+
 - Guide: https://www.markdownguide.org/
 - Cheat Sheet: https://www.markdownguide.org/cheat-sheet/
 
 ### Mermaid
+
 - Docs: https://mermaid.js.org/
 - Live Editor: https://mermaid.live/
 
@@ -457,7 +490,7 @@ Checklists interativos:
    ```yaml
    nav:
      - Seção:
-       - Nova Página: secao/nova-pagina.md
+         - Nova Página: secao/nova-pagina.md
    ```
 3. Teste e build
 

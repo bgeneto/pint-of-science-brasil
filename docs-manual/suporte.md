@@ -140,7 +140,7 @@ INFORMAÇÕES TÉCNICAS:
 JÁ TENTEI:
 - [x] Recarregar a página
 - [x] Limpar cache
-- [ ] Outro navegador
+- ✔ Outro navegador
 
 Anexo screenshots do problema.
 

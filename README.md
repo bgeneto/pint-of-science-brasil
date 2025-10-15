@@ -5,6 +5,7 @@ Um sistema completo para gerenciamento e emissão de certificados para participa
 ## 📋 Visão Geral
 
 O sistema permite:
+
 - **Inscrição de Participantes**: Registro público de participantes com validação de dados
 - **Validação de Participação**: Coordenadores podem validar participações em suas cidades
 - **Emissão de Certificados**: Geração automática de PDFs para participantes validados
@@ -44,6 +45,7 @@ pint-of-science-brasil/
 ## 🚀 Funcionalidades
 
 ### Para Participantes (Público)
+
 - ✅ Formulário de inscrição com validação
 - ✅ Download de certificados por e-mail
 - ✅ **Validação de autenticidade de certificados** - Verifique certificados online via hash HMAC-SHA256
@@ -51,6 +53,7 @@ pint-of-science-brasil/
 - ✅ Página pública de validação com link direto do certificado
 
 ### Para Coordenadores (Acesso Restrito)
+
 - ✅ Login seguro com autenticação persistente
 - ✅ Dashboard com estatísticas de participantes
 - ✅ Validação em lote de participantes
@@ -59,6 +62,7 @@ pint-of-science-brasil/
 - ✅ Editor interativo de dados (data_editor)
 
 ### Para Superadmin (Acesso Restrito)
+
 - ✅ Gestão completa de coordenadores
 - ✅ CRUD de eventos, cidades e funções
 - ✅ Dashboard com métricas do sistema
@@ -91,16 +95,19 @@ pint-of-science-brasil/
 ## 🛠️ Instalação
 
 ### Pré-requisitos
+
 - Python 3.11 ou superior
 - pip ou uv para gerenciamento de pacotes
 
 ### Passo 1: Clonar o Repositório
+
 ```bash
 git clone <URL-DO-REPOSITORIO>
 cd pint-of-science
 ```
 
 ### Passo 2: Criar Ambiente Virtual
+
 ```bash
 # Usando venv
 python -m venv pint
@@ -114,6 +121,7 @@ source .venv/bin/activate
 ```
 
 ### Passo 3: Instalar Dependências
+
 ```bash
 # Usando pip
 pip install -r requirements.txt
@@ -123,6 +131,7 @@ uv pip install -r requirements.txt
 ```
 
 ### Passo 4: Configurar Variáveis de Ambiente
+
 ```bash
 # Copiar arquivo de exemplo
 cp .env.example .env
@@ -132,6 +141,7 @@ nano .env  # ou use seu editor preferido
 ```
 
 Variáveis necessárias:
+
 ```env
 # Base Application URL
 BASE_URL=https://seu-dominio.com  # URL base para links de validação
@@ -157,6 +167,7 @@ INITIAL_SUPERADMIN_NAME=Administrador
 ```
 
 **Notas sobre configuração:**
+
 - `ENCRYPTION_KEY`: Obrigatória. Usada para criptografar dados PII (nome, email)
 - `CERTIFICATE_SECRET_KEY`: Recomendada. Se não configurada, uma chave temporária será gerada (não use em produção!)
 - `BASE_URL`: Usado para gerar links de validação nos certificados. Padrão: `http://localhost:8501`
@@ -168,18 +179,21 @@ INITIAL_SUPERADMIN_NAME=Administrador
 O sistema utiliza SQLite como banco de dados. Você pode inicializar o banco de duas formas:
 
 #### 5.1: Inicialização Automática (Recomendado)
+
 ```bash
 # Usando o script de seeding dedicado
 python utils/seed_database.py
 ```
 
 Este script irá:
+
 - ✅ Criar o arquivo `data/pint_of_science.db`
 - ✅ Criar todas as tabelas necessárias
 - ✅ Popular dados iniciais (cidades, funções, eventos)
 - ✅ Criar usuário superadmin (se configurado no `.env`)
 
 #### 5.2: Inicialização Manual
+
 ```bash
 # Executar o sistema pela primeira vez
 streamlit run 🏠_Home.py
@@ -188,6 +202,7 @@ streamlit run 🏠_Home.py
 Na primeira execução do Streamlit, o sistema irá inicializar o banco automaticamente.
 
 #### 5.3: Verificar Status do Banco
+
 ```bash
 # Ver apenas o status sem modificar
 python utils/seed_database.py --status-only
@@ -197,6 +212,7 @@ python tests/test_system.py
 ```
 
 **Saída esperada:**
+
 ```
 🚀 Iniciando testes do sistema Pint of Science Brasil
 ✅ Todos os arquivos necessários encontrados!
@@ -211,23 +227,28 @@ python tests/test_system.py
 #### 5.4: Dados Iniciais Criados
 
 **Cidades (98 cidades):**
+
 - Todas as capitais brasileiras e principais cidades do interior
 
 **Funções (34 funções):**
+
 - Organizador(a), Voluntário(a), Palestrante, Moderador(a)
 - Coordenador(a) Local/Regional, Apoio Técnico, Divulgação
 - E outras funções específicas do evento
 
 **Eventos:**
+
 - Pint of Science 2025 (datas: 19-21 de maio)
 
 **Coordenadores de Teste:**
+
 - Um coordenador de teste é criado durante os testes: `teste@exemplo.com` / `senha123`
 - Um participante de teste é criado: `participante@exemplo.com`
 
 #### 5.5: Solução de Problemas
 
 **Se o banco não for criado:**
+
 ```bash
 # Forçar recriação do banco
 rm pint_of_science.db
@@ -235,6 +256,7 @@ python tests/test_system.py
 ```
 
 **Se houver erro de permissão:**
+
 ```bash
 # Verificar permissões da pasta
 chmod 755 .
@@ -242,6 +264,7 @@ ls -la pint_of_science.db
 ```
 
 **Se os dados iniciais não forem criados:**
+
 - Verifique se o arquivo `.env` existe e está configurado
 - Execute `python -c "from app.db import init_database; init_database()"` para debug
 
@@ -267,7 +290,9 @@ with db_manager.get_db_session() as session:
     print(f'Coordenadores: {session.query(Coordenador).count()}')
 "
 ```
+
 ### Passo 6: Executar a Aplicação
+
 ```bash
 streamlit run 🏠_Home.py
 ```
@@ -277,16 +302,19 @@ A aplicação estará disponível em `http://localhost:8501`
 ## 👥 Perfis de Usuário
 
 ### 1. Participante (Público)
+
 - Acesso livre ao formulário de inscrição
 - Download de certificados após validação
 - Sem necessidade de login
 
 ### 2. Coordenador de Cidade
+
 - Login restrito com e-mail e senha
 - Validação de participantes de sua cidade
 - Visualização de estatísticas e relatórios
 
 ### 3. Superadmin
+
 - Acesso completo ao sistema
 - Gestão de usuários e configurações
 - Visualização de logs e auditoria
@@ -307,6 +335,7 @@ O sistema implementa várias camadas de segurança:
 ### 🔒 Sistema de Validação de Certificados
 
 Todos os certificados emitidos incluem:
+
 - **Hash único de validação** (HMAC-SHA256) no rodapé do certificado
 - **Link clicável** para verificação online instantânea
 - **Impossível falsificar** sem a chave secreta (`CERTIFICATE_SECRET_KEY`)
@@ -314,6 +343,7 @@ Todos os certificados emitidos incluem:
 - **Verificação criptográfica** usando `hmac.compare_digest()` para prevenir timing attacks
 
 **Como funciona:**
+
 1. Ao gerar o certificado, um hash HMAC é criado com: `id|evento_id|email|nome`
 2. Hash é armazenado no banco de dados e impresso no certificado
 3. Link no certificado direciona para página pública de validação
@@ -323,6 +353,7 @@ Todos os certificados emitidos incluem:
 Qualquer pessoa pode validar um certificado acessando a página `/Validar_Certificado` ou clicando no link do próprio certificado.
 
 📚 **Documentação técnica completa**: [`docs/CERTIFICATE_VALIDATION.md`](docs/CERTIFICATE_VALIDATION.md)
+
 - **Proteção contra Brute Force**: Limite de tentativas de login
 - **Validação de Entrada**: Todos os dados são validados com Pydantic
 - **Auditoria**: Todas as ações importantes são registradas
@@ -330,6 +361,7 @@ Qualquer pessoa pode validar um certificado acessando a página `/Validar_Certif
 ### Sistema de Validação de Certificados
 
 Todos os certificados emitidos incluem:
+
 - **Hash único de validação** (HMAC-SHA256) no rodapé
 - **Link clicável** para verificação online
 - **Impossível falsificar** sem a chave secreta
@@ -338,7 +370,7 @@ Qualquer pessoa pode validar um certificado em `/Validar_Certificado`.
 
 � **Documentação completa**: [`docs/CERTIFICATE_VALIDATION.md`](docs/CERTIFICATE_VALIDATION.md)
 
-##  Fluxo de Trabalho
+## Fluxo de Trabalho
 
 1. **Inscrição**: Participantes se registram através do formulário público
 2. **Validação**: Coordenadores acessam a área restrita e validam as participações
@@ -376,6 +408,7 @@ static/
 Superadmins podem configurar através da aba **"🖼️ Certificado"**:
 
 1. **Upload de Imagens por Ano**:
+
    - Selecione o ano do evento
    - Faça upload de 3 imagens: Logo Pint, Assinatura, Logo Patrocinador
    - Formatos aceitos: PNG, JPG, WEBP (máx. 2MB)
@@ -453,12 +486,14 @@ O sistema permite **configurar regras específicas de cálculo de carga horária
 Superadmins podem configurar através da aba **"⏱️ Carga Horária"**:
 
 1. **Horas por Dia de Participação**:
+
    - Define quantas horas equivalem a 1 dia de participação
    - Valor padrão: 4 horas
    - Faixa: 1-24 horas
    - Aplicado a participantes com funções comuns
 
 2. **Horas Totais do Evento**:
+
    - Define carga horária total para funções especiais
    - Valor padrão: 40 horas
    - Faixa: 1-200 horas
@@ -489,6 +524,7 @@ def calcular_carga_horaria(funcao_id, dias_participacao, ano_evento):
 #### Exemplo Prático de Aplicação
 
 **Configuração para Pint of Science 2025**:
+
 ```json
 {
   "horas_por_dia": 8,
@@ -499,12 +535,12 @@ def calcular_carga_horaria(funcao_id, dias_participacao, ano_evento):
 
 **Resultados nos Certificados**:
 
-| Participante | Função | Dias | Carga Horária | Cálculo |
-|--------------|--------|------|---------------|---------|
-| João Silva | Palestrante | 3 dias | **24h** | 3 × 8h |
-| Maria Santos | Coord. Local (ID 1) | 2 dias | **40h** | Total evento |
-| Pedro Costa | Organizador (ID 5) | 1 dia | **8h** | 1 × 8h |
-| Ana Lima | Coord. Regional (ID 2) | 3 dias | **40h** | Total evento |
+| Participante | Função                 | Dias   | Carga Horária | Cálculo      |
+| ------------ | ---------------------- | ------ | ------------- | ------------ |
+| João Silva   | Palestrante            | 3 dias | **24h**       | 3 × 8h       |
+| Maria Santos | Coord. Local (ID 1)    | 2 dias | **40h**       | Total evento |
+| Pedro Costa  | Organizador (ID 5)     | 1 dia  | **8h**        | 1 × 8h       |
+| Ana Lima     | Coord. Regional (ID 2) | 3 dias | **40h**       | Total evento |
 
 #### Estrutura de Configuração
 
@@ -536,6 +572,7 @@ def calcular_carga_horaria(funcao_id, dias_participacao, ano_evento):
 #### Interface do Usuário
 
 A configuração oferece:
+
 - ✅ Seletor de ano do evento
 - ✅ Inputs numéricos com validação
 - ✅ Multiselect de funções com nomes legíveis
@@ -553,6 +590,7 @@ A configuração oferece:
 ## 🧪 Testes
 
 ### Sistema de Testes Automatizado
+
 O projeto inclui um sistema completo de testes que valida todas as funcionalidades:
 
 ```bash
@@ -561,6 +599,7 @@ python tests/test_system.py
 ```
 
 **Testes Incluídos:**
+
 - ✅ Verificação de estrutura de arquivos
 - ✅ Conexão com banco de dados
 - ✅ Inicialização do banco de dados
@@ -570,6 +609,7 @@ python tests/test_system.py
 - ✅ Configuração de e-mail
 
 ### Teste de Funcionalidade Básica
+
 1. Acesse `http://localhost:8501`
 2. Preencha o formulário de inscrição como participante
 3. Tente fazer login como coordenador (`teste@exemplo.com` / `senha123`)
@@ -577,6 +617,7 @@ python tests/test_system.py
 5. Faça download de certificado
 
 ### Teste de E-mail
+
 Configure as credenciais do Brevo no `.env` para testar o envio de e-mails.
 
 ## 🚀 Deploy
@@ -590,6 +631,7 @@ Configure as credenciais do Brevo no `.env` para testar o envio de e-mails.
 5. **Monitoramento**: Configure logs e monitoramento
 
 ### Exemplo com Docker
+
 ```dockerfile
 FROM python:3.11-slim
 
@@ -608,6 +650,7 @@ CMD ["streamlit", "run", "🏠_Home.py", "--server.address=0.0.0.0"]
 ## 📝 Estrutura do Banco de Dados
 
 ### Tabelas Principais
+
 - **eventos**: Informações dos eventos (ano, datas em JSON)
 - **cidades**: Cidades participantes (nome, estado UF)
 - **funcoes**: Funções dos participantes (Organizador, Voluntário, etc.)
@@ -645,6 +688,7 @@ Estes scripts verificam e modificam a estrutura do banco de forma segura (idempo
 4. **Login não Funciona**: Verifique as credenciais no banco de dados
 
 ### Logs de Erro
+
 O sistema registra erros e pode ser configurado para exibir logs detalhados.
 
 ## 🤝 Contribuição
@@ -662,6 +706,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo LICENSE para d
 ## 📞 Suporte
 
 Para dúvidas ou suporte:
+
 - Crie uma issue no GitHub
 - Entre em contato com a equipe do Pint of Science Brasil
 
@@ -673,12 +718,11 @@ Para dúvidas ou suporte:
 - [x] ✅ Sessão persistente com cookie para coordenadores
 - [x] ✅ Sistema de notificações por email para participantes
 - [x] ✅ **Refatoração: Remoção da coluna carga_horaria_calculada do banco de dados**
-- [ ] Implementar testes unitários automatizados (pytest)
-- [ ] Adicionar suporte a múltiplos idiomas (i18n)
-- [ ] Dashboard avançado com analytics e gráficos
-- [ ] API REST para integração externa
-- [ ] Exportação de dados em formatos CSV/Excel
-
+- ✔ Implementar testes unitários automatizados (pytest)
+- ✔ Adicionar suporte a múltiplos idiomas (i18n)
+- ✔ Dashboard avançado com analytics e gráficos
+- ✔ API REST para integração externa
+- ✔ Exportação de dados em formatos CSV/Excel
 
 ## 📚 Documentação Adicional
 
@@ -693,4 +737,4 @@ Para dúvidas ou suporte:
 
 ---
 
-**Desenvolvido com ❤️ para a comunidade Pint of Science Brasil**
+**Desenvolvido por bgeneto com ❤️ para a comunidade Pint of Science Brasil**

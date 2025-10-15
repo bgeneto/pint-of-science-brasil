@@ -24,6 +24,7 @@ O objetivo é desenvolver um sistema web completo para gerenciar e emitir certif
 #### Key Implementation Details:
 
 1. **Installation Requirements:**
+
    ```bash
    pip install streamlit-authenticator>=0.3.3 pyyaml
    # or with uv:
@@ -31,12 +32,14 @@ O objetivo é desenvolver um sistema web completo para gerenciar e emitir certif
    ```
 
 2. **AuthManager Pattern** (in `app/auth.py`):
+
    - Uses `streamlit_authenticator.Authenticate` class
    - Loads credentials from database (bcrypt-hashed passwords)
    - Provides simple interface: `auth_manager.show_login_form()`
    - Automatic cookie management (no manual timing logic needed)
 
 3. **Login Flow:**
+
    ```python
    # In Home.py or any public page:
    name, authentication_status, username = auth_manager.show_login_form()
@@ -51,6 +54,7 @@ O objetivo é desenvolver um sistema web completo para gerenciar e emitir certif
    ```
 
 4. **Protected Pages:**
+
    ```python
    # At the top of any protected page:
    from app.auth import require_login, require_superadmin
@@ -63,12 +67,14 @@ O objetivo é desenvolver um sistema web completo para gerenciar e emitir certif
    ```
 
 5. **Session Persistence:**
+
    - Sessions automatically persist across page refreshes (F5)
    - Cookie expiry: 30 days (configurable in `AuthManager._initialize_authenticator()`)
    - No manual token generation/storage needed
    - No cookie timing checks required
 
 6. **Migration Notes:**
+
    - Old system used `streamlit-cookies-manager` (removed)
    - Backup of old code: `app/auth_old_backup.py`
    - Code reduction: 699 lines → 375 lines (46% smaller)
@@ -76,17 +82,18 @@ O objetivo é desenvolver um sistema web completo para gerenciar e emitir certif
    - bcrypt password hashes remain compatible (no password reset needed)
 
 7. **Troubleshooting:**
+
    - If login form doesn't appear, check that `streamlit-authenticator` is installed
    - If sessions don't persist, verify `.streamlit/config.toml` exists
    - The library shows warnings about `st.cache` deprecation - these are suppressed in config
    - Login button text is "Login" (English) - this comes from the library
 
 8. **Testing Checklist:**
-   - [ ] Login works with existing credentials
-   - [ ] Session persists on F5 refresh
-   - [ ] Protected pages load without "loading session" messages
-   - [ ] Logout clears session properly
-   - [ ] Multiple users can login simultaneously (different browsers)
+   - ✔ Login works with existing credentials
+   - ✔ Session persists on F5 refresh
+   - ✔ Protected pages load without "loading session" messages
+   - ✔ Logout clears session properly
+   - ✔ Multiple users can login simultaneously (different browsers)
 
 For detailed migration information, see `MIGRATION_TO_STREAMLIT_AUTHENTICATOR.md`.
 
@@ -168,21 +175,25 @@ pytest tests/ --cov=app
 **Tarefa:** Crie os modelos Pydantic (para validação de dados) e os modelos SQLAlchemy (para o ORM) correspondentes às seguintes tabelas:
 
 ### Tabela: `eventos`
+
 - `id`: INTEGER, PRIMARY KEY
 - `ano`: INTEGER, NOT NULL, UNIQUE
 - `datas_evento`: JSON, NOT NULL (Lista da datas no formato YYYY-MM-DD ISO 8601, ex: ["2025-10-09", "2025-10-10", "2025-10-11"])
 - `data_criacao`: TEXT, NOT NULL (data única no formato YYYY-MM-DD ISO 8601)
 
 ### Tabela: `cidades`
+
 - `id`: INTEGER, PRIMARY KEY
 - `nome`: TEXT, NOT NULL
 - `estado`: TEXT, NOT NULL (Sigla com 2 caracteres)
 
 ### Tabela: `funcoes`
+
 - `id`: INTEGER, PRIMARY KEY
 - `nome_funcao`: TEXT, NOT NULL, UNIQUE
 
 ### Tabela: `coordenadores`
+
 - `id`: INTEGER, PRIMARY KEY
 - `nome`: TEXT, NOT NULL
 - `email`: TEXT, NOT NULL, UNIQUE
@@ -190,6 +201,7 @@ pytest tests/ --cov=app
 - `is_superadmin`: BOOLEAN, NOT NULL, DEFAULT False
 
 ### Tabela: `participantes`
+
 - `id`: INTEGER, PRIMARY KEY
 - `nome_completo_encrypted`: BLOB, NOT NULL
 - `email_encrypted`: BLOB, NOT NULL
@@ -203,11 +215,13 @@ pytest tests/ --cov=app
 - `data_inscricao`: TEXT, NOT NULL (Formato ISO 8601)
 
 ### Tabela: `coordenador_cidade_link` (Tabela de Mapeamento N-para-N)
+
 - `coordenador_id`: INTEGER, FOREIGN KEY (`coordenadores.id`)
 - `cidade_id`: INTEGER, FOREIGN KEY (`cidades.id`)
 - PRIMARY KEY (`coordenador_id`, `cidade_id`)
 
 ### Tabela: `auditoria`
+
 - `id`: INTEGER, PRIMARY KEY
 - `timestamp`: TEXT, NOT NULL (Formato ISO 8601)
 - `coordenador_id`: INTEGER, FOREIGN KEY (`coordenadores.id`)
@@ -219,10 +233,12 @@ pytest tests/ --cov=app
 ### Fluxo 1: Área Pública e Login (Home.py)
 
 1.  **Inscrição de Participante:** (Visível para todos)
+
     - Formulário com os campos necessários.
     - **Regra:** Um e-mail não pode ser cadastrado duas vezes para o mesmo evento.
 
 2.  **Emissão de Certificado:** (Visível para todos)
+
     - Campo para inserir o e-mail e obter o PDF.
     - **Regras:** Validar se o e-mail existe e se a participação foi confirmada.
 
@@ -252,6 +268,7 @@ pytest tests/ --cov=app
 Para garantir uma implementação robusta e idiomática, os seguintes padrões devem ser adotados:
 
 1.  **Gerenciamento de Autenticação e Sessão:**
+
     - **CURRENT IMPLEMENTATION**: Uses `streamlit-authenticator` library for all authentication
     - The library automatically manages `st.session_state` and cookies
     - Session state is populated by `auth_manager.handle_login_result()`:
@@ -265,6 +282,7 @@ Para garantir uma implementação robusta e idiomática, os seguintes padrões d
       ```
     - **IMPORTANT**: Always use `SESSION_KEYS` dict from `app/auth.py` when accessing session state
     - Pages are protected using helper functions:
+
       ```python
       from app.auth import require_login, require_superadmin
 
@@ -274,9 +292,11 @@ Para garantir uma implementação robusta e idiomática, os seguintes padrões d
       # For superadmin pages:
       require_superadmin()  # Checks both login and superadmin status
       ```
+
     - The old manual approach with direct `st.session_state` checks is **DEPRECATED**
 
 2.  **Tabelas de Dados Interativas:**
+
     - Para a tela de validação de participantes, use o componente `st.data_editor`. Ele permite a edição direta na interface (como marcar checkboxes de validação), além de oferecer ordenação e filtragem nativas, cumprindo o requisito de "DataTable".
     - O resultado do `st.data_editor` pode ser comparado com o estado original para identificar quais linhas foram alteradas pelo coordenador.
 
@@ -293,12 +313,15 @@ Os prompts iniciais continuam válidos, e agora a IA terá um contexto muito mai
     ```bash
     gemini -o project_setup.py "Baseado no arquivo GEMINI_BRIEF.md (v2), crie a estrutura de diretórios e arquivos vazios para o projeto Pint of Science..."
     ```
+
 2.  **Modelos de Dados:**
 
     ```bash
     gemini -o app/models.py "Baseado na seção 5 do GEMINI_BRIEF.md (v2), gere o código Python completo para o arquivo app/models.py..."
     ```
+
 3.  **Lógica de Autenticação:**
+
     ```bash
     gemini -o app/auth.py "Crie o código para app/auth.py. A função    principal deve receber email e senha, verificar no banco de dados (tabela coordenadores) e usar o padrão de st.session_state descrito na seção 8 do GEMINI_BRIEF.md (v2) para gerenciar a sessão."
 
@@ -314,6 +337,7 @@ Os prompts iniciais continuam válidos, e agora a IA terá um contexto muito mai
 - Is it about interacting with YAML or XML? use `yq`
 
 ## Avoid creating unnecessary files
+
 - Only create files that are explicitly requested or clearly needed based on the context.
 - Do not create placeholder files unless they serve a specific purpose in the project structure.
 - Do not create .md files for applied fixes, summaries, or migrations unless explicitly requested.

@@ -309,20 +309,20 @@ Ação:
 
 ### Checklist Antes de Criar Evento
 
-- [ ] Confirmar datas oficiais do Pint of Science internacional
-- [ ] Verificar se não há conflito com feriados locais
-- [ ] Consultar cidades participantes
-- [ ] Definir carga horária padrão
-- [ ] Preparar logos e imagens do ano
+- ✔ Confirmar datas oficiais do Pint of Science internacional
+- ✔ Verificar se não há conflito com feriados locais
+- ✔ Consultar cidades participantes
+- ✔ Definir carga horária padrão
+- ✔ Preparar logos e imagens do ano
 
 ### Checklist Após Criar Evento
 
-- [ ] Configurar imagens do certificado (aba Certificado)
-- [ ] Configurar carga horária (aba Carga Horária)
-- [ ] Cadastrar cidades participantes (se novas)
-- [ ] Criar/atualizar coordenadores
-- [ ] Testar geração de certificado
-- [ ] Comunicar datas aos coordenadores
+- ✔ Configurar imagens do certificado (aba Certificado)
+- ✔ Configurar carga horária (aba Carga Horária)
+- ✔ Cadastrar cidades participantes (se novas)
+- ✔ Criar/atualizar coordenadores
+- ✔ Testar geração de certificado
+- ✔ Comunicar datas aos coordenadores
 
 ## 💡 Dicas e Boas Práticas
 

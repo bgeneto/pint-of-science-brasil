@@ -191,11 +191,11 @@ Visual: Profissional, acadêmico, confiável
 2. Crie participante teste
 3. Gere certificado
 4. Verifique:
-   - [ ] Título legível
-   - [ ] Texto corpo legível
-   - [ ] Nome destaca adequadamente
-   - [ ] Cores harmoniosas
-   - [ ] Não há elementos invisíveis
+   - ✔ Título legível
+   - ✔ Texto corpo legível
+   - ✔ Nome destaca adequadamente
+   - ✔ Cores harmoniosas
+   - ✔ Não há elementos invisíveis
 
 ### Teste de Impressão
 

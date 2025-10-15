@@ -641,7 +641,7 @@ def main():
         """
     <div style='text-align: center; color: #666; padding: 20px;'>
         <p><strong>© Pint of Science Brasil</strong> - Sistema de Inscrição e Emissão de Certificados</p>
-        <p>Desenvolvido com ❤️ para a comunidade científica brasileira</p>
+        <p>Desenvolvido por bgeneto com ❤️ para a comunidade científica brasileira</p>
     </div>
     """,
         unsafe_allow_html=True,

@@ -171,41 +171,41 @@ Cada edição do Pint of Science pode ter:
 
 ### Antes de Lançar Novo Evento
 
-- [ ] **Imagens do certificado**
+- ✔ **Imagens do certificado**
 
-  - [ ] Logo do Pint of Science atualizado
-  - [ ] Assinatura digital do coordenador geral
-  - [ ] Logos dos patrocinadores
+  - ✔ Logo do Pint of Science atualizado
+  - ✔ Assinatura digital do coordenador geral
+  - ✔ Logos dos patrocinadores
 
-- [ ] **Cores**
+- ✔ **Cores**
 
-  - [ ] Cor primária definida
-  - [ ] Cor secundária definida
-  - [ ] Cores testadas em certificado de amostra
+  - ✔ Cor primária definida
+  - ✔ Cor secundária definida
+  - ✔ Cores testadas em certificado de amostra
 
-- [ ] **Carga horária**
+- ✔ **Carga horária**
 
-  - [ ] Horas por dia configuradas
-  - [ ] Horas totais definidas
-  - [ ] Funções especiais listadas
+  - ✔ Horas por dia configuradas
+  - ✔ Horas totais definidas
+  - ✔ Funções especiais listadas
 
-- [ ] **Teste completo**
-  - [ ] Gerar certificado de teste
-  - [ ] Verificar visual
-  - [ ] Confirmar cálculos
-  - [ ] Validar dados exibidos
+- ✔ **Teste completo**
+  - ✔ Gerar certificado de teste
+  - ✔ Verificar visual
+  - ✔ Confirmar cálculos
+  - ✔ Validar dados exibidos
 
 ### Durante o Evento
 
-- [ ] Monitorar geração de certificados
-- [ ] Verificar reclamações de participantes
-- [ ] Corrigir problemas rapidamente
+- ✔ Monitorar geração de certificados
+- ✔ Verificar reclamações de participantes
+- ✔ Corrigir problemas rapidamente
 
 ### Após o Evento
 
-- [ ] Revisar estatísticas
-- [ ] Arquivar configuração do ano
-- [ ] Documentar mudanças para próximo ano
+- ✔ Revisar estatísticas
+- ✔ Arquivar configuração do ano
+- ✔ Documentar mudanças para próximo ano
 
 ## 💡 Boas Práticas
 

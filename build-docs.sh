@@ -14,11 +14,12 @@ fi
 # Menu de opções
 echo "Escolha uma opção:"
 echo "1) Servir localmente (http://localhost:8000)"
-echo "2) Construir site estático"
-echo "3) Construir site + PDF"
-echo "4) Limpar build anterior"
+echo "2) Construir site estático (HTML)"
+echo "3) Construir PDF profissional com WeasyPrint"
+echo "4) Construir site + PDF (completo)"
+echo "5) Limpar build anterior"
 echo ""
-read -p "Opção (1-4): " option
+read -p "Opção (1-5): " option
 
 case $option in
     1)
@@ -27,16 +28,41 @@ case $option in
         ;;
     2)
         echo "🔨 Construindo site estático..."
-        mkdocs build
+        mkdocs build --clean
         echo "✅ Site gerado em: site/"
         ;;
     3)
-        echo "🔨 Construindo site com PDF..."
-        ENABLE_PDF_EXPORT=1 mkdocs build
-        echo "✅ Site gerado em: site/"
-        echo "📄 PDF gerado em: site/pdf/manual-usuario-pint-of-science.pdf"
+        echo "� Construindo PDF profissional..."
+        # Verificar se o site HTML existe
+        if [ ! -d "site" ]; then
+            echo "⚠️  Site HTML não encontrado, construindo primeiro..."
+            mkdocs build --clean
+        fi
+        python3 generate_pdf.py
+        if [ $? -eq 0 ]; then
+            echo "✅ PDF gerado em: site/pdf/manual-completo.pdf"
+            ls -lh site/pdf/manual-completo.pdf
+        else
+            echo "❌ Erro ao gerar PDF"
+            exit 1
+        fi
         ;;
     4)
+        echo "🔨 Construindo site + PDF completo..."
+        echo "📝 Passo 1: Construindo HTML..."
+        mkdocs build --clean
+        echo "📄 Passo 2: Gerando PDF..."
+        python3 generate_pdf.py
+        if [ $? -eq 0 ]; then
+            echo "✅ Site gerado em: site/"
+            echo "✅ PDF gerado em: site/pdf/manual-completo.pdf"
+            ls -lh site/pdf/manual-completo.pdf
+        else
+            echo "❌ Erro ao gerar PDF"
+            exit 1
+        fi
+        ;;
+    5)
         echo "🧹 Limpando build anterior..."
         rm -rf site/
         echo "✅ Build limpo!"

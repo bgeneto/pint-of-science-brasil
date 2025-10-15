@@ -16,6 +16,7 @@ Quando um certificado PDF é gerado, o sistema:
 4. **Inclui no PDF**: Adiciona link clicável no rodapé do certificado
 
 **Algoritmo:**
+
 ```
 hash = HMAC-SHA256(
     key=CERTIFICATE_SECRET_KEY,
@@ -44,12 +45,12 @@ Qualquer pessoa pode validar um certificado:
 
 #### Cenários de Falsificação
 
-| Tentativa de Fraude | Resultado |
-|---------------------|-----------|
-| Alterar nome no PDF | ❌ Hash não corresponde aos dados do banco |
-| Copiar hash de outro certificado | ❌ Hash vinculado a dados específicos |
-| Gerar hash falso | ❌ Impossível sem a chave secreta |
-| Modificar dados após emissão | ❌ Recalculo do hash detecta alteração |
+| Tentativa de Fraude              | Resultado                                  |
+| -------------------------------- | ------------------------------------------ |
+| Alterar nome no PDF              | ❌ Hash não corresponde aos dados do banco |
+| Copiar hash de outro certificado | ❌ Hash vinculado a dados específicos      |
+| Gerar hash falso                 | ❌ Impossível sem a chave secreta          |
+| Modificar dados após emissão     | ❌ Recalculo do hash detecta alteração     |
 
 ## Configuração
 
@@ -214,16 +215,19 @@ with db_manager.get_db_session() as session:
 ### Teste Manual
 
 1. **Gerar certificado**:
+
    - Login como coordenador
    - Validar participante
    - Baixar certificado
 
 2. **Verificar hash no PDF**:
+
    - Abrir PDF
    - Localizar link no rodapé
    - Copiar código de 64 caracteres
 
 3. **Validar online**:
+
    - Acessar `/Validar_Certificado`
    - Colar código
    - Verificar se mostra dados corretos
@@ -288,6 +292,7 @@ def test_verification_with_wrong_hash():
 ⚠️ **CRÍTICO**: Todos os certificados emitidos perderão validade!
 
 **Recomendações**:
+
 - Fazer backup seguro da chave
 - Usar mesma chave em dev/prod
 - Documentar onde a chave está armazenada
@@ -314,17 +319,18 @@ Não. A validação requer acesso ao banco de dados para buscar os dados origina
 
 ### Checklist
 
-- [ ] `CERTIFICATE_SECRET_KEY` definida no `.env`
-- [ ] Chave tem 64 caracteres hexadecimais
-- [ ] Chave NÃO está versionada no Git
-- [ ] Backup da chave em local seguro
-- [ ] `BASE_URL` aponta para domínio de produção
-- [ ] HTTPS habilitado (evita man-in-the-middle)
-- [ ] Firewall/rate limiting na página de validação
+- ✔ `CERTIFICATE_SECRET_KEY` definida no `.env`
+- ✔ Chave tem 64 caracteres hexadecimais
+- ✔ Chave NÃO está versionada no Git
+- ✔ Backup da chave em local seguro
+- ✔ `BASE_URL` aponta para domínio de produção
+- ✔ HTTPS habilitado (evita man-in-the-middle)
+- ✔ Firewall/rate limiting na página de validação
 
 ### Monitoramento
 
 Recomenda-se monitorar:
+
 - Tentativas de validação com hash inválido (possível ataque)
 - Picos de validação (possível scraping)
 - Erros de verificação HMAC (chave comprometida?)

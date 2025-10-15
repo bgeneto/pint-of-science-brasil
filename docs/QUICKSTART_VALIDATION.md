@@ -24,6 +24,7 @@ python -c "import secrets; print('CERTIFICATE_SECRET_KEY=' + secrets.token_hex(3
 ```
 
 **Saída exemplo:**
+
 ```
 CERTIFICATE_SECRET_KEY=a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
 ```
@@ -41,6 +42,7 @@ BASE_URL=http://localhost:8501  # ou seu domínio em produção
 ```
 
 ⚠️ **IMPORTANTE**:
+
 - Esta chave é **crítica** - não compartilhe publicamente
 - Faça backup em local seguro
 - Use a **mesma chave** em dev e prod
@@ -53,6 +55,7 @@ python utils/migrate_add_hash_validation.py
 ```
 
 **O script vai:**
+
 - ✅ Adicionar coluna `hash_validacao` na tabela `participantes`
 - ✅ Gerar hashes para todos os participantes validados
 - ✅ Exibir relatório de sucesso/erros
@@ -97,13 +100,13 @@ docker-compose restart
 
 Antes de colocar em produção, verifique:
 
-- [ ] `CERTIFICATE_SECRET_KEY` definida no `.env`
-- [ ] Chave tem exatamente 64 caracteres hexadecimais
-- [ ] Backup da chave em local seguro (senha manager, vault, etc.)
-- [ ] `BASE_URL` aponta para domínio de produção (https://...)
-- [ ] Migração executada com sucesso
-- [ ] Teste manual funcionando
-- [ ] Certificados antigos (se houver) receberam hash
+- ✔ `CERTIFICATE_SECRET_KEY` definida no `.env`
+- ✔ Chave tem exatamente 64 caracteres hexadecimais
+- ✔ Backup da chave em local seguro (senha manager, vault, etc.)
+- ✔ `BASE_URL` aponta para domínio de produção (https://...)
+- ✔ Migração executada com sucesso
+- ✔ Teste manual funcionando
+- ✔ Certificados antigos (se houver) receberam hash
 
 ## 🔍 Arquivos modificados
 
@@ -131,6 +134,7 @@ Arquivos modificados:
 ### Erro: "no such column: hash_validacao"
 
 **Solução**: Executar o script de migração:
+
 ```bash
 python utils/migrate_add_hash_validation.py
 ```
@@ -138,6 +142,7 @@ python utils/migrate_add_hash_validation.py
 ### Certificado mostra "NÃO ENCONTRADO" mas é válido
 
 **Possíveis causas:**
+
 1. Hash não foi gerado (executar migração)
 2. Chave secreta diferente entre dev/prod
 3. Dados do participante foram modificados após emissão

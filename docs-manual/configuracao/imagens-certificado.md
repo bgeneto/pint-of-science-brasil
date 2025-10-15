@@ -194,13 +194,13 @@ Após upload:
 
 ### Checklist de Validação
 
-- [ ] Logo principal visível e centralizado
-- [ ] Assinatura legível no rodapé
-- [ ] Logo patrocinador na lateral
-- [ ] Todas as imagens nítidas (não pixelizadas)
-- [ ] Proporções adequadas (não distorcidas)
-- [ ] Cores corretas
-- [ ] Texto do certificado não sobrepõe imagens
+- ✔ Logo principal visível e centralizado
+- ✔ Assinatura legível no rodapé
+- ✔ Logo patrocinador na lateral
+- ✔ Todas as imagens nítidas (não pixelizadas)
+- ✔ Proporções adequadas (não distorcidas)
+- ✔ Cores corretas
+- ✔ Texto do certificado não sobrepõe imagens
 
 ## 🎯 Casos de Uso
 

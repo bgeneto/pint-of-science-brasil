@@ -373,12 +373,12 @@ except Exception as e:
 
 ### Checklist de Segurança
 
-- [ ] `.env` está no `.gitignore`
-- [ ] `ENCRYPTION_KEY` tem backup seguro
-- [ ] API keys não estão em código fonte
-- [ ] Senhas são fortes (16+ caracteres)
-- [ ] `DEBUG_MODE=false` em produção
-- [ ] Logs não expõem dados sensíveis
+- ✔ `.env` está no `.gitignore`
+- ✔ `ENCRYPTION_KEY` tem backup seguro
+- ✔ API keys não estão em código fonte
+- ✔ Senhas são fortes (16+ caracteres)
+- ✔ `DEBUG_MODE=false` em produção
+- ✔ Logs não expõem dados sensíveis
 
 ## 📚 Referências
 

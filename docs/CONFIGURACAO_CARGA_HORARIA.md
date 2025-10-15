@@ -13,6 +13,7 @@ A configuração está disponível na página de **Administração** (`pages/2_�
 ### 1. Configuração por Ano
 
 Cada evento/ano mantém sua própria configuração de carga horária, garantindo:
+
 - Flexibilidade para diferentes edições do evento
 - Histórico de configurações preservado
 - Geração consistente de certificados retroativos
@@ -20,30 +21,36 @@ Cada evento/ano mantém sua própria configuração de carga horária, garantind
 ### 2. Parâmetros Configuráveis
 
 #### a) Horas por Dia (`horas_por_dia`)
+
 - **Descrição**: Define quantas horas equivalem a 1 dia de participação
 - **Valor padrão**: 4 horas
 - **Faixa**: 1-24 horas
 - **Uso**: Aplicado a participantes com funções comuns
 
 **Exemplo**:
+
 - Se configurado para 4h e o participante compareceu 3 dias → 12h no certificado
 
 #### b) Horas por Evento (`horas_por_evento`)
+
 - **Descrição**: Carga horária total do evento (independente dos dias)
 - **Valor padrão**: 40 horas
 - **Faixa**: 1-200 horas
 - **Uso**: Aplicado apenas às funções selecionadas
 
 **Exemplo**:
+
 - Coordenadores recebem sempre 40h, independente de terem participado 1 ou 5 dias
 
 #### c) Funções de Evento Completo (`funcoes_evento_completo`)
+
 - **Descrição**: Lista de IDs de funções que recebem carga horária total
 - **Valor padrão**: Lista vazia `[]`
 - **Tipo**: Lista de IDs (integers)
 - **Uso**: Define quais funções ignoram o cálculo por dias
 
 **Exemplos de funções típicas**:
+
 - Coordenador(a) Local
 - Coordenador(a) Regional
 - Organizador(a)
@@ -73,6 +80,7 @@ def calcular_carga_horaria(datas_participacao, evento_datas, evento_ano, funcao_
 **Localização**: `static/certificate_config.json`
 
 **Estrutura**:
+
 ```json
 {
   "2025": {
@@ -89,11 +97,11 @@ def calcular_carga_horaria(datas_participacao, evento_datas, evento_ano, funcao_
 
 ### Campos
 
-| Campo | Tipo | Descrição |
-|-------|------|-----------|
-| `horas_por_dia` | int | Horas equivalentes a 1 dia |
-| `horas_por_evento` | int | Carga horária total do evento |
-| `funcoes_evento_completo` | list[int] | IDs das funções com CH total |
+| Campo                     | Tipo      | Descrição                     |
+| ------------------------- | --------- | ----------------------------- |
+| `horas_por_dia`           | int       | Horas equivalentes a 1 dia    |
+| `horas_por_evento`        | int       | Carga horária total do evento |
+| `funcoes_evento_completo` | list[int] | IDs das funções com CH total  |
 
 ## Interface do Usuário
 
@@ -120,6 +128,7 @@ A interface oferece:
 ### Cenário 1: Evento de 3 dias, 4h por dia
 
 **Configuração**:
+
 ```json
 {
   "horas_por_dia": 4,
@@ -129,6 +138,7 @@ A interface oferece:
 ```
 
 **Resultados**:
+
 - Palestrante (função comum) que participou 2 dias → **8h**
 - Palestrante que participou 3 dias → **12h**
 - Coordenador Local (função ID 1) que participou 1 dia → **40h**
@@ -137,6 +147,7 @@ A interface oferece:
 ### Cenário 2: Evento intensivo, 6h por dia
 
 **Configuração**:
+
 ```json
 {
   "horas_por_dia": 6,
@@ -146,6 +157,7 @@ A interface oferece:
 ```
 
 **Resultados**:
+
 - Palestrante que participou 2 dias → **12h**
 - Organizador(a) (função ID 5) → **60h** (sempre)
 
@@ -165,10 +177,12 @@ O valor `[XX]` é determinado pela lógica de cálculo descrita acima.
 ### Classes Afetadas
 
 1. **`ServicoCalculoCargaHoraria`** (`app/services.py`):
+
    - Método: `calcular_carga_horaria()` - atualizado para aceitar `evento_ano` e `funcao_id`
    - Método novo: `_carregar_configuracao_carga_horaria()` - carrega config do JSON
 
 2. **`GeradorCertificado`** (`app/services.py`):
+
    - Usa `participante.carga_horaria_calculada` (já calculado na inscrição)
 
 3. **Página Administração** (`pages/2_⚙️_Administração.py`):
@@ -182,6 +196,7 @@ O valor `[XX]` é determinado pela lógica de cálculo descrita acima.
 A carga horária é calculada em dois momentos:
 
 1. **Na inscrição** (`inscrever_participante()`):
+
    ```python
    carga_horaria, _ = servico_calculo_carga_horaria.calcular_carga_horaria(
        dados_inscricao.datas_participacao,
@@ -197,6 +212,7 @@ A carga horária é calculada em dois momentos:
 ### Persistência
 
 O valor calculado é armazenado em `participantes.carga_horaria_calculada`, garantindo:
+
 - Performance (não recalcula a cada geração de certificado)
 - Consistência (valor fixo mesmo se configuração mudar)
 - Histórico (preserva o cálculo original da inscrição)
@@ -219,6 +235,7 @@ python test_carga_horaria.py
 ```
 
 **Casos testados**:
+
 1. ✅ Salvar configuração no JSON
 2. ✅ Calcular CH por dias (função comum)
 3. ✅ Calcular CH total (função especial)
@@ -231,6 +248,7 @@ python test_carga_horaria.py
 **Causa**: Carga horária já foi calculada e armazenada na inscrição
 
 **Solução**:
+
 - Configuração afeta apenas **novas inscrições**
 - Para recalcular participantes existentes, seria necessário script de migração
 
@@ -239,6 +257,7 @@ python test_carga_horaria.py
 **Causa**: Função não está cadastrada na tabela `funcoes`
 
 **Solução**:
+
 1. Vá para aba "🎭 Funções"
 2. Cadastre a função desejada
 3. Retorne para aba "⏱️ Carga Horária"
@@ -248,18 +267,19 @@ python test_carga_horaria.py
 **Causa**: Permissões de escrita ou JSON malformado
 
 **Solução**:
+
 1. Verificar permissões da pasta `static/`
 2. Verificar logs do sistema
 3. Validar JSON existente com `jq` ou similar
 
 ## Roadmap / Melhorias Futuras
 
-- [ ] Script de recálculo em massa para participantes existentes
-- [ ] Interface para visualizar participantes afetados por configuração
-- [ ] Histórico de mudanças de configuração (auditoria)
-- [ ] Validação de conflitos entre anos
-- [ ] Exportar/importar configurações entre anos
-- [ ] Suporte a múltiplas faixas de CH (Junior/Senior/Master)
+- ✔ Script de recálculo em massa para participantes existentes
+- ✔ Interface para visualizar participantes afetados por configuração
+- ✔ Histórico de mudanças de configuração (auditoria)
+- ✔ Validação de conflitos entre anos
+- ✔ Exportar/importar configurações entre anos
+- ✔ Suporte a múltiplas faixas de CH (Junior/Senior/Master)
 
 ## Referências
 

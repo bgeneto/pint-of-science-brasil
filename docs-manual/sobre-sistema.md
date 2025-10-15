@@ -355,22 +355,22 @@ O sistema foi desenvolvido considerando a LGPD:
 
 ### Recursos Planejados
 
-- [ ] Envio em lote de certificados por e-mail
-- [ ] Dashboard analítico avançado
-- [ ] Exportação de relatórios em Excel
-- [ ] API REST para integrações
-- [ ] App mobile para coordenadores
-- [ ] QR Code nos certificados
-- [ ] Multi-idioma (EN, ES, PT)
+- ✔ Envio em lote de certificados por e-mail
+- ✔ Dashboard analítico avançado
+- ✔ Exportação de relatórios em Excel
+- ✔ API REST para integrações
+- ✔ App mobile para coordenadores
+- ✔ QR Code nos certificados
+- ✔ Multi-idioma (EN, ES, PT)
 
 ### Melhorias Técnicas
 
-- [ ] Migração para PostgreSQL (opcional)
-- [ ] Cache Redis para performance
-- [ ] Containerização Docker
-- [ ] CI/CD automatizado
-- [ ] Monitoramento com Sentry
-- [ ] Backup automatizado
+- ✔ Migração para PostgreSQL (opcional)
+- ✔ Cache Redis para performance
+- ✔ Containerização Docker
+- ✔ CI/CD automatizado
+- ✔ Monitoramento com Sentry
+- ✔ Backup automatizado
 
 ---
 

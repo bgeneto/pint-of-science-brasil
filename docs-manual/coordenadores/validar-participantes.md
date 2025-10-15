@@ -23,10 +23,10 @@ Validar um participante significa **confirmar oficialmente** que aquela pessoa p
 
 Antes de começar, tenha em mãos:
 
-- [ ] **Lista de presença física** do evento
-- [ ] **Relação de funções** de cada participante
-- [ ] **Datas exatas** do evento em sua cidade
-- [ ] **Informações sobre palestrantes** e voluntários confirmados
+- ✔ **Lista de presença física** do evento
+- ✔ **Relação de funções** de cada participante
+- ✔ **Datas exatas** do evento em sua cidade
+- ✔ **Informações sobre palestrantes** e voluntários confirmados
 
 ### Acesso à Página
 
@@ -49,7 +49,7 @@ Ao acessar, você vê:
 
 ```
 ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│ 👥 Total    │ │ ✅ Validados│ │ ⏳ Pendentes│ │ 📍 Cidades  │
+│ 👥 Total    │ │ ✅ Validados │ │ ⏳ Pendentes  │ │ 📍 Cidades  │
 │     150     │ │      120    │ │      30     │ │      3      │
 └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
 ```
@@ -362,14 +362,14 @@ Equipe Pint of Science
 
 Use este checklist após cada sessão de validação:
 
-- [ ] Todos os dados verificados?
-- [ ] Funções estão corretas?
-- [ ] Datas conferidas com lista de presença?
-- [ ] Erros de digitação corrigidos?
-- [ ] Participantes reais (não validei ninguém falso)?
-- [ ] Coordenadores marcados adequadamente?
-- [ ] Carga horária será calculada corretamente?
-- [ ] Documentei casos especiais (se houver)?
+- ✔ Todos os dados verificados?
+- ✔ Funções estão corretas?
+- ✔ Datas conferidas com lista de presença?
+- ✔ Erros de digitação corrigidos?
+- ✔ Participantes reais (não validei ninguém falso)?
+- ✔ Coordenadores marcados adequadamente?
+- ✔ Carga horária será calculada corretamente?
+- ✔ Documentei casos especiais (se houver)?
 
 ## 🆘 Problemas Comuns
 

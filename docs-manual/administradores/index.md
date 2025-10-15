@@ -270,16 +270,16 @@ Explore os guias completos para cada funcionalidade:
 
 Antes de lançar um novo evento:
 
-- [ ] Evento cadastrado com ano e datas corretas
-- [ ] Todas as cidades participantes cadastradas
-- [ ] Funções atualizadas (se houver novas)
-- [ ] Coordenadores criados e associados às cidades
-- [ ] Logos do certificado enviados (logo, assinatura, patrocinadores)
-- [ ] Cores do certificado configuradas
-- [ ] Carga horária configurada corretamente
-- [ ] Teste de geração de certificado realizado
-- [ ] Coordenadores notificados sobre acesso
-- [ ] Documentação interna atualizada
+- ✔ Evento cadastrado com ano e datas corretas
+- ✔ Todas as cidades participantes cadastradas
+- ✔ Funções atualizadas (se houver novas)
+- ✔ Coordenadores criados e associados às cidades
+- ✔ Logos do certificado enviados (logo, assinatura, patrocinadores)
+- ✔ Cores do certificado configuradas
+- ✔ Carga horária configurada corretamente
+- ✔ Teste de geração de certificado realizado
+- ✔ Coordenadores notificados sobre acesso
+- ✔ Documentação interna atualizada
 
 ---
 
