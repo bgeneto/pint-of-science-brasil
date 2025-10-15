@@ -584,7 +584,7 @@ def main():
             # Link para documentação HTML local via MkDocs
             st.link_button(
                 "🌍 Docs",
-                "http://localhost:8000",
+                f"{settings.base_url}/docs/",
                 use_container_width=True,
                 help="Página de documentação do sistema",
             )
