@@ -36,12 +36,8 @@ RUN pip install --upgrade pip && \
 # Stage 2: Build documentation
 FROM base AS docs-builder
 
-# Copy documentation source
-COPY docs-manual/ /app/docs-manual/
-COPY mkdocs.yml /app/
-
-# Build MkDocs documentation
-RUN mkdocs build --clean
+# Copy site documentation source
+COPY docs-site/ /app/docs-site/
 
 # Stage 3: Production application
 FROM base AS production
