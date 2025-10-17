@@ -20,8 +20,6 @@ services:
       - ./data:/app/data
       # Static files (logo, etc.)
       - ./static:/app/static
-      # Documentation source files
-      - ./docs-site:/app/docs-site:ro
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
