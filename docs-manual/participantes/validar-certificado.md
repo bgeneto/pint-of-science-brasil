@@ -6,10 +6,10 @@ O Sistema Pint of Science Brasil possui um recurso de **validação de autentici
 
 A validação de certificado é um processo que verifica:
 
-✅ Se o certificado foi realmente emitido pelo sistema
-✅ Se os dados no certificado não foram adulterados
-✅ Se o certificado ainda é válido
-✅ Informações detalhadas do participante
+- ✅ Se o certificado foi realmente emitido pelo sistema
+- ✅ Se os dados no certificado não foram adulterados
+- ✅ Se o certificado ainda é válido
+- ✅ Informações detalhadas do participante
 
 ## 🎯 Quem pode validar?
 
