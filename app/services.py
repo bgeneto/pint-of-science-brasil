@@ -617,6 +617,58 @@ class GeradorCertificado:
 
     def __init__(self):
         self._servico_criptografia = ServicoCriptografia()
+        self._fonts_registered = False
+        self._registrar_fontes()
+
+    def _registrar_fontes(self) -> None:
+        """Registra as fontes Space Grotesk para uso nos certificados."""
+        if self._fonts_registered:
+            return
+
+        try:
+            from reportlab.pdfbase import pdfmetrics
+            from reportlab.pdfbase.ttfonts import TTFont
+
+            services_dir = Path(__file__).parent
+            project_root = services_dir.parent
+            fonts_folder = project_root / "static"
+
+            pdfmetrics.registerFont(
+                TTFont(
+                    "SpaceGrotesk",
+                    str(fonts_folder / "SpaceGrotesk-VariableFont_wght.ttf"),
+                )
+            )
+            pdfmetrics.registerFont(
+                TTFont(
+                    "SpaceGrotesk-Bold",
+                    str(fonts_folder / "SpaceGrotesk-SemiBold.ttf"),
+                )
+            )
+
+            # Aliases para estilos não disponíveis (ex.: itálico) usando arquivos existentes
+            pdfmetrics.registerFont(
+                TTFont(
+                    "SpaceGrotesk-Italic",
+                    str(fonts_folder / "SpaceMono-Italic.ttf"),
+                )
+            )
+            pdfmetrics.registerFont(
+                TTFont(
+                    "SpaceGrotesk-BoldItalic",
+                    str(fonts_folder / "SpaceGrotesk-VariableFont_wght.ttf"),
+                )
+            )
+            pdfmetrics.registerFont(
+                TTFont(
+                    "SpaceGrotesk-Mono",
+                    str(fonts_folder / "SpaceMono-Regular.ttf"),
+                )
+            )
+
+            self._fonts_registered = True
+        except Exception as e:
+            logger.warning(f"Erro ao registrar fontes Space Grotesk: {e}")
 
     def _carregar_configuracao_cores(self, evento_ano: int) -> Dict[str, str]:
         """
@@ -808,7 +860,7 @@ class GeradorCertificado:
             sidebar_width = page_width * 0.30
             content_x_start = sidebar_width + 30  # 30 points de margem
 
-            # ========== COLUNA LATERAL ESQUERDA (LARANJA) ==========
+            # ========== COLUNA LATERAL ESQUERDA (cor_primaria) ==========
             c.setFillColor(colors.HexColor(cores["cor_primaria"]))
             c.rect(0, 0, sidebar_width, page_height, fill=1, stroke=0)
 
@@ -822,7 +874,7 @@ class GeradorCertificado:
 
                     # Calcular dimensões - ALTURA FIXA = altura da página
                     new_height = page_height  # Altura total da página
-                    max_width = sidebar_width  # - 20 - 20 # margem de 20 em cada lado
+                    max_width = sidebar_width  # sem margem de cada lado
 
                     # Calcular largura mantendo aspect ratio
                     ratio = new_height / img_height
@@ -869,13 +921,14 @@ class GeradorCertificado:
                     logger.warning(f"Erro ao carregar logo Pint: {e}")
 
             # Título principal
-            c.setFont("Helvetica-Bold", 24)
+            c.setFont("SpaceGrotesk-Bold", 24)
             c.setFillColor(colors.HexColor(cores["cor_secundaria"]))
             title_y = page_height - 100
             # Calcular centro da área de conteúdo (excluindo sidebar e área do logo)
+            content_right_margin = 30 + 80 + 10  # margem direita + logo + espaço extra
             content_center_x = content_x_start + (
-                (page_width - content_x_start - 120) / 2
-            )  # 120 = espaço do logo + margem
+                (page_width - content_x_start - content_right_margin) / 2
+            )
             c.drawCentredString(
                 content_center_x,
                 title_y,
@@ -883,7 +936,7 @@ class GeradorCertificado:
             )
 
             # Subtítulo
-            c.setFont("Helvetica-Bold", 20)
+            c.setFont("SpaceGrotesk-Bold", 20)
             c.setFillColor(colors.HexColor(cores["cor_texto"]))
             c.drawCentredString(
                 content_center_x,
@@ -893,7 +946,7 @@ class GeradorCertificado:
 
             # ========== TEXTO PRINCIPAL (SEM QUEBRAS DE LINHA) ==========
             y_position = title_y - 110
-            c.setFont("Helvetica", 14)
+            c.setFont("SpaceGrotesk", 14)
             c.setFillColor(colors.HexColor(cores["cor_texto"]))
 
             # Formatar datas de participação
@@ -933,16 +986,16 @@ class GeradorCertificado:
 
             # Construir o texto completo do certificado em uma linha fluida
             # Calcular a largura disponível
-            max_width = page_width - content_x_start - 60
+            max_width = page_width - content_x_start - content_right_margin - 30
             x_current = content_x_start + 20
 
             # Função auxiliar para desenhar texto com alternância de estilos
             def desenhar_texto_fluido(canvas, x, y, texto, bold=False, cor=None):
                 """Desenha texto e retorna a nova posição X."""
                 if bold:
-                    canvas.setFont("Helvetica-Bold", 14)
+                    canvas.setFont("SpaceGrotesk-Bold", 14)
                 else:
-                    canvas.setFont("Helvetica", 14)
+                    canvas.setFont("SpaceGrotesk", 14)
 
                 if cor:
                     canvas.setFillColor(colors.HexColor(cor))
@@ -979,70 +1032,39 @@ class GeradorCertificado:
             largura_linha = 0
 
             for texto, bold, cor in partes:
-                # Calcular largura do texto
-                fonte = "Helvetica-Bold" if bold else "Helvetica"
-                largura_texto = c.stringWidth(texto, fonte, 14)
+                fonte = "SpaceGrotesk-Bold" if bold else "SpaceGrotesk"
+                tokens = re.findall(r"\s+|\S+", texto)
 
-                # Se o texto atual cabe na linha, adiciona
-                if largura_linha + largura_texto <= max_width or not linha_atual:
-                    linha_atual.append((texto, bold, cor))
-                    largura_linha += largura_texto
-                else:
-                    # Texto não cabe. Verificar se precisa quebrar por palavras
-                    if " " in texto.strip() and largura_texto > max_width * 0.6:
-                        # Texto muito longo, quebrar por palavras
-                        palavras = texto.split()
-                        texto_parcial = ""
+                for token in tokens:
+                    if not token:
+                        continue
 
-                        for palavra in palavras:
-                            teste = (
-                                texto_parcial + " " + palavra
-                                if texto_parcial
-                                else palavra
-                            )
-                            largura_teste = c.stringWidth(teste, fonte, 14)
+                    token_width = c.stringWidth(token, fonte, 14)
 
-                            # Se cabe na linha atual com o que já tem
-                            if largura_linha + largura_teste <= max_width:
-                                texto_parcial = teste
-                            else:
-                                # Não cabe. Salvar linha atual se tiver conteúdo
-                                if linha_atual:
-                                    linhas.append(linha_atual)
-                                    linha_atual = []
-                                    largura_linha = 0
+                    if token.isspace():
+                        # Ignora espaços no início de linha, mas mantém entre palavras
+                        if not linha_atual:
+                            continue
 
-                                # Adicionar o que já foi construído (se houver)
-                                if texto_parcial:
-                                    linha_atual.append((texto_parcial, bold, cor))
-                                    largura_linha = c.stringWidth(
-                                        texto_parcial, fonte, 14
-                                    )
-                                    # Nova linha
-                                    linhas.append(linha_atual)
-                                    linha_atual = []
-                                    largura_linha = 0
-                                    texto_parcial = ""
+                        if largura_linha + token_width <= max_width:
+                            linha_atual.append((token, bold, cor))
+                            largura_linha += token_width
+                        else:
+                            # Espaços que não cabem finalizam a linha atual
+                            linhas.append(linha_atual)
+                            linha_atual = []
+                            largura_linha = 0
+                        continue
 
-                                # Começar com a palavra atual
-                                texto_parcial = palavra
-
-                        # Adicionar resto do texto parcial
-                        if texto_parcial:
-                            largura_parcial = c.stringWidth(texto_parcial, fonte, 14)
-                            if largura_linha + largura_parcial <= max_width:
-                                linha_atual.append((texto_parcial, bold, cor))
-                                largura_linha += largura_parcial
-                            else:
-                                if linha_atual:
-                                    linhas.append(linha_atual)
-                                linha_atual = [(texto_parcial, bold, cor)]
-                                largura_linha = largura_parcial
+                    if largura_linha + token_width <= max_width or not linha_atual:
+                        linha_atual.append((token, bold, cor))
+                        largura_linha += token_width
                     else:
-                        # Salvar linha atual e começar nova
-                        linhas.append(linha_atual)
-                        linha_atual = [(texto, bold, cor)]
-                        largura_linha = largura_texto
+                        # Inicia nova linha descartando espaços pendentes
+                        if linha_atual:
+                            linhas.append(linha_atual)
+                        linha_atual = [(token, bold, cor)]
+                        largura_linha = token_width
 
             # Adicionar última linha
             if linha_atual:
@@ -1060,19 +1082,19 @@ class GeradorCertificado:
             # ========== TÍTULO DA APRESENTAÇÃO (SE HOUVER) ==========
             if participante.titulo_apresentacao:
                 y_position -= 15  # Espaço extra antes do título
-                c.setFont("Helvetica-Bold", 12)
+                c.setFont("SpaceGrotesk-Bold", 12)
                 c.setFillColor(colors.HexColor(cores["cor_texto"]))
                 c.drawString(
                     content_x_start + 20, y_position, "Título da apresentação:"
                 )
 
                 y_position -= 20
-                c.setFont("Helvetica-Bold", 14)
+                c.setFont("SpaceGrotesk-Bold", 14)
                 c.setFillColor(colors.HexColor(cores["cor_destaque"]))
                 # Quebrar título se for muito longo
-                max_width = page_width - content_x_start - 120
+                max_width = page_width - content_x_start - content_right_margin
                 if (
-                    c.stringWidth(participante.titulo_apresentacao, "Helvetica", 14)
+                    c.stringWidth(participante.titulo_apresentacao, "SpaceGrotesk", 14)
                     > max_width
                 ):
                     # Quebrar em palavras
@@ -1080,7 +1102,7 @@ class GeradorCertificado:
                     linha = ""
                     for palavra in palavras:
                         teste = linha + " " + palavra if linha else palavra
-                        if c.stringWidth(teste, "Helvetica-Oblique", 12) <= max_width:
+                        if c.stringWidth(teste, "SpaceGrotesk-Italic", 12) <= max_width:
                             linha = teste
                         else:
                             c.drawString(content_x_start + 20, y_position, linha)
@@ -1097,7 +1119,7 @@ class GeradorCertificado:
 
             # Data de emissão
             y_position -= 50
-            c.setFont("Helvetica", 11)
+            c.setFont("SpaceGrotesk", 11)
             c.setFillColor(colors.HexColor(cores["cor_texto"]))
             data_emissao = datetime.now().strftime("%d de %B de %Y")
             # Traduzir mês para português
@@ -1126,11 +1148,14 @@ class GeradorCertificado:
 
             # Assinatura (se existir)
             signature_path = caminhos_imagens["pint_signature"]
+            footer_center_x = content_x_start + (
+                (page_width - content_x_start - 30) / 2
+            )
             if signature_path.exists():
                 try:
                     sig_width = 200
                     sig_height = 60
-                    sig_x = content_center_x - sig_width / 2
+                    sig_x = footer_center_x - sig_width / 2
                     sig_y = 95  # Aumentado de 80 para 95 para dar mais espaço ao rodapé
 
                     c.drawImage(
@@ -1145,13 +1170,13 @@ class GeradorCertificado:
 
                     # Nome do coordenador geral IMEDIATAMENTE abaixo da assinatura
                     nome_coordenador = self._obter_nome_coordenador_geral()
-                    c.setFont("Helvetica", 9)
+                    c.setFont("SpaceGrotesk", 9)
                     c.setFillColor(colors.HexColor(cores["cor_texto"]))
                     # Reduzido espaço de -10 para -5 (mais próximo)
-                    c.drawCentredString(content_center_x, sig_y - 5, nome_coordenador)
+                    c.drawCentredString(footer_center_x, sig_y - 5, nome_coordenador)
                     # Reduzido espaço de -22 para -17 (mais próximo)
                     c.drawCentredString(
-                        content_center_x,
+                        footer_center_x,
                         sig_y - 17,
                         "Coordenador Geral - Pint of Science Brasil",
                     )
@@ -1159,30 +1184,30 @@ class GeradorCertificado:
                     logger.warning(f"Erro ao carregar assinatura: {e}")
 
             # Rodapé
-            c.setFont("Helvetica-Oblique", 9)
+            c.setFont("SpaceGrotesk-Italic", 9)
             c.setFillColor(colors.HexColor("#7f8c8d"))
             footer_text = "“Levando a ciência para o bar”"
-            c.drawCentredString(content_center_x, 50, footer_text)
+            c.drawCentredString(footer_center_x, 50, footer_text)
 
             # Link de validação
             validation_url = (
                 f"{settings.base_url}/Validar_Certificado?hash={hash_validacao}"
             )
-            c.setFont("Helvetica", 7)
-            c.setFillColor(colors.HexColor("#2980b9"))
+            c.setFont("SpaceGrotesk", 7)
+            c.setFillColor(colors.HexColor("#7f8c8d"))
             c.drawCentredString(
-                content_center_x,
+                footer_center_x,
                 35,
                 "Valide a autenticidade deste certificado em:",
             )
 
             # Tornar o link clicável
             c.setFillColor(colors.HexColor("#3498db"))
-            c.setFont("Helvetica", 6)
+            c.setFont("SpaceGrotesk-Mono", 6)
             # Calcular largura aproximada do link para centralização do hitbox
-            link_width = c.stringWidth(validation_url, "Helvetica", 6)
-            link_x_start = content_center_x - (link_width / 2)
-            link_x_end = content_center_x + (link_width / 2)
+            link_width = c.stringWidth(validation_url, "SpaceGrotesk-Mono", 6)
+            link_x_start = footer_center_x - (link_width / 2)
+            link_x_end = footer_center_x + (link_width / 2)
 
             c.linkURL(
                 validation_url,
@@ -1194,7 +1219,7 @@ class GeradorCertificado:
                 ),
                 relative=0,
             )
-            c.drawCentredString(content_center_x, 22, validation_url)
+            c.drawCentredString(footer_center_x, 22, validation_url)
 
             # Finalizar PDF
             c.save()
