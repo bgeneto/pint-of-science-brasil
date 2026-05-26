@@ -199,7 +199,7 @@ def validar_dataframe_editor(df_editado: pd.DataFrame) -> List[str]:
 def exibir_erros_validacao_editor(erros: List[str]) -> None:
     """Mostra erros de validação de forma compacta."""
     st.error(
-        "Corrija os campos obrigatórios antes de salvar alterações ou validar participantes."
+        "⚠️ Corrija os campos obrigatórios antes de salvar alterações ou validar participantes."
     )
     with st.expander("Ver detalhes dos campos inválidos", expanded=True):
         for erro in erros[:20]:
@@ -445,7 +445,7 @@ def tabela_validacao_participantes(
     df_participantes: pd.DataFrame,
     cidades: Dict[int, Dict[str, Any]],
     funcoes: Dict[int, Dict[str, Any]],
-) -> Optional[pd.DataFrame]:
+) -> Optional[tuple[pd.DataFrame, str]]:
     """Exibe tabela editável para validação de participação."""
 
     if df_participantes.empty:
@@ -461,9 +461,7 @@ def tabela_validacao_participantes(
     # Coordenadores podem editar participantes de suas cidades
     can_edit = is_superadmin or bool(allowed_cities)
 
-    st.write(
-        "Marque os participantes que deseja confirmar a participação (apenas para permitir a emissão do certificado)"
-    )
+    st.write("Marque os participantes que deseja validar/desvalidar ou excluir.")
 
     if is_superadmin:
         st.info(
@@ -514,96 +512,126 @@ def tabela_validacao_participantes(
     cidade_options = [""] + [f"{c['nome']}-{c['estado']}" for c in cidades.values()]
     funcao_options = [""] + [f["nome_funcao"] for f in funcoes.values()]
 
-    # Data editor com configurações
-    edited_df = st.data_editor(
-        df_para_editor,
-        column_config={
-            "Selecionado": st.column_config.CheckboxColumn(
-                "Validar", help="Marque para validar este participante"
-            ),
-            "Nome": st.column_config.TextColumn(
-                "Nome",
-                width="large",
-                disabled=not can_edit,
-                required=True,
-                max_chars=200,
-                help=(
-                    "Editar nome (coordenadores e superadmin)"
-                    if can_edit
-                    else "Somente leitura"
+    acao = ""
+    with st.form("form_validacao_participantes", clear_on_submit=False):
+        # Data editor com configurações
+        edited_df = st.data_editor(
+            df_para_editor,
+            column_config={
+                "Selecionado": st.column_config.CheckboxColumn(
+                    "Selecionar",
+                    help="Marque para validar/desvalidar ou excluir este participante",
                 ),
-            ),
-            "Email": st.column_config.TextColumn(
-                "Email",
-                width="large",
-                disabled=not can_edit,
-                required=True,
-                max_chars=200,
-                validate=r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",
-                help=(
-                    "Editar email (coordenadores e superadmin)"
-                    if can_edit
-                    else "Somente leitura"
+                "Nome": st.column_config.TextColumn(
+                    "Nome",
+                    width="large",
+                    disabled=not can_edit,
+                    max_chars=200,
+                    help=(
+                        "Editar nome (coordenadores e superadmin)"
+                        if can_edit
+                        else "Somente leitura"
+                    ),
                 ),
-            ),
-            "Cidade": st.column_config.SelectboxColumn(
-                "Cidade",
-                options=cidade_options,
-                width="medium",
-                disabled=not is_superadmin,  # Apenas superadmin pode trocar cidade
-                required=True,
-                help=(
-                    "Selecionar cidade (somente superadmin)"
-                    if is_superadmin
-                    else "Somente leitura"
+                "Email": st.column_config.TextColumn(
+                    "Email",
+                    width="large",
+                    disabled=not can_edit,
+                    max_chars=200,
+                    help=(
+                        "Editar email (coordenadores e superadmin)"
+                        if can_edit
+                        else "Somente leitura"
+                    ),
                 ),
-            ),
-            "Função": st.column_config.SelectboxColumn(
-                "Função",
-                options=funcao_options,
-                width="medium",
-                disabled=not can_edit,
-                required=True,
-                help=(
-                    "Selecionar função (coordenadores e superadmin)"
-                    if can_edit
-                    else "Somente leitura"
+                "Cidade": st.column_config.SelectboxColumn(
+                    "Cidade",
+                    options=cidade_options,
+                    width="medium",
+                    disabled=not is_superadmin,  # Apenas superadmin pode trocar cidade
+                    help=(
+                        "Selecionar cidade (somente superadmin)"
+                        if is_superadmin
+                        else "Somente leitura"
+                    ),
                 ),
-            ),
-            "Título Apresentação": st.column_config.TextColumn(
-                "Título Apresentação",
-                width="large",
-                disabled=not can_edit,
-                help=(
-                    "Editar título (coordenadores e superadmin)"
-                    if can_edit
-                    else "Somente leitura"
+                "Função": st.column_config.SelectboxColumn(
+                    "Função",
+                    options=funcao_options,
+                    width="medium",
+                    disabled=not can_edit,
+                    help=(
+                        "Selecionar função (coordenadores e superadmin)"
+                        if can_edit
+                        else "Somente leitura"
+                    ),
                 ),
-            ),
-            "Datas Participação": st.column_config.TextColumn(
-                "Datas Participação",
-                width="medium",
-                disabled=not can_edit,
-                required=True,
-                help=(
-                    "Editar datas no formato DD/MM/YYYY, separadas por vírgula (coordenadores e superadmin)"
-                    if can_edit
-                    else "Somente leitura"
+                "Título Apresentação": st.column_config.TextColumn(
+                    "Título Apresentação",
+                    width="large",
+                    disabled=not can_edit,
+                    help=(
+                        "Editar título (coordenadores e superadmin)"
+                        if can_edit
+                        else "Somente leitura"
+                    ),
                 ),
-            ),
-            "Status": st.column_config.TextColumn(
-                "Status", width="medium", disabled=True
-            ),
-            "Data Inscrição": st.column_config.TextColumn(
-                "Data Inscrição", width="medium", disabled=True
-            ),
-        },
-        hide_index=True,
-        width="content",
-        num_rows="fixed",
-    )
+                "Datas Participação": st.column_config.TextColumn(
+                    "Datas Participação",
+                    width="medium",
+                    disabled=not can_edit,
+                    help=(
+                        "Editar datas no formato DD/MM/YYYY, separadas por vírgula (coordenadores e superadmin)"
+                        if can_edit
+                        else "Somente leitura"
+                    ),
+                ),
+                "Status": st.column_config.TextColumn(
+                    "Status", width="medium", disabled=True
+                ),
+                "Data Inscrição": st.column_config.TextColumn(
+                    "Data Inscrição", width="medium", disabled=True
+                ),
+            },
+            hide_index=True,
+            width="content",
+            num_rows="fixed",
+            key="participantes_editor",
+        )
 
-    return edited_df
+        confirmar_exclusao = st.checkbox(
+            "Confirmo que desejo excluir definitivamente os participantes selecionados",
+            help="Use com cuidado. A exclusão remove o cadastro e permite refazer a inscrição.",
+        )
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            validar_submit = st.form_submit_button(
+                "🔄 Validar/Desvalidar", type="primary", width="content"
+            )
+        with col2:
+            salvar_submit = st.form_submit_button(
+                "💾 Salvar Alterações",
+                type="primary",
+                width="content",
+                disabled=not can_edit,
+            )
+        with col3:
+            excluir_submit = st.form_submit_button(
+                "🗑️ Excluir Selecionados",
+                type="secondary",
+                width="content",
+                disabled=not can_edit,
+            )
+
+        if validar_submit:
+            acao = "validar"
+        elif salvar_submit:
+            acao = "salvar"
+        elif excluir_submit:
+            acao = "excluir" if confirmar_exclusao else "excluir_sem_confirmacao"
+
+    return edited_df, acao
 
 
 def processar_validacao(
@@ -611,6 +639,7 @@ def processar_validacao(
     df_editado: pd.DataFrame,
     cidades: Dict[int, Dict[str, Any]],
     funcoes: Dict[int, Dict[str, Any]],
+    acao: str,
 ) -> str:
     """Processa a validação e edições dos participantes selecionados.
 
@@ -627,19 +656,44 @@ def processar_validacao(
     # Coordenadores podem editar participantes de suas cidades
     can_edit = is_superadmin or bool(allowed_cities)
 
+    if not acao:
+        return ""
+
     # CRITICAL FIX: Ensure df_original uses ID as index to match df_editado
     # df_editado already has ID as index from tabela_validacao_participantes
     # But df_original (df_filtrado) comes with default numeric index
     if "ID" in df_original.columns:
         df_original = df_original.set_index("ID")
 
+    # Identificar participantes selecionados antes das validações para permitir
+    # excluir registros já corrompidos/incompletos.
+    selecionados = df_editado[df_editado["Selecionado"] == True]
+
+    if acao == "excluir_sem_confirmacao":
+        st.error("Marque a confirmação de exclusão antes de excluir participantes.")
+        return ""
+
+    if acao == "excluir":
+        if not can_edit:
+            st.error("Você não tem permissão para excluir participantes.")
+        elif selecionados.empty:
+            st.info("Selecione pelo menos um participante para excluir.")
+        else:
+            with st.spinner("Excluindo participantes selecionados..."):
+                sucesso, mensagem = excluir_participantes(selecionados.index.tolist())
+
+            if sucesso:
+                st.success(f"🎉 {mensagem}")
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.error(f"❌ {mensagem}")
+        return ""
+
     erros_editor = validar_dataframe_editor(df_editado)
     if erros_editor:
         exibir_erros_validacao_editor(erros_editor)
         return ""
-
-    # Identificar participantes que foram marcados para validação
-    selecionados = df_editado[df_editado["Selecionado"] == True]
 
     # Detectar mudanças em campos editáveis (para superadmins e coordenadores)
     mudancas = []
@@ -722,76 +776,106 @@ def processar_validacao(
                 if changes:
                     mudancas.append({"id": participante_id, "changes": changes})
 
-    # Debug: Show detected changes (remove this after testing)
-    # if is_superadmin and mudancas:
-    #     with st.expander("🔍 Debug: Mudanças Detectadas", expanded=True):
-    #         st.write("Mudanças detectadas:")
-    #         for mudanca in mudancas:
-    #             st.write(f"ID {mudanca['id']}: {mudanca['changes']}")
-
-    # Layout das colunas para botões
-    col1, col2 = st.columns(2)
-
-    with col1:
+    if acao == "validar":
         if not selecionados.empty:
-            if st.button("🔄 Validar/Desvalidar", type="primary", width="content"):
-                with st.spinner("Alternando status de validação..."):
-                    # Para cada participante selecionado, toggle seu status atual
-                    validation_statuses = []
-                    ids_para_validar = []
+            with st.spinner("Alternando status de validação..."):
+                # Para cada participante selecionado, toggle seu status atual
+                validation_statuses = []
+                ids_para_validar = []
 
-                    for idx in selecionados.index:
-                        if idx in df_original.index:
-                            original_row = df_original.loc[idx]
-                            # Toggle: se está validado (True), vira False; se não está (False), vira True
-                            current_status = original_row["Validado"]
-                            new_status = not current_status
-                            validation_statuses.append(new_status)
-                            ids_para_validar.append(idx)
-                            logger.info(
-                                f"Toggling participant {idx}: {current_status} -> {new_status}"
-                            )
-                        else:
-                            # Se não encontrar no original, validar por padrão
-                            validation_statuses.append(True)
-                            ids_para_validar.append(idx)
-                            logger.info(
-                                f"Participant {idx} not found in original, defaulting to True"
-                            )
+                for idx in selecionados.index:
+                    if idx in df_original.index:
+                        original_row = df_original.loc[idx]
+                        # Toggle: se está validado (True), vira False; se não está (False), vira True
+                        current_status = original_row["Validado"]
+                        new_status = not current_status
+                        validation_statuses.append(new_status)
+                        ids_para_validar.append(idx)
+                        logger.info(
+                            f"Toggling participant {idx}: {current_status} -> {new_status}"
+                        )
+                    else:
+                        # Se não encontrar no original, validar por padrão
+                        validation_statuses.append(True)
+                        ids_para_validar.append(idx)
+                        logger.info(
+                            f"Participant {idx} not found in original, defaulting to True"
+                        )
 
-                    logger.info(
-                        f"Calling validar_participantes with {len(ids_para_validar)} participants"
-                    )
-                    sucesso, mensagem = validar_participantes(
-                        ids_para_validar, validation_statuses
-                    )
-                    logger.info(
-                        f"validar_participantes returned: sucesso={sucesso}, mensagem={mensagem}"
-                    )
+                logger.info(
+                    f"Calling validar_participantes with {len(ids_para_validar)} participants"
+                )
+                sucesso, mensagem = validar_participantes(
+                    ids_para_validar, validation_statuses
+                )
+                logger.info(
+                    f"validar_participantes returned: sucesso={sucesso}, mensagem={mensagem}"
+                )
 
-                if sucesso:
-                    st.success(f"🎉 Status de validação alternado com sucesso!")
-                    if "atualizados com sucesso" in mensagem:
-                        st.info(mensagem)
-                    time.sleep(1)  # Brief pause to show the message
-                    st.rerun()  # Force immediate refresh
-                else:
-                    st.error(f"❌ Erro ao alternar validação: {mensagem}")
+            if sucesso:
+                st.success(f"🎉 Status de validação alternado com sucesso!")
+                if "atualizados com sucesso" in mensagem:
+                    st.info(mensagem)
+                time.sleep(1)  # Brief pause to show the message
+                st.rerun()  # Force immediate refresh
+            else:
+                st.error(f"❌ Erro ao alternar validação: {mensagem}")
+        else:
+            st.info("Selecione pelo menos um participante para validar/desvalidar.")
 
-    with col2:
-        if can_edit and mudancas:
-            if st.button("💾 Salvar Alterações", type="primary", width="content"):
-                with st.spinner("Salvando alterações..."):
-                    sucesso, mensagem = salvar_edicoes_participantes(mudancas)
+    elif acao == "salvar":
+        if not can_edit:
+            st.error("Você não tem permissão para editar participantes.")
+        elif mudancas:
+            with st.spinner("Salvando alterações..."):
+                sucesso, mensagem = salvar_edicoes_participantes(mudancas)
 
-                if sucesso:
-                    st.success("🎉 Alterações salvas com sucesso!")
-                    time.sleep(1)  # Brief pause to show the message
-                    st.rerun()  # Force immediate refresh
-                else:
-                    st.error(f"❌ {mensagem}")
+            if sucesso:
+                st.success("🎉 Alterações salvas com sucesso!")
+                time.sleep(1)  # Brief pause to show the message
+                st.rerun()  # Force immediate refresh
+            else:
+                st.error(f"❌ {mensagem}")
+        else:
+            st.info("Nenhuma alteração detectada.")
 
     return ""
+
+
+def excluir_participantes(participante_ids: List[Any]) -> tuple[bool, str]:
+    """Exclui participantes selecionados."""
+    try:
+        ids_para_excluir = []
+        for participante_id in participante_ids:
+            if pd.isna(participante_id):
+                continue
+            ids_para_excluir.append(int(participante_id))
+
+        if not ids_para_excluir:
+            return False, "Nenhum participante selecionado para exclusão."
+
+        with db_manager.get_db_session() as session:
+            excluidos = 0
+            for participante_id in ids_para_excluir:
+                participante = session.get(Participante, participante_id)
+                if not participante:
+                    logger.warning(
+                        f"Participante ID {participante_id} não encontrado para exclusão"
+                    )
+                    continue
+
+                session.delete(participante)
+                excluidos += 1
+                logger.info(f"🗑️ Participante ID {participante_id} excluído")
+
+        if excluidos == 0:
+            return False, "Nenhum participante encontrado para exclusão."
+
+        return True, f"{excluidos} participante(s) excluído(s) com sucesso."
+
+    except Exception as e:
+        logger.error(f"❌ Erro ao excluir participantes: {str(e)}")
+        return False, "Erro ao excluir participantes."
 
 
 def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> tuple[bool, str]:
@@ -904,7 +988,7 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> tuple[bool, 
                             participante.nome_completo_encrypted
                         )
                         participante.nome_completo_encrypted = (
-                            servico_criptografia.criptografar(valor)
+                            servico_criptografia.criptografar_nome(valor)
                         )
                         needs_hash_regeneration = True
                         logger.info(f"✏️ Nome atualizado: '{old_name}' -> '{valor}'")
@@ -1112,11 +1196,12 @@ def main():
     df_filtrado = mostrar_filtros(df_participantes)
 
     # Tabela de validação
-    df_editado = tabela_validacao_participantes(df_filtrado, cidades, funcoes)
+    resultado_editor = tabela_validacao_participantes(df_filtrado, cidades, funcoes)
 
-    if df_editado is not None:
+    if resultado_editor is not None:
+        df_editado, acao = resultado_editor
         # Processar validação e edições (rerun happens inside this function if needed)
-        processar_validacao(df_filtrado, df_editado, cidades, funcoes)
+        processar_validacao(df_filtrado, df_editado, cidades, funcoes, acao)
 
     # Rodapé
     st.markdown(

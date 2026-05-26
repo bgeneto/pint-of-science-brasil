@@ -99,17 +99,26 @@ class ServicoCriptografia:
 
     def criptografar_email(self, email: str) -> bytes:
         """Criptografa um endereço de email."""
-        return self.criptografar(email.lower().strip())
+        email_normalizado = email.lower().strip() if email else ""
+        if not email_normalizado:
+            raise ValueError("Email não pode estar vazio")
+        return self.criptografar(email_normalizado)
 
     def criptografar_nome(self, nome: str) -> bytes:
         """Criptografa um nome completo."""
-        return self.criptografar(nome.strip())
+        nome_normalizado = nome.strip() if nome else ""
+        if not nome_normalizado:
+            raise ValueError("Nome não pode estar vazio")
+        return self.criptografar(nome_normalizado)
 
     def gerar_hash_email(self, email: str) -> str:
         """Gera um hash SHA-256 do email para buscas eficientes."""
         import hashlib
 
-        return hashlib.sha256(email.lower().strip().encode("utf-8")).hexdigest()
+        email_normalizado = email.lower().strip() if email else ""
+        if not email_normalizado:
+            raise ValueError("Email não pode estar vazio")
+        return hashlib.sha256(email_normalizado.encode("utf-8")).hexdigest()
 
     def gerar_hash_validacao_certificado(
         self, participante_id: int, evento_id: int, email: str, nome: str
