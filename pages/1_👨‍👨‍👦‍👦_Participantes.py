@@ -467,7 +467,8 @@ def tabela_validacao_participantes(
         st.info(
             "💡 **Atenção superadmin:**\n\n"
             "- Você pode editar nome, email, cidade, função, título, datas etc...\n"
-            "- Basta clicar fora da célula para salvar as alterações e confirmar as mudanças realizadas!"
+            "- Clique em “💾 Salvar Alterações” para confirmar edições.\n"
+            "- Para excluir cadastros inválidos, marque as linhas e clique em “🗑️ Excluir Selecionados”."
         )
     elif allowed_cities:
         st.info(
@@ -599,11 +600,6 @@ def tabela_validacao_participantes(
             key="participantes_editor",
         )
 
-        confirmar_exclusao = st.checkbox(
-            "Confirmo que desejo excluir definitivamente os participantes selecionados",
-            help="Use com cuidado. A exclusão remove o cadastro e permite refazer a inscrição.",
-        )
-
         col1, col2, col3 = st.columns(3)
         with col1:
             validar_submit = st.form_submit_button(
@@ -629,7 +625,7 @@ def tabela_validacao_participantes(
         elif salvar_submit:
             acao = "salvar"
         elif excluir_submit:
-            acao = "excluir" if confirmar_exclusao else "excluir_sem_confirmacao"
+            acao = "excluir"
 
     return edited_df, acao
 
@@ -668,10 +664,6 @@ def processar_validacao(
     # Identificar participantes selecionados antes das validações para permitir
     # excluir registros já corrompidos/incompletos.
     selecionados = df_editado[df_editado["Selecionado"] == True]
-
-    if acao == "excluir_sem_confirmacao":
-        st.error("Marque a confirmação de exclusão antes de excluir participantes.")
-        return ""
 
     if acao == "excluir":
         if not can_edit:
