@@ -38,7 +38,7 @@ Primeiro, você precisa **participar fisicamente** de um evento Pint of Science 
 
 - Confirmar presença com os organizadores locais
 - Anotar as datas em que participou
-- Guardar a função que exerceu (participante, voluntário, palestrante, etc.)
+- Guardar a função ou funções que exerceu (participante, voluntário, palestrante, etc.)
 
 ### 2️⃣ Inscreva-se no Sistema
 

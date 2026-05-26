@@ -18,6 +18,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Tuple
 from cryptography.fernet import Fernet
+from sqlalchemy.exc import IntegrityError
 
 import streamlit as st
 from reportlab.lib.pagesizes import letter
@@ -98,17 +99,26 @@ class ServicoCriptografia:
 
     def criptografar_email(self, email: str) -> bytes:
         """Criptografa um endereço de email."""
-        return self.criptografar(email.lower().strip())
+        email_normalizado = email.lower().strip() if email else ""
+        if not email_normalizado:
+            raise ValueError("Email não pode estar vazio")
+        return self.criptografar(email_normalizado)
 
     def criptografar_nome(self, nome: str) -> bytes:
         """Criptografa um nome completo."""
-        return self.criptografar(nome.strip())
+        nome_normalizado = nome.strip() if nome else ""
+        if not nome_normalizado:
+            raise ValueError("Nome não pode estar vazio")
+        return self.criptografar(nome_normalizado)
 
     def gerar_hash_email(self, email: str) -> str:
         """Gera um hash SHA-256 do email para buscas eficientes."""
         import hashlib
 
-        return hashlib.sha256(email.lower().strip().encode("utf-8")).hexdigest()
+        email_normalizado = email.lower().strip() if email else ""
+        if not email_normalizado:
+            raise ValueError("Email não pode estar vazio")
+        return hashlib.sha256(email_normalizado.encode("utf-8")).hexdigest()
 
     def gerar_hash_validacao_certificado(
         self, participante_id: int, evento_id: int, email: str, nome: str
@@ -439,7 +449,11 @@ class ServicoEmail:
             return False
 
     def enviar_email_certificado_liberado(
-        self, nome: str, email: str, link_download: str
+        self,
+        nome: str,
+        email: str,
+        link_download: str,
+        funcao_nome: Optional[str] = None,
     ) -> bool:
         """Envia e-mail informando que o certificado está liberado."""
         if not self._configured:
@@ -448,6 +462,12 @@ class ServicoEmail:
 
         try:
             assunto = "Seu Certificado Pint of Science Brasil Está Disponível! 🎉"
+            funcao_texto = (
+                f" para a função <strong>{funcao_nome}</strong>" if funcao_nome else ""
+            )
+            funcao_instrucao = (
+                f"<li>Selecione a função “{funcao_nome}”</li>" if funcao_nome else ""
+            )
 
             html_content = f"""
             <html>
@@ -459,7 +479,7 @@ class ServicoEmail:
 
                     <div style="background-color: #f8fff8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #27ae60;">
                         <h3>Parabéns, {nome}!</h3>
-                        <p>Sua participação no Pint of Science Brasil foi confirmada e seu certificado já está disponível para download!</p>
+                        <p>Sua participação no Pint of Science Brasil{funcao_texto} foi confirmada e seu certificado já está disponível para download!</p>
 
                         <div style="text-align: center; margin: 30px 0;">
                             <a href="{link_download}" style="
@@ -479,6 +499,7 @@ class ServicoEmail:
                             <li>Vá até a página principal do site</li>
                             <li>Clique na aba “📜 Certificado”</li>
                             <li>Digite o seu e-mail</li>
+                            {funcao_instrucao}
                             <li>Clique no botão “👁️ Visualizar Certificado”</li>
                         </ul>
                         <p><strong>O certificado inclui:</strong></p>
@@ -492,7 +513,7 @@ class ServicoEmail:
 
                     <div style="background-color: #fff3cd; padding: 15px; border-radius: 6px; margin: 20px 0;">
                         <p style="margin: 0; color: #856404;">
-                            <strong>⏰ Importante:</strong> Clique na aba “Certificado” na página principal e informe o seu e-mail para visualizar ou baixar o seu certificado em formato pdf.
+                            <strong>⏰ Importante:</strong> Clique na aba “Certificado” na página principal, informe o seu e-mail e selecione a função correspondente para visualizar ou baixar o seu certificado em formato pdf.
                         </p>
                     </div>
 
@@ -582,6 +603,7 @@ class ServicoEmail:
                     nome = dest.get("nome", "Participante")
                     email = dest.get("email")
                     link_download = dest.get("link_download", settings.base_url)
+                    funcao_nome = dest.get("funcao_nome")
 
                     if not email:
                         total_falha += 1
@@ -589,7 +611,7 @@ class ServicoEmail:
 
                     # Enviar email individual usando o método existente
                     sucesso = self.enviar_email_certificado_liberado(
-                        nome, email, link_download
+                        nome, email, link_download, funcao_nome
                     )
 
                     if sucesso:
@@ -1262,15 +1284,20 @@ class ServicoValidacao:
             Tupla com (valido, mensagem_erro)
         """
         try:
-            # Validar email duplicado no mesmo evento
+            # Validar email duplicado no mesmo evento e função
             with db_manager.get_db_session() as session:
                 participante_repo = get_participante_repository(session)
 
                 email_hash = self._servico_criptografia.gerar_hash_email(dados.email)
-                existing = participante_repo.get_by_email_hash(email_hash, evento.id)
+                existing = participante_repo.get_by_email_evento_funcao(
+                    email_hash, evento.id, dados.funcao_id
+                )
 
                 if existing:
-                    return False, "Este email já está inscrito neste evento"
+                    return (
+                        False,
+                        "Este email já está inscrito neste evento com esta função",
+                    )
 
             # Validar datas de participação
             if not self._servico_calculo.validar_datas_participacao(
@@ -1296,7 +1323,7 @@ class ServicoValidacao:
             return False, "Erro na validação da inscrição"
 
     def validar_download_certificado(
-        self, email: str, evento_id: int
+        self, email: str, evento_id: int, funcao_id: int
     ) -> Tuple[bool, Optional[ParticipanteRead], str]:
         """
         Valida se um usuário pode baixar certificado.
@@ -1304,6 +1331,7 @@ class ServicoValidacao:
         Args:
             email: Email do participante
             evento_id: ID do evento
+            funcao_id: ID da função escolhida para o certificado
 
         Returns:
             Tupla com (pode_baixar, participante, mensagem)
@@ -1315,15 +1343,15 @@ class ServicoValidacao:
 
                 # Buscar participante
                 email_hash = self._servico_criptografia.gerar_hash_email(email)
-                participante = participante_repo.get_by_email_hash(
-                    email_hash, evento_id
+                participante = participante_repo.get_by_email_evento_funcao(
+                    email_hash, evento_id, funcao_id
                 )
 
                 if not participante:
                     return (
                         False,
                         None,
-                        "Email não encontrado ou não inscrito neste evento",
+                        "Email não encontrado ou não inscrito neste evento com esta função",
                     )
 
                 # Verificar se está validado
@@ -1466,18 +1494,31 @@ def inscrever_participante(
             logger.info(f"✅ Participante inscrito: {dados_inscricao.email}")
             return True, "Inscrição realizada com sucesso!", participante.id
 
+    except IntegrityError:
+        logger.warning(
+            "⚠️ Inscrição duplicada bloqueada por restrição email/evento/função"
+        )
+        return (
+            False,
+            "Este email já está inscrito neste evento com esta função",
+            None,
+        )
+
     except Exception as e:
         logger.error(f"❌ Erro ao inscrever participante: {e}")
         return False, f"Erro ao realizar inscrição: {str(e)}", None
 
 
-def baixar_certificado(email: str, evento_id: int) -> Tuple[bool, Optional[bytes], str]:
+def baixar_certificado(
+    email: str, evento_id: int, funcao_id: int
+) -> Tuple[bool, Optional[bytes], str]:
     """
     Função de conveniência para baixar certificado.
 
     Args:
         email: Email do participante
         evento_id: ID do evento
+        funcao_id: ID da função escolhida para o certificado
 
     Returns:
         Tupla com (sucesso, pdf_bytes, mensagem)
@@ -1485,7 +1526,7 @@ def baixar_certificado(email: str, evento_id: int) -> Tuple[bool, Optional[bytes
     try:
         # Validar download
         pode_baixar, participante, mensagem = (
-            servico_validacao.validar_download_certificado(email, evento_id)
+            servico_validacao.validar_download_certificado(email, evento_id, funcao_id)
         )
 
         if not pode_baixar:
@@ -1590,12 +1631,18 @@ def validar_participantes(
                                 email = servico_criptografia.descriptografar(
                                     participante.email_encrypted
                                 )
+                                funcao_nome = (
+                                    participante.funcao.nome_funcao
+                                    if participante.funcao
+                                    else None
+                                )
                                 link_download = f"{settings.base_url}/"
 
                                 emails_para_enviar.append(
                                     {
                                         "nome": nome,
                                         "email": email,
+                                        "funcao_nome": funcao_nome,
                                         "link_download": link_download,
                                     }
                                 )

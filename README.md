@@ -379,7 +379,7 @@ Qualquer pessoa pode validar um certificado em `/Validar_Certificado`.
    - Design visual específico do ano do evento (cores e imagens)
    - **Carga horária calculada baseada em regras configuráveis por ano**
    - Link clicável para verificação online
-4. **Download**: Participantes baixam certificados usando e-mail de cadastro
+4. **Download**: Participantes baixam certificados usando e-mail, evento e função de cadastro
 5. **Verificação**: Qualquer pessoa pode validar autenticidade do certificado online através do link ou página pública
 
 ## 🎨 Configuração Visual por Ano do Evento
@@ -658,6 +658,7 @@ CMD ["streamlit", "run", "🏠_Home.py", "--server.address=0.0.0.0"]
 - **participantes**: Dados dos participantes com:
   - `nome_completo_encrypted` e `email_encrypted` (BLOB, Fernet)
   - `email_hash` (SHA-256 para lookups, STRING 64 chars)
+  - Identidade única por `email_hash` + `evento_id` + `funcao_id`
   - `hash_validacao` (HMAC-SHA256 para validação de certificados, STRING 64 chars, UNIQUE)
   - Dados de validação e participação
   - **Carga horária calculada dinamicamente** (não armazenada no banco)
@@ -674,6 +675,9 @@ python utils/add_hash_validacao_column.py
 
 # 2. Remover coluna carga_horaria_calculada (sistema agora calcula dinamicamente)
 python utils/migrate_drop_carga_horaria_column.py
+
+# 3. Migrar identidade de inscrição para email + evento + função
+python utils/migrate_participante_identity_funcao.py
 ```
 
 Estes scripts verificam e modificam a estrutura do banco de forma segura (idempotente).

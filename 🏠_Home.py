@@ -349,7 +349,7 @@ def formulario_inscricao(evento_atual, cidades, funcoes) -> Dict[str, Any]:
     return resultado
 
 
-def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
+def formulario_download_certificado(evento_atual, todos_eventos, funcoes) -> bool:
     """Exibe o formulário para download de certificados."""
     st.subheader("📜 Download de Certificado")
     st.write("Digite seu e-mail para baixar seu certificado:")
@@ -359,6 +359,7 @@ def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
         """
     ℹ️ **Importante:**
     - Apenas participantes com apresentação validada pelos coordenadores podem baixar certificados
+    - Se você tem mais de uma inscrição no mesmo evento, selecione a função correspondente ao certificado desejado
     - Se você acabou de se inscrever, aguarde a validação pelos coordenadores após a sua apresentação
     - Você receberá um e-mail quando seu certificado estiver disponível
     """
@@ -410,6 +411,15 @@ def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
             ),  # Default to current event
         )
 
+        funcao_selecionada = st.selectbox(
+            "Função *",
+            options=[("", None)]
+            + [(funcao["nome_funcao"], funcao["id"]) for funcao in funcoes],
+            format_func=lambda x: x[0] if x and x[0] else "Selecione...",
+            help="Selecione a mesma função usada na inscrição",
+            index=0,
+        )
+
         submit_button = st.form_submit_button(
             "👁️ Visualizar Certificado", type="primary", width="content"
         )
@@ -430,10 +440,16 @@ def formulario_download_certificado(evento_atual, todos_eventos) -> bool:
             mostrar_mensagem("error", "Por favor, selecione um evento.")
             return False
 
+        if not funcao_selecionada[1]:
+            mostrar_mensagem("error", "Por favor, selecione a função.")
+            return False
+
         # Baixar certificado
         with st.spinner("Verificando seu certificado..."):
             sucesso, pdf_bytes, mensagem = baixar_certificado(
-                email.lower().strip(), evento_id[1] if evento_id else None
+                email.lower().strip(),
+                evento_id[1] if evento_id else None,
+                funcao_selecionada[1],
             )
 
         if sucesso and pdf_bytes:
@@ -660,7 +676,7 @@ def main():
                 f"📧 Enviamos um e-mail de confirmação para: {resultado_inscricao['email']}"
             )
     elif active_tab == "📜 Certificado":
-        formulario_download_certificado(evento_atual, todos_eventos)
+        formulario_download_certificado(evento_atual, todos_eventos, funcoes)
     elif active_tab == "🔐 Coordenadores":
         if is_user_logged_in():
             st.switch_page("pages/1_👨‍👨‍👦‍👦_Participantes.py")

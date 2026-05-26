@@ -433,16 +433,18 @@ def seed_speakers_from_csv(verbose: bool = False) -> bool:
                             erros += 1
                             continue
 
-                        # Verificar se participante já existe (pelo hash do email)
+                        # Verificar se participante já existe (email + evento + função)
                         email_hash = crypto_service.gerar_hash_email(email)
-                        participante_existente = participante_repo.get_by_email_hash(
-                            email_hash, evento_2025.id
+                        participante_existente = (
+                            participante_repo.get_by_email_evento_funcao(
+                                email_hash, evento_2025.id, funcao_palestrante.id
+                            )
                         )
 
                         if participante_existente:
                             if verbose:
                                 logging.info(
-                                    f"ℹ️ Linha {row_num}: Palestrante '{nome}' já existe, pulando..."
+                                    f"ℹ️ Linha {row_num}: Palestrante '{nome}' já existe nesta função, pulando..."
                                 )
                             palestrantes_processados += 1
                             continue

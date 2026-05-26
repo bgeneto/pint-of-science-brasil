@@ -101,7 +101,7 @@ Este guia rápido vai te ajudar a começar a usar o Sistema Pint of Science Bras
 
 **Onde**: Página inicial → Aba "📥 Baixar Certificado"
 
-**O que faz**: Participantes validados podem baixar seus certificados em PDF digitando apenas o e-mail.
+**O que faz**: Participantes validados podem baixar seus certificados em PDF informando e-mail, evento e função.
 
 ### 3. Validação de Certificados
 
@@ -140,7 +140,7 @@ Este guia rápido vai te ajudar a começar a usar o Sistema Pint of Science Bras
 
 !!! tip "E-mail deve ser exato"
 
-    Ao baixar certificado, use **exatamente** o mesmo e-mail usado na inscrição (incluindo maiúsculas/minúsculas).
+    Ao baixar certificado, use o mesmo e-mail usado na inscrição e selecione a função correspondente.
 
 !!! warning "Validação necessária"
 

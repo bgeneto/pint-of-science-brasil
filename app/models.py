@@ -18,6 +18,7 @@ from sqlalchemy import (
     Text,
     ForeignKey,
     LargeBinary,
+    UniqueConstraint,
     create_engine,
 )
 from sqlalchemy.dialects.sqlite import JSON
@@ -179,12 +180,20 @@ class Participante(Base):
     """Modelo SQLAlchemy para a tabela participantes."""
 
     __tablename__ = "participantes"
+    __table_args__ = (
+        UniqueConstraint(
+            "email_hash",
+            "evento_id",
+            "funcao_id",
+            name="uq_participantes_email_evento_funcao",
+        ),
+    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     nome_completo_encrypted = Column(LargeBinary, nullable=False)
     email_encrypted = Column(LargeBinary, nullable=False)
     email_hash = Column(
-        String(64), nullable=True, index=True
+        String(64), nullable=False, index=True
     )  # SHA-256 hash for lookups
     titulo_apresentacao = Column(Text, nullable=True)
     evento_id = Column(Integer, ForeignKey("eventos.id"), nullable=False)

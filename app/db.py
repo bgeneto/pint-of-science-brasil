@@ -305,7 +305,11 @@ class ParticipanteRepository(BaseRepository):
     def get_by_email_hash(
         self, email_hash: str, evento_id: int
     ) -> Optional[Participante]:
-        """Busca um participante pelo hash do email e evento."""
+        """Busca um participante pelo hash do email e evento.
+
+        Deprecated: email + evento is ambiguous when the same participant has
+        multiple funções in one event. Prefer get_by_email_evento_funcao().
+        """
         return (
             self.session.query(Participante)
             .filter(
@@ -314,6 +318,25 @@ class ParticipanteRepository(BaseRepository):
             )
             .first()
         )
+
+    def get_by_email_evento_funcao(
+        self,
+        email_hash: str,
+        evento_id: int,
+        funcao_id: int,
+        exclude_participante_id: Optional[int] = None,
+    ) -> Optional[Participante]:
+        """Busca participante pela identidade email + evento + função."""
+        query = self.session.query(Participante).filter(
+            Participante.email_hash == email_hash,
+            Participante.evento_id == evento_id,
+            Participante.funcao_id == funcao_id,
+        )
+
+        if exclude_participante_id is not None:
+            query = query.filter(Participante.id != exclude_participante_id)
+
+        return query.first()
 
     def get_by_encrypted_email(
         self, email_encrypted: bytes, evento_id: int
