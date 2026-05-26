@@ -62,7 +62,7 @@ def migrate_drop_carga_horaria_column():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome_completo_encrypted BLOB NOT NULL,
             email_encrypted BLOB NOT NULL,
-            email_hash TEXT NOT NULL UNIQUE,
+            email_hash TEXT NOT NULL,
             titulo_apresentacao TEXT,
             evento_id INTEGER NOT NULL,
             cidade_id INTEGER NOT NULL,
@@ -95,6 +95,10 @@ def migrate_drop_carga_horaria_column():
         print("🔗 Recreating indexes...")
         cursor.execute(
             "CREATE INDEX idx_participantes_email_hash ON participantes(email_hash)"
+        )
+        cursor.execute(
+            "CREATE UNIQUE INDEX uq_participantes_email_evento_funcao "
+            "ON participantes(email_hash, evento_id, funcao_id)"
         )
         cursor.execute(
             "CREATE INDEX idx_participantes_evento_id ON participantes(evento_id)"

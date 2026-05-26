@@ -131,7 +131,7 @@ Pint of Science 2025
 
 !!! question "Qual função escolher?"
 
-    Escolha a função **principal** que você exerceu. Se você teve múltiplas funções, escolha a de maior responsabilidade.
+    Se você exerceu múltiplas funções no mesmo evento, faça uma inscrição separada para cada função. O sistema permite uma inscrição por e-mail, evento e função.
 
 #### 6. Datas de Participação
 
@@ -279,11 +279,11 @@ O sistema é **totalmente responsivo** e funciona perfeitamente em smartphones e
 
 ### Posso me inscrever várias vezes?
 
-Não. Cada e-mail pode ter apenas **uma inscrição por evento**.
+Sim, desde que seja para **funções diferentes** no mesmo evento. Cada e-mail pode ter apenas uma inscrição por evento e função.
 
 ### E se eu participei em duas cidades diferentes?
 
-Faça uma inscrição para cada cidade.
+Se a função for diferente em cada cidade, faça uma inscrição para cada função. Se for a mesma função, entre em contato com a coordenação para ajustar cidade/datas em uma única inscrição.
 
 ### Posso usar o mesmo e-mail para participantes diferentes?
 
@@ -316,7 +316,7 @@ Sem problemas! O sistema aceita todos os caracteres do alfabeto português.
    - ❌ Apressar o preenchimento
    - ❌ Usar e-mail que você não acessa
    - ❌ Marcar datas em que não participou
-   - ❌ Fazer múltiplas inscrições com o mesmo e-mail
+   - ❌ Fazer múltiplas inscrições com o mesmo e-mail para a mesma função no mesmo evento
    - ❌ Usar dados falsos
 
 ---

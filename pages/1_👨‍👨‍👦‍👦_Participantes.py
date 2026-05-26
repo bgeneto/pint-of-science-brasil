@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 import logging
 import time
+from sqlalchemy.exc import IntegrityError
 
 # Importar módulos do sistema
 from app.auth import require_login, get_current_user_info, auth_manager, SESSION_KEYS
@@ -681,38 +682,84 @@ def processar_validacao(
         if can_edit and mudancas:
             if st.button("💾 Salvar Alterações", type="primary", width="content"):
                 with st.spinner("Salvando alterações..."):
-                    # Check if any changes affect hash (nome ou email)
-                    hash_affected = any(
-                        "nome" in m["changes"] or "email" in m["changes"]
-                        for m in mudancas
-                    )
-
-                    sucesso = salvar_edicoes_participantes(mudancas)
+                    sucesso, mensagem = salvar_edicoes_participantes(mudancas)
 
                 if sucesso:
                     st.success("🎉 Alterações salvas com sucesso!")
                     time.sleep(1)  # Brief pause to show the message
                     st.rerun()  # Force immediate refresh
                 else:
-                    st.error("❌ Erro ao salvar alteraçãoes.")
+                    st.error(f"❌ {mensagem}")
 
     return ""
 
 
-def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> bool:
+def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> tuple[bool, str]:
     """Salva alterações nos participantes e regenera hash de validação se necessário."""
     try:
         logger.info(f"📝 Iniciando salvamento de {len(mudancas)} alterações")
 
         with db_manager.get_db_session() as session:
             from app.models import Participante
+            from app.db import get_participante_repository
+
+            participante_repo = get_participante_repository(session)
+            participantes_por_id = {}
+            identidades_propostas = []
+
+            for mudanca in mudancas:
+                participante = session.get(Participante, mudanca["id"])
+
+                if not participante:
+                    logger.error(f"❌ Participante {mudanca['id']} não encontrado!")
+                    continue
+
+                participantes_por_id[mudanca["id"]] = participante
+                changes = mudanca["changes"]
+                email_hash = participante.email_hash
+
+                if not email_hash:
+                    email_atual = servico_criptografia.descriptografar(
+                        participante.email_encrypted
+                    )
+                    email_hash = servico_criptografia.gerar_hash_email(email_atual)
+
+                if "email" in changes:
+                    email_hash = servico_criptografia.gerar_hash_email(changes["email"])
+
+                funcao_id = changes.get("funcao_id", participante.funcao_id)
+                identidades_propostas.append(
+                    (participante.id, email_hash, participante.evento_id, funcao_id)
+                )
+
+            identidades_vistas = {}
+            for participante_id, email_hash, evento_id, funcao_id in identidades_propostas:
+                identidade = (email_hash, evento_id, funcao_id)
+                if identidade in identidades_vistas:
+                    return (
+                        False,
+                        "As alterações criariam inscrições duplicadas para o mesmo email, evento e função.",
+                    )
+                identidades_vistas[identidade] = participante_id
+
+                existing = participante_repo.get_by_email_evento_funcao(
+                    email_hash,
+                    evento_id,
+                    funcao_id,
+                    exclude_participante_id=participante_id,
+                )
+                if existing:
+                    return (
+                        False,
+                        "Este email já está inscrito neste evento com esta função.",
+                    )
 
             for mudanca in mudancas:
                 logger.info(
                     f"Processando participante ID {mudanca['id']}: {mudanca['changes']}"
                 )
 
-                participante = session.get(Participante, mudanca["id"])
+                participante = participantes_por_id.get(mudanca["id"])
 
                 if not participante:
                     logger.error(f"❌ Participante {mudanca['id']} não encontrado!")
@@ -804,13 +851,16 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> bool:
 
             # Context manager will auto-commit
         logger.info(f"✅ Commit automático concluído - alterações salvas no banco")
-        return True
+        return True, "Alterações salvas com sucesso!"
+    except IntegrityError:
+        logger.warning("⚠️ Alteração duplicada bloqueada por email/evento/função")
+        return False, "Este email já está inscrito neste evento com esta função."
     except Exception as e:
         logger.error(f"❌ Erro ao salvar alterações: {str(e)}")
         import traceback
 
         traceback.print_exc()
-        return False
+        return False, "Erro ao salvar alterações."
 
 
 def mostrar_filtros(df_participantes: pd.DataFrame) -> pd.DataFrame:

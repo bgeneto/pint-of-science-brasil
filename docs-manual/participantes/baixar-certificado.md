@@ -36,14 +36,14 @@ Na página inicial, clique na (segunda) aba:
 
 ### Formulário de Busca
 
-Você verá um formulário simples com apenas um campo:
+Você verá um formulário com e-mail, evento e função:
 
 #### Campo: E-mail
 
 **O que digitar:**
 
 - O **mesmo e-mail** que você usou na inscrição
-- Digite com **atenção** - maiúsculas e minúsculas fazem diferença!
+- Digite com **atenção** para evitar letras ou domínios incorretos
 
 **Exemplos:**
 
@@ -56,14 +56,27 @@ joao.pedro@universidade.edu.br
 
     O e-mail deve ser **exatamente igual** ao usado na inscrição:
 
-      - ✅ `Maria.Silva@gmail.com` é diferente de ❌ `maria.silva@gmail.com`
       - ✅ `joao@email.com` é diferente de ❌ `joão@email.com`
 
-      Tente ambas as formas se tiver dúvidas!
+      Verifique acentos, pontos, hífens e espaços extras se tiver dúvidas.
+
+#### Campo: Evento
+
+**O que selecionar:**
+
+- O ano do evento correspondente à sua inscrição
+- Para certificados antigos, selecione o ano em que você participou
+
+#### Campo: Função
+
+**O que selecionar:**
+
+- A mesma função usada na inscrição validada
+- Se você tem mais de uma inscrição no mesmo evento, selecione a função do certificado desejado
 
 ### Passo 3: Buscar
 
-Após digitar seu e-mail:
+Após digitar seu e-mail e selecionar evento/função:
 
 1. Clique no botão:
 

@@ -18,7 +18,7 @@ Entre em contato com o coordenador da sua cidade informando seu nome completo. E
 
 ### Posso me inscrever duas vezes?
 
-Não. Cada e-mail pode ter apenas uma inscrição por evento. Se inscreveu errado, entre em contato com o coordenador.
+Sim, se forem funções diferentes no mesmo evento. Cada e-mail pode ter apenas uma inscrição por evento e função. Se inscreveu errado, entre em contato com o coordenador.
 
 ### Meu nome tem acento/cedilha. Tem problema?
 
@@ -26,7 +26,7 @@ Nenhum problema! O sistema aceita todos os caracteres do alfabeto português (ã
 
 ### E se eu participei em duas cidades diferentes?
 
-Faça uma inscrição separada para cada cidade onde participou.
+Se você exerceu funções diferentes, faça uma inscrição separada para cada função. Se foi a mesma função em cidades diferentes, entre em contato com a coordenação para ajustar sua inscrição.
 
 ---
 
@@ -291,7 +291,7 @@ Não! Todo o processo é **100% gratuito**.
 
 ### Quantos certificados posso ter?
 
-Quantos você quiser! Se participou de múltiplas edições, múltiplas cidades, ou múltiplas funções, terá um certificado para cada.
+Quantos forem aplicáveis às suas inscrições validadas. Múltiplas edições e múltiplas funções podem gerar certificados separados; a mesma função no mesmo evento usa uma única inscrição.
 
 ### O Pint of Science é internacional?
 

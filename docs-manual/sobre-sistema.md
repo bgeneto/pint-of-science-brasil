@@ -226,7 +226,7 @@ Os seguintes dados são **sempre criptografados** no banco:
 
 !!! info "Por que email_hash?"
 
-    O campo `email_hash` permite fazer buscas eficientes por e-mail sem descriptografar todos os registros.
+    O campo `email_hash` permite fazer buscas eficientes por e-mail sem descriptografar todos os registros. A identidade única de inscrição usa `email_hash` + evento + função.
 
 ## 🎨 Personalização Visual
 

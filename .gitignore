@@ -212,6 +212,8 @@ temp/
 local_*.py
 dev_*.py
 test_*.py
+!tests/
+!tests/test_participante_identity.py
 
 # Documentation build
 docs/build/
@@ -247,4 +249,3 @@ tramp
 # For example:
 # user_data/
 # exported_data/
-
