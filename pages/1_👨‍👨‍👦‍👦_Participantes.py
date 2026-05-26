@@ -469,7 +469,7 @@ def tabela_validacao_participantes(
         st.info(
             "💡 **Atenção superadmin:**\n\n"
             "- Você pode editar nome, email, cidade, função, título, datas etc...\n"
-            "- Não esqueça de clicar no botão “💾 Salvar Alterações” para confirmar as mudanças!"
+            "- Basta clicar fora da célula para salvar as alterações e confirmar as mudanças realizadas!"
         )
     elif allowed_cities:
         st.info(
