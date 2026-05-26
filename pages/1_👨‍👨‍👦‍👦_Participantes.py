@@ -23,7 +23,7 @@ from app.services import (
     validar_participantes,
     servico_calculo_carga_horaria,
 )
-from app.utils import formatar_data_exibicao, limpar_texto
+from app.utils import formatar_data_exibicao, validar_email
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -111,6 +111,101 @@ def mostrar_informacoes_usuario():
             f"🔐 **Tipo:** {'Superadmin' if user_info['is_superadmin'] else 'Coordenador'}  \n"
             f"⏰ **Login:** {formatar_data_exibicao(user_info.get('login_time', ''))}"
         )
+
+
+def normalizar_valor_editor(val: Any) -> str:
+    """Normaliza valores do data_editor para comparação e validação."""
+    if pd.isna(val) or val is None:
+        return ""
+
+    s = str(val).strip()
+    if s in ["-", "nan", "None", "N/A"]:
+        return ""
+    return s
+
+
+def validar_campos_obrigatorios_participante(
+    participante_id: Any,
+    *,
+    nome: Any,
+    email: Any,
+    cidade: Any,
+    funcao: Any,
+    datas_participacao: Any,
+    validar_datas_br: bool,
+) -> List[str]:
+    """Valida campos obrigatórios antes de qualquer alteração persistente."""
+    prefixo = f"Participante ID {participante_id}"
+    erros = []
+
+    nome_normalizado = normalizar_valor_editor(nome)
+    email_normalizado = normalizar_valor_editor(email)
+    cidade_normalizada = normalizar_valor_editor(cidade)
+    funcao_normalizada = normalizar_valor_editor(funcao)
+    datas_normalizadas = normalizar_valor_editor(datas_participacao)
+
+    campos_vazios = []
+    if not nome_normalizado:
+        campos_vazios.append("Nome")
+    if not email_normalizado:
+        campos_vazios.append("Email")
+    if not cidade_normalizada:
+        campos_vazios.append("Cidade")
+    if not funcao_normalizada:
+        campos_vazios.append("Função")
+    if not datas_normalizadas:
+        campos_vazios.append("Datas Participação")
+
+    if campos_vazios:
+        erros.append(f"{prefixo}: preencha {', '.join(campos_vazios)}.")
+
+    if email_normalizado and not validar_email(email_normalizado):
+        erros.append(f"{prefixo}: email inválido ({email_normalizado}).")
+
+    if datas_normalizadas and validar_datas_br:
+        try:
+            Participante.parse_datas_participacao_br_to_iso(datas_normalizadas)
+        except ValueError as exc:
+            erros.append(f"{prefixo}: {exc}")
+
+    return erros
+
+
+def validar_dataframe_editor(df_editado: pd.DataFrame) -> List[str]:
+    """Valida todas as linhas editáveis antes de salvar ou validar participantes."""
+    erros = []
+
+    for participante_id, row in df_editado.iterrows():
+        # Linhas novas não devem existir neste editor, mas ignoramos linhas
+        # sem ID para tolerar estados intermediários do Streamlit.
+        if pd.isna(participante_id):
+            continue
+
+        erros.extend(
+            validar_campos_obrigatorios_participante(
+                participante_id,
+                nome=row.get("Nome", ""),
+                email=row.get("Email", ""),
+                cidade=row.get("Cidade", ""),
+                funcao=row.get("Função", ""),
+                datas_participacao=row.get("Datas Participação", ""),
+                validar_datas_br=True,
+            )
+        )
+
+    return erros
+
+
+def exibir_erros_validacao_editor(erros: List[str]) -> None:
+    """Mostra erros de validação de forma compacta."""
+    st.error(
+        "Corrija os campos obrigatórios antes de salvar alterações ou validar participantes."
+    )
+    with st.expander("Ver detalhes dos campos inválidos", expanded=True):
+        for erro in erros[:20]:
+            st.write(f"- {erro}")
+        if len(erros) > 20:
+            st.write(f"- ... e mais {len(erros) - 20} erro(s).")
 
 
 def carregar_dados_validacao() -> Optional[tuple]:
@@ -430,6 +525,8 @@ def tabela_validacao_participantes(
                 "Nome",
                 width="large",
                 disabled=not can_edit,
+                required=True,
+                max_chars=200,
                 help=(
                     "Editar nome (coordenadores e superadmin)"
                     if can_edit
@@ -440,6 +537,9 @@ def tabela_validacao_participantes(
                 "Email",
                 width="large",
                 disabled=not can_edit,
+                required=True,
+                max_chars=200,
+                validate=r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",
                 help=(
                     "Editar email (coordenadores e superadmin)"
                     if can_edit
@@ -451,6 +551,7 @@ def tabela_validacao_participantes(
                 options=cidade_options,
                 width="medium",
                 disabled=not is_superadmin,  # Apenas superadmin pode trocar cidade
+                required=True,
                 help=(
                     "Selecionar cidade (somente superadmin)"
                     if is_superadmin
@@ -462,6 +563,7 @@ def tabela_validacao_participantes(
                 options=funcao_options,
                 width="medium",
                 disabled=not can_edit,
+                required=True,
                 help=(
                     "Selecionar função (coordenadores e superadmin)"
                     if can_edit
@@ -482,6 +584,7 @@ def tabela_validacao_participantes(
                 "Datas Participação",
                 width="medium",
                 disabled=not can_edit,
+                required=True,
                 help=(
                     "Editar datas no formato DD/MM/YYYY, separadas por vírgula (coordenadores e superadmin)"
                     if can_edit
@@ -497,7 +600,7 @@ def tabela_validacao_participantes(
         },
         hide_index=True,
         width="content",
-        num_rows="dynamic",
+        num_rows="fixed",
     )
 
     return edited_df
@@ -530,18 +633,13 @@ def processar_validacao(
     if "ID" in df_original.columns:
         df_original = df_original.set_index("ID")
 
+    erros_editor = validar_dataframe_editor(df_editado)
+    if erros_editor:
+        exibir_erros_validacao_editor(erros_editor)
+        return ""
+
     # Identificar participantes que foram marcados para validação
     selecionados = df_editado[df_editado["Selecionado"] == True]
-
-    # Helper function to normalize values for comparison
-    def normalize_value(val):
-        """Normalize values for comparison, handling None, NaN, empty strings, etc."""
-        if pd.isna(val) or val is None:
-            return ""
-        s = str(val).strip()
-        if s in ["-", "nan", "None", "N/A"]:
-            return ""
-        return s
 
     # Detectar mudanças em campos editáveis (para superadmins e coordenadores)
     mudancas = []
@@ -558,22 +656,22 @@ def processar_validacao(
                 changes = {}
 
                 # Compare Nome
-                if normalize_value(row["Nome"]) != normalize_value(
+                if normalizar_valor_editor(row["Nome"]) != normalizar_valor_editor(
                     original_row["Nome"]
                 ):
-                    changes["nome"] = normalize_value(row["Nome"])
+                    changes["nome"] = normalizar_valor_editor(row["Nome"])
 
                 # Compare Email
-                if normalize_value(row["Email"]) != normalize_value(
+                if normalizar_valor_editor(row["Email"]) != normalizar_valor_editor(
                     original_row["Email"]
                 ):
-                    changes["email"] = normalize_value(row["Email"])
+                    changes["email"] = normalizar_valor_editor(row["Email"])
 
                 # Compare Cidade
-                if normalize_value(row["Cidade"]) != normalize_value(
+                if normalizar_valor_editor(row["Cidade"]) != normalizar_valor_editor(
                     original_row["Cidade"]
                 ):
-                    cidade_nome = normalize_value(row["Cidade"])
+                    cidade_nome = normalizar_valor_editor(row["Cidade"])
                     if cidade_nome:  # Only if not empty
                         cidade_id = next(
                             (
@@ -587,10 +685,10 @@ def processar_validacao(
                             changes["cidade_id"] = cidade_id
 
                 # Compare Função
-                if normalize_value(row["Função"]) != normalize_value(
+                if normalizar_valor_editor(row["Função"]) != normalizar_valor_editor(
                     original_row["Função"]
                 ):
-                    funcao_nome = normalize_value(row["Função"])
+                    funcao_nome = normalizar_valor_editor(row["Função"])
                     if funcao_nome:  # Only if not empty
                         funcao_id = next(
                             (
@@ -604,18 +702,20 @@ def processar_validacao(
                             changes["funcao_id"] = funcao_id
 
                 # Compare Título Apresentação
-                if normalize_value(
+                if normalizar_valor_editor(
                     row.get("Título Apresentação", "")
-                ) != normalize_value(original_row.get("Título Apresentação", "")):
-                    changes["titulo_apresentacao"] = normalize_value(
+                ) != normalizar_valor_editor(
+                    original_row.get("Título Apresentação", "")
+                ):
+                    changes["titulo_apresentacao"] = normalizar_valor_editor(
                         row.get("Título Apresentação", "")
                     )
 
                 # Compare Datas Participação
-                if normalize_value(row["Datas Participação"]) != normalize_value(
-                    original_row["Datas Participação"]
-                ):
-                    changes["datas_participacao"] = normalize_value(
+                if normalizar_valor_editor(
+                    row["Datas Participação"]
+                ) != normalizar_valor_editor(original_row["Datas Participação"]):
+                    changes["datas_participacao"] = normalizar_valor_editor(
                         row["Datas Participação"]
                     )
 
@@ -706,6 +806,7 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> tuple[bool, 
             participante_repo = get_participante_repository(session)
             participantes_por_id = {}
             identidades_propostas = []
+            erros_validacao = []
 
             for mudanca in mudancas:
                 participante = session.get(Participante, mudanca["id"])
@@ -716,24 +817,53 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> tuple[bool, 
 
                 participantes_por_id[mudanca["id"]] = participante
                 changes = mudanca["changes"]
-                email_hash = participante.email_hash
 
-                if not email_hash:
-                    email_atual = servico_criptografia.descriptografar(
-                        participante.email_encrypted
-                    )
-                    email_hash = servico_criptografia.gerar_hash_email(email_atual)
+                nome_atual = servico_criptografia.descriptografar(
+                    participante.nome_completo_encrypted
+                )
+                email_atual = servico_criptografia.descriptografar(
+                    participante.email_encrypted
+                )
 
-                if "email" in changes:
-                    email_hash = servico_criptografia.gerar_hash_email(changes["email"])
-
+                nome_proposto = changes.get("nome", nome_atual)
+                email_proposto = changes.get("email", email_atual)
+                cidade_id = changes.get("cidade_id", participante.cidade_id)
                 funcao_id = changes.get("funcao_id", participante.funcao_id)
+                datas_participacao = changes.get(
+                    "datas_participacao", participante.datas_participacao
+                )
+
+                erros_validacao.extend(
+                    validar_campos_obrigatorios_participante(
+                        participante.id,
+                        nome=nome_proposto,
+                        email=email_proposto,
+                        cidade=cidade_id,
+                        funcao=funcao_id,
+                        datas_participacao=datas_participacao,
+                        validar_datas_br="datas_participacao" in changes,
+                    )
+                )
+
+                email_hash = servico_criptografia.gerar_hash_email(email_proposto)
+
                 identidades_propostas.append(
                     (participante.id, email_hash, participante.evento_id, funcao_id)
                 )
 
+            if erros_validacao:
+                mensagem = " ".join(erros_validacao[:5])
+                if len(erros_validacao) > 5:
+                    mensagem += f" ... e mais {len(erros_validacao) - 5} erro(s)."
+                return False, mensagem
+
             identidades_vistas = {}
-            for participante_id, email_hash, evento_id, funcao_id in identidades_propostas:
+            for (
+                participante_id,
+                email_hash,
+                evento_id,
+                funcao_id,
+            ) in identidades_propostas:
                 identidade = (email_hash, evento_id, funcao_id)
                 if identidade in identidades_vistas:
                     return (
@@ -818,8 +948,9 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> tuple[bool, 
                             participante.datas_participacao = valor_iso
                         except ValueError as e:
                             logger.error(f"❌ Erro ao converter datas: {str(e)}")
-                            # Keep original value if conversion fails
-                            continue
+                            raise ValueError(
+                                f"Datas inválidas para participante ID {participante.id}: {e}"
+                            )
 
                 # Regenerate validation hash if nome or email changed
                 if needs_hash_regeneration and participante.hash_validacao:
@@ -833,7 +964,6 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> tuple[bool, 
                     novo_hash = servico_criptografia.gerar_hash_validacao_certificado(
                         participante.id, participante.evento_id, email_atual, nome_atual
                     )
-                    old_hash = participante.hash_validacao
                     participante.hash_validacao = novo_hash
                     logger.info(f"🔐 Hash de validação regenerado")
 
@@ -855,6 +985,9 @@ def salvar_edicoes_participantes(mudancas: List[Dict[str, Any]]) -> tuple[bool, 
     except IntegrityError:
         logger.warning("⚠️ Alteração duplicada bloqueada por email/evento/função")
         return False, "Este email já está inscrito neste evento com esta função."
+    except ValueError as e:
+        logger.warning(f"⚠️ Alteração inválida bloqueada: {str(e)}")
+        return False, str(e)
     except Exception as e:
         logger.error(f"❌ Erro ao salvar alterações: {str(e)}")
         import traceback
